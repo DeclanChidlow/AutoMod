@@ -1,7 +1,6 @@
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+# IDE / editor specific ignores
+.idea/
+.vscode/
+
+# JavaScript
+node_modules

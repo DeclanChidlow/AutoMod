@@ -1,19 +1,16 @@
-FROM node:18 as build
+FROM oven/bun:1 as build
 WORKDIR /build/app
-COPY api/package.json api/yarn.lock api/.yarnrc.yml ./
-COPY api/.yarn ./.yarn
+COPY api/package.json api/bun.lockb ./
 COPY lib ../lib
-RUN yarn --cwd ../lib --immutable
-RUN yarn --cwd ../lib build
-RUN yarn install --immutable
+RUN cd ../lib && bun install --frozen-lockfile && bun run build
+RUN bun install --frozen-lockfile
 COPY ./api .
-RUN yarn build
+RUN bun run build
 
-FROM node:18 as prod
+FROM oven/bun:1 as prod
 WORKDIR /app/api
-COPY --from=build /build/app/package.json /build/app/yarn.lock /build/app/.yarnrc.yml ./
-COPY --from=build /build/app/.yarn ./.yarn
+COPY --from=build /build/app/package.json /build/app/bun.lockb ./
 COPY --from=build /build/app/dist ./dist
 COPY --from=build /build/lib ../lib
-RUN yarn install --immutable
-CMD ["yarn", "start"]
+RUN bun install --production --frozen-lockfile
+CMD ["bun", "start"]

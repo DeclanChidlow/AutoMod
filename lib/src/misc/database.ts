@@ -12,7 +12,7 @@ import { createClient } from 'redis';
 const _redisClient = createClient();
 type RedisClient = typeof _redisClient;
 
-class CachedDb<T> {
+class CachedDb<T extends { [key: string]: any }> {
     db: ICollection<T>;
     redis: RedisClient;
     ttl: number = 300;
@@ -39,8 +39,7 @@ class CachedDb<T> {
                     if (this.debug) console.debug('Db: Answering from cache');
                     resolve(JSON.parse(res));
                     return;
-                }
-                else if (this.debug) console.debug('Db: Fetching from database');
+                } else if (this.debug) console.debug('Db: Fetching from database');
 
                 const mongoRes = await this.db.findOne({ [this.mongoIndexKey]: key } as any);
                 resolve(mongoRes ?? undefined);
@@ -48,10 +47,10 @@ class CachedDb<T> {
                 try {
                     await this.redis.SET(`${this.redisPrefix}:${key}`, JSON.stringify(mongoRes));
                     await this.redis.EXPIRE(`${this.redisPrefix}:${key}`, this.ttl);
-                } catch(e) {
+                } catch (e) {
                     console.warn('Failed to cache to redis:', e);
                 }
-            } catch(e) { reject(e) }
+            } catch (e) { reject(e); }
         });
     }
 
@@ -70,13 +69,13 @@ class CachedDb<T> {
                 );
                 resolve(res);
                 if (!res.ok) return console.debug('Db: Not caching;', res);
-            } catch(e) { reject(e) }
+            } catch (e) { reject(e); }
 
             try {
                 if (this.debug) console.debug('Db: Caching updated document');
                 await this.redis.SET(`${this.redisPrefix}:${key}`, JSON.stringify(value));
                 await this.redis.EXPIRE(`${this.redisPrefix}:${key}`, this.ttl);
-            } catch(e) {
+            } catch (e) {
                 console.warn('Failed to cache to redis:', e);
             }
         });
@@ -101,10 +100,10 @@ class CachedDb<T> {
                 try {
                     await this.redis.SET(`${this.redisPrefix}:${key}`, JSON.stringify(res));
                     await this.redis.EXPIRE(`${this.redisPrefix}:${key}`, this.ttl);
-                } catch(e) {
+                } catch (e) {
                     console.warn('Failed to cache to redis:', e);
                 }
-            } catch(e) { reject(e) }
+            } catch (e) { reject(e); }
         });
     }
 }
