@@ -1,8 +1,6 @@
 # Copy this file to `docker-compose.yml` and modify it to your liking.
 # Copy `.env.example` to `.env` to configure environment variables.
 
-version: "3.1"
-
 services:
   bot:
     build:
