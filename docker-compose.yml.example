@@ -51,27 +51,6 @@ services:
       - 0.0.0.0:9000:9000
     restart: unless-stopped
 
-  bridge:
-    build:
-      context: .
-      dockerfile: ./bridge/Dockerfile
-    environment:
-      - REVOLT_TOKEN=${BOT_TOKEN}
-      - DISCORD_TOKEN=${BOT_TOKEN_DISCORD}
-      - DB_STRING=mongodb://mogus:${DB_PASS}@mongo:27017/admin
-      - NODE_ENV=production
-      - BRIDGE_METRICS_PORT
-      - REVOLT_API_URL=${API_URL}
-      - EMOJI_SERVERS=${BRIDGE_EMOJI_SERVERS}
-    # Uncomment if you enabled Prometheus metrics
-    #ports:
-    #  - 127.0.0.1:${BRIDGE_METRICS_PORT}:${BRIDGE_METRICS_PORT}
-    restart: unless-stopped
-    depends_on:
-      - mongo
-
-  # If you prefer to host the web app on a different
-  # platform like Vercel, you can remove this part.
   web:
     build:
       context: .
