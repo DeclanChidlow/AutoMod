@@ -6,7 +6,6 @@ import child_process from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { User } from "revolt.js";
-import { adminBotLog } from "../../logging";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import { getMutualServers, parseUserOrId } from "../../util";
 
@@ -94,8 +93,6 @@ export default {
 
                             const sentMsg = await message.reply(msg.replace('%emoji%', ':lock:'), false);
                             setTimeout(() => sentMsg?.edit({ content: msg.replace('%emoji%', ':unlock:') }).catch(()=>{}), 200);
-
-                            await adminBotLog({ type: 'WARN', message: `@${message.author!.username} has enabled sudo mode.` });
 
                             break;
                         }

@@ -6,7 +6,7 @@ export default {
     name: 'test',
     aliases: [ 'testalias' ],
     description: 'Test command',
-    category: CommandCategory.Misc,
+    category: CommandCategory.Miscellaneous,
     run: (message: MessageCommandContext, args: string[]) => {
         message.reply({
             content: 'Beep boop.',

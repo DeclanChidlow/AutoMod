@@ -7,7 +7,7 @@ export default {
     name: 'ping',
     aliases: null,
     description: 'ping pong',
-    category: CommandCategory.Misc,
+    category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
         let now = Date.now();
         message.reply(`Measuring...`)

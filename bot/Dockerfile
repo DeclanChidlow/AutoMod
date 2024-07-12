@@ -17,7 +17,7 @@ RUN pnpm install
 RUN pnpm run build
 
 WORKDIR /build/app
-RUN yarn install --immutable
+RUN yarn install
 COPY ./bot .
 RUN yarn build
 

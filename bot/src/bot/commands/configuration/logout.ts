@@ -8,7 +8,7 @@ export default {
     name: 'logout',
     aliases: null,
     description: 'Log out of sessions created with /login',
-    category: CommandCategory.Misc,
+    category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
             const code = args.shift();

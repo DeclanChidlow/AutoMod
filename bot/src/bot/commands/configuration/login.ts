@@ -11,7 +11,7 @@ export default {
     name: 'login',
     aliases: null,
     description: 'Log into the web dashboard',
-    category: CommandCategory.Misc,
+    category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
             const code = args.shift();

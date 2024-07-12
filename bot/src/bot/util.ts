@@ -7,7 +7,6 @@ import axios from 'axios';
 import { Server } from "revolt.js";
 import LogConfig from "automod/dist/types/LogConfig";
 import LogMessage from "automod/dist/types/LogMessage";
-import { ColorResolvable, MessageEmbed } from "discord.js";
 import logger from "./logger";
 import { ulid } from "ulid";
 import { Channel } from "revolt.js";
@@ -182,58 +181,6 @@ async function uploadFile(file: any, filename: string): Promise<string> {
 }
 
 async function sendLogMessage(config: LogConfig, content: LogMessage) {
-    if (config.discord?.webhookUrl) {
-        let c = { ...content, ...content.overrides?.discord };
-
-        const embed = new MessageEmbed();
-        if (c.title) embed.setTitle(content.title);
-        if (c.description) embed.setDescription(c.description);
-        if (c.color?.match(/^#[0-9a-fA-F]+$/))
-            embed.setColor(c.color as ColorResolvable);
-        if (c.fields?.length) {
-            for (const field of c.fields) {
-                embed.addField(
-                    field.title,
-                    field.content.trim() || "\u200b",
-                    field.inline
-                );
-            }
-        }
-        if (content.image) {
-            if (content.image.type == "THUMBNAIL")
-                embed.setThumbnail(content.image.url);
-            else if (content.image.type == "BIG")
-                embed.setImage(content.image.url);
-        }
-
-        if (content.attachments?.length) {
-            embed.setFooter(
-                `Attachments: ${content.attachments
-                    .map((a) => a.name)
-                    .join(", ")}`
-            );
-        }
-
-        let data = new FormData();
-        content.attachments?.forEach((a) => {
-            data.append(`files[${ulid()}]`, a.content, { filename: a.name });
-        });
-
-        data.append(
-            "payload_json",
-            JSON.stringify({ embeds: [embed.toJSON()] }),
-            { contentType: "application/json" }
-        );
-
-        axios
-            .post(config.discord.webhookUrl, data, {
-                headers: data.getHeaders(),
-            })
-            .catch((e) =>
-                logger.error(`Failed to send log message (discord): ${e}`)
-            );
-    }
-
     if (config.revolt?.channel) {
         let c = { ...content, ...content.overrides?.revolt };
         try {

@@ -6,7 +6,7 @@ export default {
     name: 'healthcheck',
     aliases: null,
     description: 'Health check',
-    category: CommandCategory.Misc,
+    category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
         const msg = await message.reply('Health check success: ' + args.join(' '));
     }
