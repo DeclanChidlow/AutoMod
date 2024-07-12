@@ -35,13 +35,6 @@ client.on('messageUpdate', async (message, oldMessage) => {
                     `[Jump to message](/server/${server.id}/channel/${channel.id}/${message.id})`,
                 fields: [],
                 color: "#829dff",
-                overrides: {
-                    discord: {
-                        description: `Author: @${
-                            message.author?.username || message.authorId || "Unknown"
-                        } | Channel: ${channel.name || channel.id}`,
-                    },
-                },
             };
 
             if (attachFullMessage) {
@@ -78,11 +71,6 @@ client.on('messageDelete', async (message) => {
                             + `[\\[Jump to context\\]](/server/${channel.serverId}/channel/${channel.id}/${message.id})`,
                 fields: [],
                 color: '#ff6b6b',
-                overrides: {
-                    discord: {
-                        description: `Author: @${author?.username || message.authorId} | Channel: ${channel?.name || message.channelId}`
-                    },
-                }
             }
 
             if (msg.length > 1000) {
@@ -136,11 +124,6 @@ client.on('messageDeleteBulk', async (messages) => {
                 fields: [],
                 attachments: [{ name: 'messages.csv', content: Buffer.from(csv) }],
                 color: '#ff392b',
-                overrides: {
-                    discord: {
-                        description: `${messages.length} messages deleted in #${channel.name}`,
-                    }
-                }
             }
 
             await sendLogMessage(config.logs.messageUpdate, embed);
@@ -168,7 +151,6 @@ async function logModAction(type: 'warn'|'kick'|'ban'|'votekick', server: Server
                            + `**Warn ID**: \`${infractionID}\`\n`
                            + (extraText ?? ''),
                 color: embedColor,
-                overrides: {},
             });
         }
     } catch(e) {

@@ -66,7 +66,6 @@ export default {
                             + `Commit hash: \`${await getCommitHash() || 'Unknown'}\`\n`
                             + `### Packages\n`
                             + `revolt.js: \`${pjson.dependencies['revolt.js']}\`\n`
-                            + `discord.js: \`${pjson.dependencies['discord.js']}\`\n`
                             + `axios: \`${pjson.dependencies['axios']}\`\n`
                             + `log75: \`${pjson.dependencies['log75']}\`\n`
                             + `typescript: \`${pjson.devDependencies['typescript']}\`\n`
