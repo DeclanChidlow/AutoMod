@@ -1,10 +1,22 @@
-node_modules
-dist
-.env
-yarn-error.log
-docker-compose.yml
-/db
-.vercel
+# IDE / editor specific ignores
+.idea/
+.vscode/
 
-# For stuff like docker mounts
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# JavaScript
+node_modules
+yarn-error.log
+
+# Docker
+docker-compose.yml
+
+# Misc
+dist
+/db
 /private
