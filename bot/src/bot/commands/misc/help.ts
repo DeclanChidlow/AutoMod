@@ -11,22 +11,22 @@ const categories: { [key in CommandCategory]: {
     [CommandCategory.Moderation]: {
         friendlyName: 'Moderation',
         description: 'Moderation-focused commands',
-        aliases: [ 'mod', 'mods' ],
+        aliases: [ 'mod' ],
     },
     [CommandCategory.Config]: {
         friendlyName: 'Configuration',
         description: 'Configure AutoMod',
         aliases: [ 'conf', 'config' ],
     },
-    [CommandCategory.Misc]: {
-        friendlyName: 'Misc',
-        description: 'Random stuff :yed:',
-        aliases: [ 'miscellaneous', 'weirdwordicantspell' ],
-    },
     [CommandCategory.Owner]: {
         friendlyName: 'Owner',
         description: 'Owner-only commands for managing AutoMod',
         aliases: [],
+    },
+    [CommandCategory.Miscellaneous]: {
+        friendlyName: 'Miscellaneous',
+        description: 'Assorted extras',
+        aliases: [ 'misc' ],
     },
     [CommandCategory.None]: {
         friendlyName: 'Uncategorized',
@@ -40,17 +40,17 @@ export default {
     aliases: null,
     description: 'Help command.',
     removeEmptyArgs: true,
-    category: CommandCategory.Misc,
+    category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
         const isBotOwner = ownerIDs.includes(message.authorId!);
         const prefix = DEFAULT_PREFIX; // TODO: fetch prefix from server config
 
         let searchInput = args.shift()?.toLowerCase();
         if (!searchInput) {
-            let msg = `## AutoMod help\n` +
+            let msg = `## AutoMod Help\n` +
                       `Type **${prefix}help [category]** to view see all commands or **${prefix}help [command]** to learn more about a command.\n\n`
                       + `### [Open Server Settings]`
-                      + `(<${process.env.WEB_UI_URL || 'https://automod.janderedev.xyz'}/dashboard/${message.channel?.serverId}>)\n\n`;
+                      + `(<${process.env.WEB_UI_URL || 'https://automod.vale.rocks'}/dashboard/${message.channel?.serverId}>)\n\n`;
 
             let total = 0;
 
@@ -79,7 +79,7 @@ export default {
                 c => c[1].aliases.find(k => k.toLowerCase() == searchInput)
             ) || [];
             if (category && !searchInput.startsWith(prefix)) {
-                let msg = `**AutoMod help** - Category: ${category.friendlyName}\n`
+                let msg = `**AutoMod Help** - Category: ${category.friendlyName}\n`
                         + `${category.description}\n\n`
                         + `Type **${prefix}help [command]** to learn more about a command.\n\n`;
 
@@ -103,7 +103,7 @@ export default {
                 if (!cmd) {
                     return message.reply(`I can't find any command or category matching \`${searchInput}\`.`);
                 } else {
-                    let msg = `**AutoMod help** - Command: ${cmd.name}\n`
+                    let msg = `**AutoMod Help** - Command: ${cmd.name}\n`
                             + `${cmd.description}\n\n`;
 
                     if (cmd.syntax) msg += `Syntax: \`${cmd.syntax}\`\n`;
