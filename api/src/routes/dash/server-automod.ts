@@ -2,8 +2,14 @@ import { app, db } from '../..';
 import { Request, Response } from 'express';
 import { badRequest, ensureObjectStructure, isAuthenticated, requireAuth, unauthorized } from '../../utils';
 import { botReq } from '../internal/ws';
-import { FindOneResult } from 'monk';
+import { Collection, Db, ObjectId } from 'mongodb';
 import { ulid } from 'ulid';
+
+let serversCollection: Collection;
+
+export function initializeAutomodAPI(database: Db) {
+    serversCollection = database.collection('servers');
+}
 
 type AntispamRule = {
     id: string;
@@ -14,7 +20,7 @@ type AntispamRule = {
     message: string | null;
 }
 
-app.get('/dash/server/:server/automod',requireAuth({ permission: 2 }) , async (req: Request, res: Response) => {
+app.get('/dash/server/:server/automod', requireAuth({ permission: 2 }), async (req: Request, res: Response) => {
     const user = await isAuthenticated(req, res, true);
     if (!user) return;
 
@@ -31,11 +37,11 @@ app.get('/dash/server/:server/automod',requireAuth({ permission: 2 }) , async (r
     const permissionLevel: 0|1|2|3 = response.perms;
     if (permissionLevel < 1) return unauthorized(res, `Only moderators and bot managers may view this.`);
 
-    const serverConfig: FindOneResult<any> = await db.get('servers').findOne({ id: server });
+    const serverConfig = await serversCollection.findOne({ id: server });
     
     const result = {
         antispam: (serverConfig?.automodSettings?.spam as AntispamRule[]|undefined)
-            ?.map(r => ({                // Removing unwanted fields from response
+            ?.map(r => ({
                 action: r.action,
                 channels: r.channels,
                 id: r.id,
@@ -57,28 +63,29 @@ app.patch('/dash/server/:server/automod/:ruleid', requireAuth({ permission: 2 })
     const body = req.body;
     if (!server || !ruleid) return badRequest(res);
 
-    const serverConfig: FindOneResult<any> = await db.get('servers').findOne({ id: server });
-    const antiSpamRules: AntispamRule[] = serverConfig.automodSettings?.spam ?? [];
+    const serverConfig = await serversCollection.findOne({ id: server });
+    const antiSpamRules: AntispamRule[] = serverConfig?.automodSettings?.spam ?? [];
 
     const rule = antiSpamRules.find(r => r.id == ruleid);
     if (!rule) return res.status(404).send({ error: 'No rule with this ID could be found.' });
 
-    await db.get('servers').update({
-        id: server
-    }, {
-        $set: {
-            "automodSettings.spam.$[rulefilter]": {
-                ...rule,
-                action: Number(body.action ?? rule.action),
-                channels: body.channels ?? rule.channels,
-                message: body.message ?? rule.message,
-                max_msg: body.max_msg ?? rule.max_msg,
-                timeframe: body.timeframe ?? rule.timeframe,
-            } as AntispamRule
+    const result = await serversCollection.updateOne(
+        { id: server, "automodSettings.spam.id": ruleid },
+        {
+            $set: {
+                "automodSettings.spam.$": {
+                    ...rule,
+                    action: Number(body.action ?? rule.action),
+                    channels: body.channels ?? rule.channels,
+                    message: body.message ?? rule.message,
+                    max_msg: body.max_msg ?? rule.max_msg,
+                    timeframe: body.timeframe ?? rule.timeframe,
+                }
+            }
         }
-    }, { arrayFilters: [ { "rulefilter.id": ruleid } ] });
+    );
 
-    return res.send({ success: true });
+    return res.send({ success: result.modifiedCount > 0 });
 });
 
 app.post('/dash/server/:server/automod', requireAuth({ permission: 2 }), async (req, res) => {
@@ -109,21 +116,22 @@ app.post('/dash/server/:server/automod', requireAuth({ permission: 2 }), async (
 
     const id = ulid();
 
-    await db.get('servers').update({
-        id: server,
-    }, {
-        $push: {
-            "automodSettings.spam": {
-                id: id,
-                max_msg: rule.max_msg ?? 5,
-                timeframe: rule.timeframe ?? 3,
-                action: rule.action ?? 0,
-                message: rule.message ?? null,
+    const result = await serversCollection.updateOne(
+        { id: server },
+        {
+            $push: {
+                "automodSettings.spam": {
+                    id: id,
+                    max_msg: rule.max_msg ?? 5,
+                    timeframe: rule.timeframe ?? 3,
+                    action: rule.action ?? 0,
+                    message: rule.message ?? null,
+                }
             }
         }
-    });
+    );
 
-    res.status(200).send({ success: true, id: id });
+    res.status(200).send({ success: result.modifiedCount > 0, id: id });
 });
 
 app.delete('/dash/server/:server/automod/:ruleid', requireAuth({ permission: 2 }), async (req, res) => {
@@ -140,22 +148,22 @@ app.delete('/dash/server/:server/automod/:ruleid', requireAuth({ permission: 2 }
 
     if (!response.server) return res.status(404).send({ error: 'Server not found' });
 
-    // todo: fix this shit idk if it works
-    let queryRes;
+    let result;
     try {
-        queryRes = await db.get('servers').update({
-            id: server
-        }, {
-            $pull: {
-                "automodSettings.spam": { id: ruleid }
+        result = await serversCollection.updateOne(
+            { id: server },
+            {
+                $pull: {
+                    "automodSettings.spam": { id: ruleid }
+                }
             }
-        });
+        );
     } catch(e) {
         console.error(e);
         res.status(500).send({ error: e });
         return;
     }
 
-    if (queryRes.nModified > 0) res.status(200).send({ success: true });
+    if (result.modifiedCount > 0) res.status(200).send({ success: true });
     else res.status(404).send({ success: false, error: 'Rule not found' });
 });

@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
-import { FindOneResult } from "monk";
-import { db } from ".";
+import { Collection, Db } from "mongodb";
 import { botReq } from "./routes/internal/ws";
+
+let sessionsCollection: Collection;
+
+export function initializeSessionAuthentication(db: Db) {
+    sessionsCollection = db.collection('sessions');
+}
 
 class Session {
     user: string;
@@ -19,9 +24,7 @@ class Session {
 async function isAuthenticated(req: Request, res?: Response, send401?: boolean): Promise<string|false> {
     const user = req.header('x-auth-user');
     const token = req.header('x-auth-token');
-
     if (!user || !token) return false;
-
     const info = await getSessionInfo(user, token);
     if (res && send401 && !info.valid) {
         res.status(401).send({ error: 'Unauthorized' });
@@ -32,9 +35,13 @@ async function isAuthenticated(req: Request, res?: Response, send401?: boolean):
 type SessionInfo = { exists: boolean, valid: boolean, nonce?: string }
 
 async function getSessionInfo(user: string, token: string): Promise<SessionInfo> {
-    const session: FindOneResult<Session> = await db.get('sessions').findOne({ user, token });
+    const session = await sessionsCollection.findOne<Session>({ user, token });
     
-    return { exists: !!session, valid: !!(session && !session.invalid && session.expires > Date.now()), nonce: session?.nonce }
+    return { 
+        exists: !!session, 
+        valid: !!(session && !session.invalid && session.expires > Date.now()), 
+        nonce: session?.nonce 
+    }
 }
 
 function badRequest(res: Response, infoText?: string) {

@@ -1,19 +1,33 @@
 import { Request, Response } from "express";
-import { FindOneResult } from "monk";
-import { app, db, SESSION_LIFETIME } from "..";
+import { Collection, Db } from "mongodb";
+import { app, SESSION_LIFETIME } from "..";
+
+let sessionsCollection: Collection;
+
+export function initializeSessionsMiddleware(db: Db) {
+    sessionsCollection = db.collection('sessions');
+}
 
 app.use('*', async (req: Request, res: Response, next: () => void) => {
     next();
-
     const user = req.header('x-auth-user');
     const token = req.header('x-auth-token');
-
     if (!user || !token) return;
 
     try {
-        const session: FindOneResult<any> = await db.get('sessions').findOne({ user, token, expires: { $gt: Date.now() } });
+        const session = await sessionsCollection.findOne({ 
+            user, 
+            token, 
+            expires: { $gt: new Date() } 
+        });
+
         if (session) {
-            await db.get('sessions').update({ _id: session._id }, { $set: { expires: Date.now() + SESSION_LIFETIME } });
+            await sessionsCollection.updateOne(
+                { _id: session._id },
+                { $set: { expires: new Date(Date.now() + SESSION_LIFETIME) } }
+            );
         }
-    } catch(e) { console.error(e) }
+    } catch(e) { 
+        console.error(e);
+    }
 });
