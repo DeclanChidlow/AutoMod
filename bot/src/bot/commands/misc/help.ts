@@ -23,7 +23,7 @@ const categories: {
 	[CommandCategory.Owner]: {
 		friendlyName: "Owner",
 		description: "Owner-only commands for managing AutoMod",
-		aliases: [ "owner" ],
+		aliases: ["owner"],
 	},
 	[CommandCategory.Miscellaneous]: {
 		friendlyName: "Miscellaneous",
