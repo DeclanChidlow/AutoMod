@@ -1,4 +1,4 @@
-FROM oven/bun:1 as build
+FROM oven/bun:latest as build
 WORKDIR /build/app
 COPY api/package.json api/bun.lockb ./
 COPY lib ../lib
@@ -7,7 +7,7 @@ RUN bun install --frozen-lockfile
 COPY ./api .
 RUN bun run build
 
-FROM oven/bun:1 as prod
+FROM oven/bun:latest as prod
 WORKDIR /app/api
 COPY --from=build /build/app/package.json /build/app/bun.lockb ./
 COPY --from=build /build/app/dist ./dist
