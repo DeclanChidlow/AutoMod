@@ -106,14 +106,14 @@ const ServerDashboard: FunctionComponent = () => {
             const server: Server = res.data.server;
             setServerInfo(server);
 
-            setPrefix(server.serverConfig?.prefix || '');
-            setPrefixAllowSpace(!!server.serverConfig?.spaceAfterPrefix);
-            setDmOnKick(!!server.serverConfig?.dmOnKick);
-            setDmOnWarn(!!server.serverConfig?.dmOnWarn);
-            setContact(server.serverConfig?.contact || '');
+            setPrefix(server.serverConfig?.['prefix'] || '');
+            setPrefixAllowSpace(!!server.serverConfig?.['spaceAfterPrefix']);
+            setDmOnKick(!!server.serverConfig?.['dmOnKick']);
+            setDmOnWarn(!!server.serverConfig?.['dmOnWarn']);
+            setContact(server.serverConfig?.['contact'] || '');
 
-            setBotManagers(server.serverConfig?.botManagers ?? []);
-            setModerators(server.serverConfig?.moderators ?? []);
+            setBotManagers(server.serverConfig?.['botManagers'] ?? []);
+            setModerators(server.serverConfig?.['moderators'] ?? []);
 
             loadAutomodInfo(server);
         } catch(e: any) {

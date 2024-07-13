@@ -1,20 +1,38 @@
 {
   "compilerOptions": {
+    // Enable latest features
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": false,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "jsx": "react-jsx",
+    "allowJs": true,
+
+		// Bundler mode
+		"moduleResolution": "Node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    
+    // Some stricter flags (enabled)
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true,
+    
+    // Additional improvements
+    "useDefineForClassFields": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "incremental": true
   },
-  "include": ["./src"]
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

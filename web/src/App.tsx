@@ -1,4 +1,4 @@
-import { Route, BrowserRouter, Routes, useLocation } from 'react-router-dom';
+import { Route, BrowserRouter, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import './App.css';
 import '@revoltchat/ui/src/styles/dark.css';
@@ -9,10 +9,10 @@ import ServerDashboard from './pages/ServerDashboard/ServerDashboard';
 import localforage from 'localforage';
 import TexPage from './pages/Tex';
 
-const API_URL = import.meta.env.VITE_API_URL?.toString()
+const API_URL = import.meta.env['VITE_API_URL']?.toString()
   || 'http://localhost:9000';
 
-const BOT_PREFIX = import.meta.env.VITE_BOT_PREFIX?.toString()
+const BOT_PREFIX = import.meta.env['VITE_BOT_PREFIX']?.toString()
   || '/';
 
 function App() {

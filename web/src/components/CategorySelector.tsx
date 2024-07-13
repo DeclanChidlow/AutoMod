@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent } from "react";
 import './styles/CategorySelector.css';
 
 const CategorySelector: FunctionComponent<{ keys: { id: string, name: string }[], selected: string, onChange: (key: string) => void }> = (props) => {
