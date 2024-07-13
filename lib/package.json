@@ -6,9 +6,6 @@
     "build": "rm -rf dist && tsc",
     "dev": "rm -rf dist && tsc-watch"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.0.4",
     "monk": "^7.3.4",

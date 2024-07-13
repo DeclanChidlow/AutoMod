@@ -1,7 +1,6 @@
 {
 	"name": "revolt-automod",
 	"version": "1.0.0",
-	"description": "",
 	"type": "module",
 	"exports": "./index.js",
 	"scripts": {
@@ -9,9 +8,6 @@
 		"start": "node --experimental-specifier-resolution=node dist/index",
 		"dev": "yarn build && yarn start"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
 	"dependencies": {
 		"@types/monk": "^6.0.0",
 		"automod": "^0.1.0",
