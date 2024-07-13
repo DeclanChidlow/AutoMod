@@ -1,7 +1,7 @@
 import * as Revolt from "revolt.js";
 import { IMonkManager } from 'monk';
 import logger from '../bot/logger';
-import { ClientOptions } from "revolt.js/src/Client";
+import { ClientOptions } from "revolt.js";
 
 class AutomodClient extends Revolt.Client {
     db: IMonkManager;
