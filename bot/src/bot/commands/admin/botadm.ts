@@ -33,9 +33,6 @@ const SUBCOMMANDS: string[] = [
     'stats',
     'sudo',
     'userinfo',
-    'blacklist',
-    'unblacklist',
-    'blacklistreason',
     'ignore',
     'unignore',
 ];
@@ -137,92 +134,6 @@ export default {
 
                     if (!res) await message.reply(`Nothing stored about this user.`);
                     else await message.reply(`\`\`\`json\n${JSON.stringify(res, null, 4)}\n\`\`\``);
-
-                    break;
-                }
-
-                case 'blacklist': {
-                    const target = await parseUserOrId(args.shift() || '');
-                    if (!target) return message.reply('Specified user could not be found.');
-                    if (target.id == message.authorId) return message.reply(`no`);
-
-                    await dbs.USERS.update({
-                        id: target.id,
-                    }, {
-                        $setOnInsert: { id: target.id },
-                        $set: { globalBlacklist: true }
-                    }, { upsert: true });
-
-                    try {
-                        // Ban the user from all shared servers (unless those who opted out)
-                        if (target instanceof User) {
-                            const msg = await message.reply(`User update stored.`);
-                            let bannedServers = 0;
-
-                            const mutuals = getMutualServers(target);
-                            for (const server of mutuals) {
-                                if (server.havePermission('BanMembers')) {
-                                    const config = await dbs.SERVERS.findOne({ id: server.id });
-                                    if (config?.allowBlacklistedUsers) continue;
-
-                                    try {
-                                        await server.banUser(target.id, {
-                                            reason: BLACKLIST_BAN_REASON,
-                                        });
-                                        bannedServers++;
-
-                                        if (server.systemMessages?.user_banned) {
-                                            const channel = server.channels.find(c => c!.id == server.systemMessages!.user_banned);
-                                            if (channel && channel.havePermission('SendMessage')) {
-                                                await channel.sendMessage(BLACKLIST_MESSAGE(target.username));
-                                            }
-                                        }
-                                    } catch(e) {
-                                        console.error(`Failed to ban in ${server.id}: ${e}`);
-                                    }
-                                }
-                            }
-
-                            if (bannedServers) {
-                                msg?.edit({ content: `User update stored. User has been banned from ${bannedServers} servers.` });
-                            }
-                        } else await message.reply(`User update stored. No servers are currently shared with this user.`);
-                    } catch(e) {
-                        console.error(''+e);
-                        await message.reply(`Failed to ban target from mutual servers: ${e}\n`);
-                    }
-
-                    break;
-                }
-
-                case 'unblacklist': {
-                    const target = await parseUserOrId(args.shift() || '');
-                    if (!target) return message.reply('Specified user could not be found.');
-
-                    await dbs.USERS.update({
-                        id: target.id,
-                    }, {
-                        $setOnInsert: { id: target.id },
-                        $set: { globalBlacklist: false }
-                    }, { upsert: true });
-
-                    await message.reply(`User update stored. Existing bans will not be lifted automatically.`);
-
-                    break;
-                }
-
-                case 'blacklistreason': {
-                    const target = await parseUserOrId(args.shift() || '');
-                    if (!target) return message.reply('Specified user could not be found.');
-
-                    await dbs.USERS.update({
-                        id: target.id,
-                    }, {
-                        $setOnInsert: { id: target.id },
-                        $set: { blacklistReason: args.join(' ') || undefined }
-                    }, { upsert: true });
-
-                    await message.reply(`User update stored.`);
 
                     break;
                 }
