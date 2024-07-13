@@ -11,7 +11,7 @@
   "dependencies": {
     "@types/express": "^4.17.21",
     "@types/monk": "^6.0.0",
-    "@types/ws": "^8.5.10",
+    "@types/ws": "^8.5.11",
     "automod": "^0.1.0",
     "dotenv": "^14.3.2",
     "express": "^4.19.2",
