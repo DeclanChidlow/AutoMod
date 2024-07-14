@@ -1,12 +1,5 @@
 import axios from 'axios';
 import React, { FunctionComponent, useCallback, useEffect, useState } from "react";
-import { Button } from '@revoltchat/ui/lib/components/atoms/inputs/Button';
-import { InputBox } from '@revoltchat/ui/lib/components/atoms/inputs/InputBox';
-import { Checkbox } from '@revoltchat/ui/lib/components/atoms/inputs/Checkbox';
-import { ComboBox } from '@revoltchat/ui/lib/components/atoms/inputs/ComboBox';
-import { LineDivider } from '@revoltchat/ui/lib/components/atoms/layout/LineDivider';
-import { H3 } from '@revoltchat/ui/lib/components/atoms/heading/H3';
-import { H4 } from '@revoltchat/ui/lib/components/atoms/heading/H4';
 import { Icon } from '@mdi/react';
 import { mdiChevronLeft, mdiCloseBox } from '@mdi/js';
 import { API_URL } from "../../App";
@@ -14,6 +7,7 @@ import { getAuthHeaders } from "../../utils";
 import { Link, useParams } from "react-router-dom";
 import defaultChannelIcon from '../../assets/channel-default-icon.svg';
 import CategorySelector from '../../components/CategorySelector';
+import Checkbox from '../../components/Checkbox';
 import { CSSProperties } from 'styled-components';
 
 type User = { id: string, username?: string, avatarURL?: string }
@@ -192,8 +186,9 @@ const ServerDashboard: FunctionComponent = () => {
                     {category == 'home' && (
                         <div style={serverInfo.perms ? {} : STYLE_DISABLED}>
                             <>
-                                <H3>Prefix</H3>
-                                <InputBox
+                                <h3>Prefix</h3>
+                                <input
+                  									type="text"
                                     style={{ width: '150px', }}
                                     placeholder="Enter a prefix..."
                                     value={prefix}
@@ -203,7 +198,6 @@ const ServerDashboard: FunctionComponent = () => {
                                     }}
                                 />
                                 <Checkbox
-                                    style={{ maxWidth: '400px' }}
                                     value={prefixAllowSpace}
                                     onChange={() => {
                                         setPrefixAllowSpace(!prefixAllowSpace);
@@ -214,14 +208,14 @@ const ServerDashboard: FunctionComponent = () => {
                                 />
                             </>
 
-                            <LineDivider />
+                            <hr />
 
                             <>
-                                <H3>Bot Managers</H3>
-                                <H4>
+                                <h3>Bot Managers</h3>
+                                <h4>
                                     Only users with "Manage Server" permission are allowed to add/remove other
                                     bot managers and are automatically considered bot manager.
-                                </H4>
+                                </h4>
                                 <UserListTypeContainer>
                                     <UserListContainer disabled={(serverInfo.perms ?? 0) < 3}>
                                         {botManagers.map((uid: string) => {
@@ -233,11 +227,11 @@ const ServerDashboard: FunctionComponent = () => {
                                     </UserListContainer>
                                 </UserListTypeContainer>
 
-                                <H3>Moderators</H3>
-                                <H4>
+                                <h3>Moderators</h3>
+                                <h4>
                                     Only bot managers are allowed to add/remove moderators.
                                     All bot managers and users with "Kick Members" permission are also moderators.
-                                </H4>
+                                </h4>
                                 <UserListTypeContainer>
                                     <UserListContainer disabled={(serverInfo.perms ?? 0) < 2}>
                                         {moderators.map((uid: string) => {
@@ -250,10 +244,10 @@ const ServerDashboard: FunctionComponent = () => {
                                 </UserListTypeContainer>
                             </>
 
-                            <LineDivider />
+                            <hr />
 
                             <>
-                                <H3>Infraction DMs</H3>
+                                <h3>Infraction DMs</h3>
                                 <Checkbox
                                     title="DM on kick/ban"
                                     description="If enabled, users will receive a DM when getting kicked or banned"
@@ -268,12 +262,13 @@ const ServerDashboard: FunctionComponent = () => {
                                     onChange={() => { setDmOnWarn(!dmOnWarn); setChanged({ ...changed, dmOnWarn: true }) }}
                                 />
 
-                                <H3>Contact info</H3>
-                                <H4>
+                                <h3>Contact info</h3>
+                                <h4>
                                     Provide a link, email address or instructions for users on how to contact you.
                                     If provided, this data will be sent along with warn/kick/ban DM messages.
-                                </H4>
-                                <InputBox
+                                </h4>
+                                <input
+                    								type="text"
                                     style={{ margin: '8px', width: 'calc(100% - 16px)' }}
                                     title='Contact info'
                                     placeholder='http/https URL, mailto link or custom text...'
@@ -281,21 +276,21 @@ const ServerDashboard: FunctionComponent = () => {
                                     onChange={e => { setContact(e.currentTarget.value); setChanged({ ...changed, contact: true }) }}
                                 />
 
-                                <Button
+                                <button
                                     style={{
                                         position: "fixed",
                                         right: '8px',
                                         bottom: Object.values(changed).filter(i => i).length ? '8px' : '-40px',
                                     }}
                                     onClick={saveConfig}
-                                >Save</Button>
+                                >Save</button>
                             </>
                         </div>
                     )}
 
                     {category == 'automod' && (
                         <>
-                            <H3>Antispam Rules</H3>
+                            <h3>Antispam Rules</h3>
                             {serverInfo.perms != null && automodSettings && (
                                 serverInfo.perms > 0
                                     ? (
@@ -303,10 +298,10 @@ const ServerDashboard: FunctionComponent = () => {
                                             {automodSettings.antispam.map((r, i) => (
                                                 <>
                                                     <AntispamRule rule={r} key={r.id} />
-                                                    {i < automodSettings.antispam.length - 1 && <LineDivider/>}
+                                                    {i < automodSettings.antispam.length - 1 && <hr/>}
                                                 </>
                                             ))}
-                                            <Button style={{
+                                            <button style={{
                                                 marginTop: '12px',
                                                 marginBottom: '8px',
                                             }} onClick={async () => {
@@ -334,7 +329,7 @@ const ServerDashboard: FunctionComponent = () => {
                                                 setAutomodSettings({ antispam: [ ...(automodSettings.antispam), newRule ] });
                                             }}>
                                                 Create Rule
-                                            </Button>
+                                            </button>
                                         </>
                                     )
                                     : (
@@ -481,7 +476,7 @@ const ServerDashboard: FunctionComponent = () => {
 
         return (
             <div>
-                <InputBox
+                <input
                     placeholder={`Add a ${props.type == 'MANAGER' ? 'bot manager' : 'moderator'}...`}
                     value={content}
                     onChange={e => setContent(e.currentTarget.value)}
@@ -493,7 +488,7 @@ const ServerDashboard: FunctionComponent = () => {
                     }}
                     onKeyDown={e => e.key == 'Enter' && onConfirm()}
                 />
-                <Button
+                <button
                     style={{
                         float: 'left',
                         width: '40px',
@@ -502,7 +497,7 @@ const ServerDashboard: FunctionComponent = () => {
                         opacity: content.length > 0 ? '1' : '0',
                     }}
                     onClick={onConfirm}
-                >Ok</Button>
+                >Ok</button>
             </div>
         );
     }
@@ -528,7 +523,7 @@ const ServerDashboard: FunctionComponent = () => {
 
         return (
             <div>
-                <InputBox
+                <input
                     placeholder={`Add a channel...`}
                     value={content}
                     onChange={e => setContent(e.currentTarget.value)}
@@ -540,7 +535,7 @@ const ServerDashboard: FunctionComponent = () => {
                     }}
                     onKeyDown={e => e.key == 'Enter' && onConfirm()}
                 />
-                <Button
+                <button
                     style={{
                         float: 'left',
                         width: '40px',
@@ -549,7 +544,7 @@ const ServerDashboard: FunctionComponent = () => {
                         opacity: content.length > 0 ? '1' : '0',
                     }}
                     onClick={onConfirm}
-                >Ok</Button>
+                >Ok</button>
             </div>
         );
     }
@@ -616,17 +611,17 @@ const ServerDashboard: FunctionComponent = () => {
                 >
                     <div style={{ marginTop: '12px' }}>
                         If user sends more than
-                        <InputBox style={inputStyle} value={maxMsg  || ''} placeholder={`${props.rule.max_msg}`} onChange={e => {
+                        <input style={inputStyle} value={maxMsg  || ''} placeholder={`${props.rule.max_msg}`} onChange={e => {
                             const val = e.currentTarget.value;
                             if (!isNaN(Number(val)) && val.length <= 4 && Number(val) >= 0) setMaxMsg(Number(val));
                         }} />
                         messages in
-                        <InputBox style={inputStyle} value={timeframe || ''} placeholder={`${props.rule.timeframe}`} onChange={e => {
+                        <input style={inputStyle} value={timeframe || ''} placeholder={`${props.rule.timeframe}`} onChange={e => {
                             const val = e.currentTarget.value;
                             if (!isNaN(Number(val)) && val.length <= 4 && Number(val) >= 0) setTimeframe(Number(val));
                         }} />
                         seconds,
-                        <ComboBox
+                        <select
                             style={{ ...inputStyle, maxWidth: '200px' }}
                             value={action}
                             onChange={ev => setAction(ev.currentTarget.value as any)}
@@ -636,8 +631,9 @@ const ServerDashboard: FunctionComponent = () => {
                             <option value={2}>Warn user</option>
                             <option value={3}>Kick user</option>
                             <option value={4}>Ban user</option>
-                        </ComboBox>
-                        <InputBox
+                        </select>
+                        <input
+            								type="text"
                             style={{
                                 ...inputStyle,
                                 maxWidth: 'min(400px, calc(100% - 20px))',
@@ -651,10 +647,10 @@ const ServerDashboard: FunctionComponent = () => {
                             "Kick" and "Ban" actions are currently placeholders, they do not have any functionality yet.
                         </a>
 
-                        <H4 style={{ paddingTop: '16px' }}>
+                        <h4 style={{ paddingTop: '16px' }}>
                             You can specify channels here that this rule will run in.
                             If left empty, it will run in all channels.
-                        </H4>
+                        </h4>
                         <UserListTypeContainer>
                             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                                 {
@@ -713,9 +709,9 @@ const ServerDashboard: FunctionComponent = () => {
                         paddingTop: '16px'
                     }}
                 >
-                    <Button style={{ float: 'left' }} onClick={save}>Save</Button>
-                    <Button style={{ float: 'left', marginLeft: '8px' }} onClick={reset}>Reset</Button>
-                    <Button style={{ float: 'left', marginLeft: '8px' }} onClick={remove}>Delete</Button>
+                    <button style={{ float: 'left' }} onClick={save}>Save</button>
+                    <button style={{ float: 'left', marginLeft: '8px' }} onClick={reset}>Reset</button>
+                    <button style={{ float: 'left', marginLeft: '8px' }} onClick={remove}>Delete</button>
                     <code
                         style={{
                             float: 'left',

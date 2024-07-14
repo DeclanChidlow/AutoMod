@@ -1,10 +1,6 @@
 import localforage from "localforage";
 import axios from 'axios';
 import { FunctionComponent, useCallback, useState } from "react";
-import { Button } from '@revoltchat/ui/lib/components/atoms/inputs/Button';
-import { InputBox } from '@revoltchat/ui/lib/components/atoms/inputs/InputBox';
-import { H1 } from '@revoltchat/ui/lib/components/atoms/heading/H1';
-import { H2 } from '@revoltchat/ui/lib/components/atoms/heading/H2';
 import { API_URL, BOT_PREFIX } from "../App";
 
 const Login: FunctionComponent = () => {
@@ -49,10 +45,10 @@ const Login: FunctionComponent = () => {
 
     return (
         <div style={{ marginLeft: '12px', padding: '16px 0' }}>
-            <H1>Log in</H1>
+            <h1>Log in</h1>
             {statusMsg.length ? <a>{statusMsg}</a> : <br/>}
             <div hidden={!showInitial}>
-                <InputBox
+                <input
                     onChange={e => {
                         setUsername(e.target.value);
                         setStatusMsg('');
@@ -60,10 +56,10 @@ const Login: FunctionComponent = () => {
                     placeholder="Enter your user ID..."
                     style={{ width: "200px", float: "left" }}
                 />
-                <Button onClick={getCode} disabled={username.length == 0}>Continue</Button>
+                <button onClick={getCode} disabled={username.length == 0}>Continue</button>
             </div>
             <div hidden={!showSecond}>
-                <H2>Your code: <a>{code}</a></H2>
+                <h2>Your code: <a>{code}</a></h2>
                 <p style={{ color: "var(--foreground)" }}>
                     Run <code style={{ userSelect: 'all' }}>
                         {BOT_PREFIX}login {code}

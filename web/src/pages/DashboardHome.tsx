@@ -1,9 +1,6 @@
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FunctionComponent, useCallback, useEffect, useState } from "react";
-import { Button } from '@revoltchat/ui/lib/components/atoms/inputs/Button';
-import { H1 } from '@revoltchat/ui/lib/components/atoms/heading/H1';
-import { H2 } from '@revoltchat/ui/lib/components/atoms/heading/H2';
 import { API_URL } from "../App";
 import { getAuthHeaders } from "../utils";
 
@@ -38,7 +35,7 @@ const Dashboard: FunctionComponent = () => {
 
     return (
         <div style={{ marginLeft: '12px', padding: '16px 0' }}>
-            <H1>Dashboard</H1>
+            <h1>Dashboard</h1>
             <br/>
             <p hidden={!loading}>Loading...</p>
             {
@@ -61,16 +58,16 @@ const Dashboard: FunctionComponent = () => {
                         overflow: 'clip',
                         whiteSpace: 'nowrap',
                     }}>
-                        <H2>{server.name} ({permissionName(server.perms)})</H2>
+                        <h2>{server.name} ({permissionName(server.perms)})</h2>
                         <code style={{ color: 'var(--foreground)' }}>{server.id}</code>
                     </div>
                     <div>
-                        <Button
+                        <button
                             style={{ position: 'relative', top: '8px', left: '12px' }}
                             onClick={() => {
                                 navigate(`/dashboard/${server.id}`);
                             }}
-                        >Open</Button>
+                        >Open</button>
                     </div>
                     <div style={{ clear: 'both' }} />
                 </div>)
