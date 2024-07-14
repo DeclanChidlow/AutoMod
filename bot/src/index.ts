@@ -10,9 +10,6 @@ import Infraction from 'automod/dist/types/antispam/Infraction';
 import PendingLogin from 'automod/dist/types/PendingLogin';
 import TempBan from 'automod/dist/types/TempBan';
 import { VoteEntry } from './bot/commands/moderation/votekick';
-import BridgeRequest from 'automod/dist/types/BridgeRequest';
-import BridgeConfig from 'automod/dist/types/BridgeConfig';
-import BridgedMessage from 'automod/dist/types/BridgedMessage';
 
 logger.info('Initializing client');
 
@@ -30,9 +27,6 @@ const dbs = {
     SESSIONS: db.get('sessions'),
     TEMPBANS: db.get<TempBan>('tempbans'),
     VOTEKICKS: db.get<VoteEntry>('votekicks'),
-    BRIDGE_CONFIG: db.get<BridgeConfig>('bridge_config'),
-    BRIDGED_MESSAGES: db.get<BridgedMessage>('bridged_messages'),
-    BRIDGE_REQUESTS: db.get<BridgeRequest>('bridge_requests'),
 }
 
 export { client, dbs }
