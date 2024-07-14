@@ -7,29 +7,29 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mdi/js": "^6.5.95",
-    "@mdi/react": "^1.5.0",
+    "@mdi/js": "^7.4.47",
+    "@mdi/react": "^1.6.1",
     "@types/axios": "^0.14.0",
-    "@types/core-js": "^2.5.5",
-    "@types/styled-components": "^5.1.21",
+    "@types/core-js": "^2.5.8",
+    "@types/styled-components": "^5.1.34",
     "automod": "^0.1.0",
-    "axios": "^0.25.0",
-    "core-js": "^3.20.3",
-    "katex": "^0.16.0",
+    "axios": "^1.7.2",
+    "core-js": "^3.37.1",
+    "katex": "^0.16.11",
     "localforage": "^1.10.0",
     "prop-types": "^15.8.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-router-dom": "^6.2.1",
-    "styled-components": "^5.3.3"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.24.1",
+    "styled-components": "^6.1.11"
   },
   "devDependencies": {
-    "@types/katex": "^0.14.0",
-    "@types/react": "^17.0.33",
-    "@types/react-dom": "^17.0.10",
-    "@vitejs/plugin-react": "^1.0.7",
-    "typescript": "^4.4.4",
-    "vite": "^2.7.2"
+    "@types/katex": "^0.16.7",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3"
   },
   "packageManager": "yarn@4.3.1",
   "resolutions": {
