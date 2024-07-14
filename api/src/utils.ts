@@ -66,10 +66,10 @@ function requireAuth(config: RequireAuthConfig): (req: Request, res: Response, n
 
         if (config.permission != undefined) {
             if (!auth) return unauthorized(res, 'Authentication required for this route');
-            const server_id = req.params.serverid || req.params.server;
+            const server_id = req.params['serverid'] || req.params['server'];
             const levelRes = await getPermissionLevel(auth, server_id);
             if (!levelRes.success) return res.status(500).send({ error: 'Unknown server or other error' });
-            if (levelRes.level < config.permission) return unauthorized(res, 'Your permission level is too low');
+            if (levelRes['level'] < config.permission) return unauthorized(res, 'Your permission level is too low');
         }
 
         next();

@@ -19,7 +19,7 @@ export default async function buildDBClient(): Promise<Db> {
     }
 }
 
-const redis = Redis.createClient({ url: process.env.REDIS_URL });
+const redis = Redis.createClient({ url: process.env['REDIS_URL'] });
 
 export { redis };
 

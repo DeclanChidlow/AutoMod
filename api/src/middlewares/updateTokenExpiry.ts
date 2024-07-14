@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request } from "express";
 import { Collection, Db } from "mongodb";
 import { app, SESSION_LIFETIME } from "..";
 
@@ -8,7 +8,7 @@ export function initializeSessionsMiddleware(db: Db) {
     sessionsCollection = db.collection('sessions');
 }
 
-app.use('*', async (req: Request, res: Response, next: () => void) => {
+app.use('*', async (req: Request, next: () => void) => {
     next();
     const user = req.header('x-auth-user');
     const token = req.header('x-auth-token');

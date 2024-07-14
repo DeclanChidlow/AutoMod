@@ -5,7 +5,7 @@ import buildDBClient, { redis } from './db';
 
 config();
 
-const PORT = Number(process.env.API_PORT || 9000);
+const PORT = Number(process.env['API_PORT'] || 9000);
 const DEBUG = process.env.NODE_ENV != 'production';
 const SESSION_LIFETIME = 1000 * 60 * 60 * 24 * 7;
 

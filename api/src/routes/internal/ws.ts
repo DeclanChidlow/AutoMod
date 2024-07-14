@@ -8,7 +8,7 @@ import { EventEmitter } from 'events';
 import { logger } from "../..";
 import server from '../../server';
 
-if (!process.env.BOT_API_TOKEN) {
+if (!process.env['BOT_API_TOKEN']) {
     logger.error(`$BOT_API_TOKEN is not set. This token is `
         + `required for the bot to communicate with the API.`);
     process.exit(1);

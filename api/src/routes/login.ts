@@ -36,7 +36,7 @@ app.post('/login/begin',
     if (!body.user || typeof body.user != 'string') return badRequest(res);
     const r = await botReq('requestLogin', { user: body.user.toLowerCase() });
     if (!r.success) return res.status(r.statusCode ?? 500).send(JSON.stringify({ error: r.error }, null, 4));
-    res.status(200).send({ success: true, nonce: r.nonce, code: r.code, uid: r.uid });
+    res.status(200).send({ success: true, nonce: r['nonce'], code: r['code'], uid: r['uid'] });
 });
 
 app.post('/login/complete',
@@ -57,7 +57,7 @@ app.post('/login/complete',
     });
 
     if (!loginAttempt) return res.status(404).send({ error: 'The provided login info could not be found.' });
-    if (!loginAttempt.confirmed) {
+    if (!loginAttempt['confirmed']) {
         return res.status(400).send({ error: "This code is not yet valid." });
     }
 

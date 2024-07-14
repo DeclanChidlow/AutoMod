@@ -1,8 +1,8 @@
-import { app, db } from '../..';
+import { app } from '../..';
 import { Request, Response } from 'express';
 import { badRequest, ensureObjectStructure, isAuthenticated, requireAuth, unauthorized } from '../../utils';
 import { botReq } from '../internal/ws';
-import { Collection, Db, ObjectId } from 'mongodb';
+import { Collection, Db } from 'mongodb';
 import { ulid } from 'ulid';
 
 let serversCollection: Collection;
@@ -32,15 +32,15 @@ app.get('/dash/server/:server/automod', requireAuth({ permission: 2 }), async (r
         return res.status(response.statusCode ?? 500).send({ error: response.error });
     }
 
-    if (!response.server) return res.status(404).send({ error: 'Server not found' });
+    if (!response['server']) return res.status(404).send({ error: 'Server not found' });
 
-    const permissionLevel: 0|1|2|3 = response.perms;
+    const permissionLevel: 0|1|2|3 = response['perms'];
     if (permissionLevel < 1) return unauthorized(res, `Only moderators and bot managers may view this.`);
 
     const serverConfig = await serversCollection.findOne({ id: server });
     
     const result = {
-        antispam: (serverConfig?.automodSettings?.spam as AntispamRule[]|undefined)
+        antispam: (serverConfig?.['automodSettings']?.spam as AntispamRule[]|undefined)
             ?.map(r => ({
                 action: r.action,
                 channels: r.channels,
@@ -64,7 +64,7 @@ app.patch('/dash/server/:server/automod/:ruleid', requireAuth({ permission: 2 })
     if (!server || !ruleid) return badRequest(res);
 
     const serverConfig = await serversCollection.findOne({ id: server });
-    const antiSpamRules: AntispamRule[] = serverConfig?.automodSettings?.spam ?? [];
+    const antiSpamRules: AntispamRule[] = serverConfig?.['automodSettings']?.spam ?? [];
 
     const rule = antiSpamRules.find(r => r.id == ruleid);
     if (!rule) return res.status(404).send({ error: 'No rule with this ID could be found.' });
@@ -100,7 +100,7 @@ app.post('/dash/server/:server/automod', requireAuth({ permission: 2 }), async (
         return res.status(response.statusCode ?? 500).send({ error: response.error });
     }
 
-    if (!response.server) return res.status(404).send({ error: 'Server not found' });
+    if (!response['server']) return res.status(404).send({ error: 'Server not found' });
 
     let rule: any;
     try {
@@ -146,7 +146,7 @@ app.delete('/dash/server/:server/automod/:ruleid', requireAuth({ permission: 2 }
         return res.status(response.statusCode ?? 500).send({ error: response.error });
     }
 
-    if (!response.server) return res.status(404).send({ error: 'Server not found' });
+    if (!response['server']) return res.status(404).send({ error: 'Server not found' });
 
     let result;
     try {
