@@ -14,7 +14,7 @@ export default async function buildDBClient(): Promise<Db> {
         logger.info('Connected successfully to MongoDB');
         return db;
     } catch (error) {
-        logger.error('Failed to connect to MongoDB', error);
+        logger.error(`Failed to connect to MongoDB: ${error}`);
         throw error;
     }
 }
