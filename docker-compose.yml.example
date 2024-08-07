@@ -49,17 +49,6 @@ services:
       - 0.0.0.0:9000:9000
     restart: unless-stopped
 
-  web:
-    build:
-      context: .
-      dockerfile: ./web/Dockerfile
-      args:
-        - VITE_API_URL=${PUBLIC_API_URL}
-        - VITE_BOT_PREFIX=${BOT_PREFIX}
-    ports:
-      - 0.0.0.0:8080:80
-    restart: unless-stopped
-
   mongo:
     image: mongo
     environment:
