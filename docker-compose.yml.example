@@ -42,11 +42,14 @@ services:
       - DB_USERNAME=mogus
       - DB_PASS
       - DB_NAME=admin
-      - REDIS_URL
+      - REDIS_URL=redis://redis:6379
     expose:
       - 9000
     ports:
-      - 0.0.0.0:9000:9000
+      - "9000:9000"
+    depends_on:
+      - mongo
+      - redis
     restart: unless-stopped
 
   mongo:
@@ -56,9 +59,6 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
     expose:
       - 27017
-    # If you want to access the database from outside
-    #ports:
-    #  - "0.0.0.0:36602:27017"
     volumes:
       - ./db:/data/db:rw
     restart: unless-stopped
