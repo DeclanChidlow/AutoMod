@@ -1,4 +1,4 @@
-FROM node:18 as build
+FROM node:18 AS build
 WORKDIR /build/app
 
 COPY bot/package.json bot/yarn.lock bot/.yarnrc.yml ./
@@ -12,7 +12,7 @@ RUN yarn install
 COPY ./bot .
 RUN yarn build
 
-FROM node:18 as prod
+FROM node:18 AS prod
 WORKDIR /app/bot
 COPY --from=build /build/app/package.json /build/app/yarn.lock /build/app/.yarnrc.yml ./
 COPY --from=build /build/app/.yarn ./.yarn
