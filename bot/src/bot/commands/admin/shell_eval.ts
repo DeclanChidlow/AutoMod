@@ -23,7 +23,7 @@ export default {
                     }
 
                     m?.edit({ content: str })
-                        .catch(e => console.warn('Failed to edit message'));
+                        .catch(e => console.warn('Failed to edit message', e));
                 }
             }
 

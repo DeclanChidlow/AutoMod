@@ -7,8 +7,8 @@ export default {
     aliases: [ 'setting' ],
     description: 'Manage AutoMod\'s configuration',
     category: CommandCategory.Config,
-    run: async (message: MessageCommandContext, args: string[]) => {
+    run: async (message: MessageCommandContext) => {
         await message.reply(`Bot configuration can be managed from `
-            + `[here](<${process.env.WEB_UI_URL || 'https://automod.janderedev.xyz'}/dashboard>).`);
+            + `[here](<${process.env['WEB_UI_URL'] || 'https://automod.janderedev.xyz'}/dashboard>).`);
     }
 } as SimpleCommand;

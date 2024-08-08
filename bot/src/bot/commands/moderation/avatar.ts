@@ -1,11 +1,7 @@
-import { ServerMember } from "revolt.js";
-import axios from "axios";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
-import AutomodClient from "../../../struct/AutomodClient";
-import { client } from "../../..";
 
 export default {
     name: 'avatar',

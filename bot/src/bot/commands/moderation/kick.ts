@@ -17,7 +17,6 @@ import {
     getMembers,
     isModerator,
     NO_MANAGER_MSG,
-    parseUser,
     parseUserOrId,
     sanitizeMessageContent,
     storeInfraction,

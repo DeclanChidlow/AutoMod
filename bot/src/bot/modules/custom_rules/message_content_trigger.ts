@@ -39,7 +39,7 @@ async function messageContentTrigger(message: Message, trigger: CustomRuleTrigge
                 let script = new VM.Script('matchedStrings = content.match(regex);', { timeout: 2 });
                 script.runInContext(ctx);
 
-                if (ctx.matchedStrings?.length) matched = true;
+                if (ctx['matchedStrings']?.length) matched = true;
             } catch(e) {
                 console.error('Exception thrown while parsing RegEx: ' + e);
             }

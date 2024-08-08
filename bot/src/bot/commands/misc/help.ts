@@ -53,7 +53,7 @@ export default {
 				`## AutoMod Help\n` +
 				`Type **${prefix}help [category]** to view see all commands or **${prefix}help [command]** to learn more about a command.\n\n` +
 				`### [Open Server Settings]` +
-				`(<${process.env.WEB_UI_URL || "https://automod.vale.rocks"}/dashboard/${message.channel?.serverId}>)\n\n`;
+				`(<${process.env['WEB_UI_URL'] || "https://automod.vale.rocks"}/dashboard/${message.channel?.serverId}>)\n\n`;
 
 			let total = 0;
 

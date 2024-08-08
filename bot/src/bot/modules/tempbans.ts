@@ -1,4 +1,3 @@
-import { FindResult } from "monk";
 import { client, dbs } from "../..";
 import TempBan from "automod/dist/types/TempBan";
 import logger from "../logger";

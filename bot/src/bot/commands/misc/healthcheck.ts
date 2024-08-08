@@ -8,6 +8,6 @@ export default {
     description: 'Health check',
     category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
-        const msg = await message.reply('Health check success: ' + args.join(' '));
+        await message.reply('Health check success: ' + args.join(' '));
     }
 } as SimpleCommand;

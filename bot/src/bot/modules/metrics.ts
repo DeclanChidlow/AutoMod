@@ -3,7 +3,7 @@ import http from 'http';
 import logger from '../logger';
 import { client } from '../..';
 
-const PORT = Number(process.env.BOT_METRICS_PORT);
+const PORT = Number(process.env['BOT_METRICS_PORT']);
 
 prom.collectDefaultMetrics({ prefix: 'automod_' });
 
@@ -45,11 +45,11 @@ if (!isNaN(PORT)) {
         measureLatency();
         setInterval(measureLatency, 10000);
 
-        if (process.env.BOT_METRICS_MSG_PING_CHANNEL) {
+        if (process.env['BOT_METRICS_MSG_PING_CHANNEL']) {
             logger.info('BOT_METRICS_MSG_PING_CHANNEL is set, enabling message latency measuring');
 
             const getMsgPing = async () => {
-                const channel = client.channels.get(process.env.BOT_METRICS_MSG_PING_CHANNEL!);
+                const channel = client.channels.get(process.env['BOT_METRICS_MSG_PING_CHANNEL']!);
                 try {
                     const now = Date.now();
                     const msg = await channel?.sendMessage('Ping?');

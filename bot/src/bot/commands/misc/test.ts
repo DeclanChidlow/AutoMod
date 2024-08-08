@@ -7,7 +7,7 @@ export default {
 	aliases: ["testalias"],
 	description: "Test command",
 	category: CommandCategory.Miscellaneous,
-	run: (message: MessageCommandContext, args: string[]) => {
+	run: async (message: MessageCommandContext) => {
 		message.reply({
 			content: "Beep boop.",
 			embeds: [

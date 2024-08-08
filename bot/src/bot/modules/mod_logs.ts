@@ -56,7 +56,6 @@ client.on('messageUpdate', async (message, oldMessage) => {
 client.on('messageDelete', async (message) => {
     try {
         let channel = client.channels.get(message.channelId);
-        let author = message.authorId ? client.users.get(message.authorId) : null;
         if (!channel) return;
 
         let msgRaw = String(message.content ?? '(Unknown)');
@@ -114,7 +113,6 @@ client.on('messageDeleteBulk', async (messages) => {
                 ]);
             }
 
-            const sheet = Xlsx.utils.aoa_to_sheet(data);
             const csv = Xlsx.utils.sheet_to_csv(data);
 
             let embed: LogMessage = {

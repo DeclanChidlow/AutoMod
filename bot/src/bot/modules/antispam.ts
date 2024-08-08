@@ -1,12 +1,12 @@
 import { Message } from "revolt.js";
 import { ulid } from "ulid";
-import { client, dbs } from "../..";
+import { dbs } from "../..";
 import AntispamRule from "automod/dist/types/antispam/AntispamRule";
 import Infraction from "automod/dist/types/antispam/Infraction";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
 import ModerationAction from "automod/dist/types/antispam/ModerationAction";
 import logger from "../logger";
-import { awaitClient, generateInfractionDMEmbed, isModerator, sendLogMessage, storeInfraction } from "../util";
+import { generateInfractionDMEmbed, isModerator, sendLogMessage, storeInfraction } from "../util";
 import { getDmChannel, sanitizeMessageContent } from "../util";
 import ServerConfig from "automod/dist/types/ServerConfig";
 import { WORDLIST_DEFAULT_MESSAGE } from "../commands/configuration/botctl";
@@ -124,8 +124,7 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
 
         console.log('Message matched word filter!');
 
-        // Lack of `break` is intended here
-        switch(config.wordlistAction?.action) {
+        switch (config.wordlistAction?.action) {
             case 'WARN': {
                 try {
                     const infraction: Infraction = {
@@ -145,12 +144,14 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
                         const dmChannel = await getDmChannel(message.author!);
 
                         if (dmChannel.havePermission('SendMessage') && dmChannel.havePermission('SendEmbeds')) {
-                            await dmChannel.sendMessage({ embeds: [ embed ] });
+                            await dmChannel.sendMessage({ embeds: [embed] });
                         }
                         else logger.warn('Missing permission to DM user.');
                     }
-                } catch(e) {
+                    break;
+                } catch (e) {
                     console.error(e);
+                    break;
                 }
             }
             case 'DELETE': {
@@ -164,7 +165,9 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
                         await message.channel.sendMessage((config.wordlistAction.message || WORDLIST_DEFAULT_MESSAGE)
                             .replaceAll('{{user_id}}', message.authorId!));
                     }
+                    break;
                 }
+                break;
             }
             case 'LOG':
             default: {
@@ -177,10 +180,10 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
                         `>${sanitizeMessageContent(message.content.substring(0, 1000)).trim().replace(/\n/g, '\n>')}`,
                     color: '#ff557f',
                 });
+                break;
             }
-
         }
-    } catch(e) {
+    } catch (e) {
         console.error(e);
     }
 }
@@ -250,52 +253,5 @@ function checkMessageForFilteredWords(message: string, config: ServerConfig): bo
 
     return false;
 }
-
-// Scan all servers for the `discoverable` flag and notify their owners that antispam is forcefully enabled
-const notifyPublicServers = async () => {
-    logger.info('Sending antispam notification to public servers');
-
-    const servers = Array.from(client.servers.values())
-        .filter(server => server.discoverable);
-
-    const res = await dbs.SERVERS.find({
-        id: { $in: servers.map(s => s.id) },
-        discoverAutospamNotify: { $in: [ undefined, false ] },
-    });
-
-    for (const serverConfig of res) {
-        try {
-            logger.info(`Sending notification to owner of server ${serverConfig.id}`);
-
-            if (serverConfig.discoverAutospamNotify) {
-                logger.warn('This server already received the message');
-                continue;
-            }
-
-            await dbs.SERVERS.update(
-                { id: serverConfig.id },
-                { $set: { discoverAutospamNotify: true, antispamEnabled: true, allowBlacklistedUsers: false } },
-            );
-
-            const server = client.servers.get(serverConfig.id);
-            const channel = await getDmChannel(server!.ownerId);
-            await channel.sendMessage(`Hi there,
-
-It looks like your server, **${sanitizeMessageContent(server!.name).trim()}**, has been added to server discovery. Congratulations!
-
-In order to keep Revolt free of spam, AutoMod enables spam protection by default on public servers.
-You are receiving this message to inform you that said features have been enabled automatically in your server.
-
-Please ensure that AutoMod has appropriate permissions to kick and ban users.
-You may also want to set up a logging channel by running \`/botctl logs modaction #yourchannel\` to receive details about antispam events if you haven't done so already.
-
-Thanks for being part of Revolt!`);
-        } catch(e) {
-            console.error(e);
-        }
-    }
-}
-
-// awaitClient().then(() => notifyPublicServers());
 
 export { antispam, wordFilterCheck, checkMessageForFilteredWords }

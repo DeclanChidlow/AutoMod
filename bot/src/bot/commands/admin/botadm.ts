@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { User } from "revolt.js";
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import { getMutualServers, parseUserOrId } from "../../util";
+import { parseUserOrId } from "../../util";
 
 const BLACKLIST_BAN_REASON = `This user is globally blacklisted and has been banned automatically. If you wish to opt out of the global blacklist, run '/botctl ignore_blacklist yes'.`;
 const BLACKLIST_MESSAGE = (username: string) => `\`@${username}\` has been banned automatically. Check the ban reason for more info.`;
@@ -58,7 +58,7 @@ export default {
                             + `Users: \`${client.users.size()}\`\n`
                             + `### Misc\n`
                             + `Command count: \`${commands.length}\`\n`
-                            + `Environment: \`${process.env.NODE_ENV || 'testing'}\`\n`
+                            + `Environment: \`${process.env['NODE_ENV'] || 'testing'}\`\n`
                             + `Commit hash: \`${await getCommitHash() || 'Unknown'}\`\n`
                             + `### Packages\n`
                             + `revolt.js: \`${pjson.dependencies['revolt.js']}\`\n`

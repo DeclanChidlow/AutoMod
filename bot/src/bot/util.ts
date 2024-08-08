@@ -8,7 +8,6 @@ import { Server } from "revolt.js";
 import LogConfig from "automod/dist/types/LogConfig";
 import LogMessage from "automod/dist/types/LogMessage";
 import logger from "./logger";
-import { ulid } from "ulid";
 import { Channel } from "revolt.js";
 import { Message } from "revolt.js";
 import { isSudo } from "./commands/admin/botadm";
