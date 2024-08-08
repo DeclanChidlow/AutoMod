@@ -1,6 +1,7 @@
 {
   "name": "automod",
   "version": "1.0.0",
+  "type": "module",
   "description": "Shared code for AutoMod",
   "scripts": {
     "build": "rm -rf dist && tsc",
