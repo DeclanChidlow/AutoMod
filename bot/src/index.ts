@@ -9,7 +9,7 @@ import ServerConfig from 'automod/dist/types/ServerConfig';
 import Infraction from 'automod/dist/types/antispam/Infraction';
 import PendingLogin from 'automod/dist/types/PendingLogin';
 import TempBan from 'automod/dist/types/TempBan';
-import { VoteEntry } from './bot/commands/moderation/votekick';
+import type { VoteEntry } from './bot/commands/moderation/votekick';
 
 logger.info('Initializing client');
 

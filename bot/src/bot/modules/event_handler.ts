@@ -7,7 +7,7 @@ import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/admin/botad
 import logger from "../logger";
 import { storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";
-import { SendableEmbed } from "revolt-api";
+import type { SendableEmbed } from "revolt-api";
 import { UserSystemMessage } from "revolt.js";
 
 const DM_SESSION_LIFETIME = 1000 * 60 * 60 * 24 * 30;

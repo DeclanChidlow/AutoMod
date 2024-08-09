@@ -1,8 +1,9 @@
 import { User } from "revolt.js";
 import { client } from "../../..";
 import { getPermissionLevel, parseUser } from "../../util";
-import { wsEvents, WSResponse } from "../api_communication";
-import { APIUser } from "./server_details";
+import type { WSResponse } from "../api_communication";
+import { wsEvents } from "../api_communication";
+import type { APIUser } from "./server_details";
 
 wsEvents.on('req:getPermissionLevel', async (data: { user: string, server: string }, cb: (data: WSResponse) => void) => {
     try {

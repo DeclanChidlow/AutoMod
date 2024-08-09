@@ -114,4 +114,4 @@ export default {
     }
 } as SimpleCommand;
 
-export { VoteEntry }
+export type { VoteEntry }

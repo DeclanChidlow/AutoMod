@@ -11,7 +11,7 @@ import logger from "./logger";
 import { Channel } from "revolt.js";
 import { Message } from "revolt.js";
 import { isSudo } from "./commands/admin/botadm";
-import { SendableEmbed } from "revolt-api";
+import type { SendableEmbed } from "revolt-api";
 import ServerConfig from "automod/dist/types/ServerConfig";
 
 const NO_MANAGER_MSG = "🔒 Missing permission";

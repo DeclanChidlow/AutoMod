@@ -1,7 +1,8 @@
 import { User } from 'revolt.js';
 import { client } from '../../..';
 import { getMutualServers, getPermissionLevel } from '../../util';
-import { wsEvents, WSResponse } from '../api_communication';
+import type { WSResponse } from "../api_communication";
+import { wsEvents } from "../api_communication";
 
 type ReqData = { user: string }
 

@@ -23,7 +23,7 @@ import {
 import Day from "dayjs";
 import RelativeTime from "dayjs/plugin/relativeTime";
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import { SendableEmbed } from "revolt-api";
+import type { SendableEmbed } from "revolt-api";
 import { User } from "revolt.js";
 import logger from "../../logger";
 

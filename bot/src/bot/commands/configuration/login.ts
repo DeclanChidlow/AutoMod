@@ -1,4 +1,4 @@
-import { FindOneResult } from "monk";
+import type { FindOneResult } from "monk";
 import { dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";

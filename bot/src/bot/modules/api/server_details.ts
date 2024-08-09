@@ -3,7 +3,8 @@ import { User } from "revolt.js";
 import { client, dbs } from "../../..";
 import ServerConfig from "automod/dist/types/ServerConfig";
 import { getPermissionLevel } from "../../util";
-import { wsEvents, WSResponse } from "../api_communication";
+import type { WSResponse } from "../api_communication";
+import { wsEvents } from "../api_communication";
 
 type ReqData = { user: string, server: string }
 type APIUser = { id: string, username?: string, avatarURL?: string }
@@ -95,4 +96,4 @@ wsEvents.on('req:getUserServerDetails', async (data: ReqData, cb: (data: WSRespo
     }
 });
 
-export { APIUser }
+export type { APIUser }

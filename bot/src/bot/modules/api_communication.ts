@@ -158,7 +158,8 @@ wsEvents.on("req:stats", async (_data: any, cb: (data: { servers: number }) => v
 	cb({ servers });
 });
 
-export { wsEvents, wsSend, WSResponse };
+export { wsEvents, wsSend };
+export type { WSResponse };
 
 import("./api/servers");
 import("./api/server_details");

@@ -5,7 +5,7 @@ import { ulid } from "ulid";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import { SendableEmbed } from "revolt-api";
+import type { SendableEmbed } from "revolt-api";
 import { User } from "revolt.js";
 import logger from "../../logger";
 
