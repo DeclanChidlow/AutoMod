@@ -11,7 +11,7 @@
 	"dependencies": {
 		"@types/monk": "^6.0.0",
 		"automod": "^0.1.0",
-		"axios": "^1.7.2",
+		"axios": "^1.7.3",
 		"dayjs": "^1.11.11",
 		"dotenv": "^16.4.5",
 		"form-data": "^4.0.0",
