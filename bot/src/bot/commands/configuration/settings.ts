@@ -9,6 +9,6 @@ export default {
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext) => {
         await message.reply(`Bot configuration can be managed from `
-            + `[here](<${process.env['WEB_UI_URL'] || 'https://automod.janderedev.xyz'}/dashboard>).`);
+            + `[here](<${process.env['WEB_UI_URL'] || 'https://automod.vale.rocks'}/dashboard>).`);
     }
 } as SimpleCommand;
