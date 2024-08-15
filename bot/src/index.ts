@@ -16,6 +16,7 @@ logger.info('Initializing client');
 let db = MongoDB();
 let client = new AutomodClient({
     autoReconnect: true,
+    baseURL: process.env['REVOLT_API_URL'] || "https://revolt.chat/api",
 }, db);
 login(client);
 
