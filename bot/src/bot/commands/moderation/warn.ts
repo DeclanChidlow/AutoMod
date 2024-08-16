@@ -13,7 +13,7 @@ export default {
     name: 'warn',
     aliases: null,
     removeEmptyArgs: false,
-    description: 'add an infraction to an user\'s record',
+    description: "Adds an infraction to a user's record.",
     category: CommandCategory.Moderation,
     run: async (message, args, serverConfig) => {
         if (!await isModerator(message)) return message.reply(NO_MANAGER_MSG);

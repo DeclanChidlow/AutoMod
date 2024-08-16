@@ -14,7 +14,7 @@ const WORDLIST_DEFAULT_MESSAGE = "<@{{user_id}}>, the message you sent contained
 export default {
 	name: "botctl",
 	aliases: null,
-	description: "Perform administrative actions",
+	description: "Perform administrative actions.",
 	category: CommandCategory.Config,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);

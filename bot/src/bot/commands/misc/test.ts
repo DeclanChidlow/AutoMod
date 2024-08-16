@@ -5,7 +5,7 @@ import MessageCommandContext from "../../../struct/MessageCommandContext";
 export default {
 	name: "test",
 	aliases: ["testalias"],
-	description: "Test command",
+	description: "Tests that the bot works.",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		message.reply({

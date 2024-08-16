@@ -12,27 +12,27 @@ const categories: {
 } = {
 	[CommandCategory.Moderation]: {
 		friendlyName: "Moderation",
-		description: "Moderation-focused commands",
+		description: "Commands for enforcing server rules.",
 		aliases: ["moderation", "mod"],
 	},
 	[CommandCategory.Config]: {
 		friendlyName: "Configuration",
-		description: "Configure AutoMod",
+		description: "Commands for setting up and customizing settings.",
 		aliases: ["configuration", "config", "conf"],
 	},
 	[CommandCategory.Owner]: {
 		friendlyName: "Owner",
-		description: "Owner-only commands for managing AutoMod",
+		description: "Exclusive commands for the bot owner to manage and control AutoMod.",
 		aliases: ["owner"],
 	},
 	[CommandCategory.Miscellaneous]: {
 		friendlyName: "Miscellaneous",
-		description: "Assorted extras",
+		description: "Additional commands not covered by other categories.",
 		aliases: ["miscellaneous", "misc"],
 	},
 	[CommandCategory.None]: {
 		friendlyName: "Uncategorized",
-		description: "Uncategorized commands",
+		description: "Commands that haven't been assigned to a specific category.",
 		aliases: [],
 	},
 };
@@ -40,7 +40,7 @@ const categories: {
 export default {
 	name: "help",
 	aliases: null,
-	description: "Help command.",
+	description: "Displays usage instructions.",
 	removeEmptyArgs: true,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
@@ -51,9 +51,7 @@ export default {
 		if (!searchInput) {
 			let msg =
 				`## AutoMod Help\n` +
-				`Type **${prefix}help [category]** to view see all commands or **${prefix}help [command]** to learn more about a command.\n\n` +
-				`### [Open Server Settings]` +
-				`(<${process.env['WEB_UI_URL'] || "https://automod.vale.rocks"}/dashboard/${message.channel?.serverId}>)\n\n`;
+				`Type \`${prefix}help [category]\` to view commands within a category, or \`${prefix}help [command]\` to learn more about a specific command.\n\n`;
 
 			let total = 0;
 
@@ -67,7 +65,9 @@ export default {
 				}
 			}
 
-			msg += `\n##### Categories: ${total}`;
+			msg += `\n##### Categories: ${total}\n\n` +
+				`[Open Server Settings]` +
+				`(<${process.env['WEB_UI_URL'] || "https://automod.vale.rocks"}/dashboard/${message.channel?.serverId}>)`;
 
 			await message.reply(msg);
 		} else {
@@ -76,17 +76,18 @@ export default {
 				Object.entries(categories).find((c) => c[1].aliases.find((k) => k.toLowerCase() == searchInput)) ||
 				[];
 			if (category && !searchInput.startsWith(prefix)) {
-				let msg = `**AutoMod Help** - Category: ${category.friendlyName}\n` + `${category.description}\n\n` + `Type **${prefix}help [command]** to learn more about a command.\n\n`;
+				let msg = `## AutoMod Help - ${category.friendlyName}\n` +
+					`${category.description}\n\n` +
+					`Type \`${prefix}help [command]\` to learn more about a specific command.\n\n`;
 
 				let cmdList = commands.filter((c) => (c.category || "uncategorized") == categoryName);
 				if (cmdList.length > 0) {
 					for (const cmd of cmdList) {
-						msg += `**${prefix}${cmd.name}** \u200b $\\big |$ \u200b ${cmd.description}\n`;
-
+						msg += `**${prefix}${cmd.name}** - ${cmd.description}`;
 						msg += "\n";
 					}
 
-					msg += `##### Total: ${cmdList.length}`;
+					msg += `##### ${category.friendlyName} Commands: ${cmdList.length}`;
 				} else msg += `### This category is empty.`;
 
 				await message.reply(msg);
@@ -97,7 +98,8 @@ export default {
 				if (!cmd) {
 					return message.reply(`I can't find any command or category matching \`${searchInput}\`.`);
 				} else {
-					let msg = `**AutoMod Help** - Command: ${cmd.name}\n` + `${cmd.description}\n\n`;
+					let msg = `## AutoMod Help - ${cmd.name}\n`	+
+						`${cmd.description}\n\n`;
 
 					if (cmd.syntax) msg += `Syntax: \`${cmd.syntax}\`\n`;
 					msg += "Aliases: " + (cmd.aliases ? `\`${cmd.aliases.join(`\`, \``)}\`` : "None") + "\n";

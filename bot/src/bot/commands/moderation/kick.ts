@@ -26,7 +26,7 @@ import {
 export default {
     name: "kick",
     aliases: ["yeet", "vent"],
-    description: "Kick a member from the server",
+    description: "Kick a user from the server.",
     syntax: "/kick @username [reason?]",
     removeEmptyArgs: true,
     category: CommandCategory.Moderation,

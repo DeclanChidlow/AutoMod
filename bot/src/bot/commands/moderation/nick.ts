@@ -9,7 +9,7 @@ import { client } from "../../..";
 export default {
     name: 'nick',
     aliases: [ 'setnick' ],
-    description: 'Set or clear someone\'s nickname',
+    description: 'Manage a user\'s nickname.',
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {

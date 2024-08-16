@@ -8,7 +8,7 @@ import { isModerator, NO_MANAGER_MSG, parseUser, ULID_REGEX, USER_MENTION_REGEX 
 export default {
     name: 'unban',
     aliases: [ 'pardon' ],
-    description: 'Unbans a user',
+    description: "Removes a user's server ban.",
     syntax: '/unban [@user or ID]',
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {

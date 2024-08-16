@@ -11,7 +11,7 @@ const MENTION_TEXT = 'You can also @mention me instead of using the prefix.';
 export default {
     name: 'prefix',
     aliases: null,
-    description: 'Configure AutoMod\'s prefix',
+    description: "Change AutoMod's prefix",
     syntax: SYNTAX,
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {

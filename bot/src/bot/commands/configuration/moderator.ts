@@ -12,7 +12,7 @@ const SYNTAX = '/mod add @user; /mod remove @user; /mod list';
 export default {
     name: 'moderator',
     aliases: [ 'moderators', 'mod', 'mods' ],
-    description: 'Allow users to moderate other users',
+    description: 'Allow users to moderate other users.',
     syntax: SYNTAX,
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {

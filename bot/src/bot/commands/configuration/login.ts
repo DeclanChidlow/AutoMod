@@ -10,7 +10,7 @@ import { DEFAULT_PREFIX } from "../../modules/command_handler";
 export default {
     name: 'login',
     aliases: null,
-    description: 'Log into the web dashboard',
+    description: 'Log into the web dashboard.',
     category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {

@@ -10,7 +10,7 @@ const SYNTAX = '/admin add @user; /admin remove @user; /admin list';
 export default {
     name: 'admin',
     aliases: [ 'admins', 'manager', 'managers' ],
-    description: 'Allow users to control the bot\'s configuration',
+    description: "Manage users with permission to modify the configuration.",
     syntax: SYNTAX,
     category: CommandCategory.Config,
     run: async (message: MessageCommandContext, args: string[]) => {

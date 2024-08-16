@@ -17,8 +17,8 @@ const GLOBAL_BLACKLIST_TEXT = (reason?: string) => `> :warning: This user has be
 
 export default {
     name: 'warns',
-    aliases: [ 'warnings', 'infractions', 'infraction' ],
-    description: 'Show all user infractions',
+    aliases: [ 'warnings', 'infractions' ],
+    description: "Shows a user's infractions.",
     syntax: '/warns; /warns @username ["export-csv"]; /warns rm [ID]',
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {

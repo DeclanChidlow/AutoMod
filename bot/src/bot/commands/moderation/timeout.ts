@@ -34,7 +34,7 @@ function parseTimeInput(input: string) {
 export default {
     name: 'timeout',
     aliases: [ 'mute' ],
-    description: 'Set a timeout on a user',
+    description: 'Set a timeout on a user.',
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {

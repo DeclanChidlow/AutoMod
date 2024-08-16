@@ -6,7 +6,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 export default {
 	name: "ping",
 	aliases: null,
-	description: "ping pong",
+	description: "Checks response times.",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		let now = Date.now();

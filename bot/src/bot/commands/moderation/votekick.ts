@@ -19,7 +19,7 @@ type VoteEntry = {
 export default {
     name: 'votekick',
     aliases: [ 'voteban' ],
-    description: 'Allow trusted users to vote kick users',
+    description: 'Allow trusted users to vote kick users.',
     category: CommandCategory.Moderation,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {

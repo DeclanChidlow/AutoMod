@@ -7,7 +7,7 @@ import { DEFAULT_PREFIX } from "../../modules/command_handler";
 export default {
     name: 'logout',
     aliases: null,
-    description: 'Log out of sessions created with /login',
+    description: 'Log out of web dashboard sessions.',
     category: CommandCategory.Miscellaneous,
     run: async (message: MessageCommandContext, args: string[]) => {
         try {
