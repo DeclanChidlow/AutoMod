@@ -15,7 +15,7 @@ const categories: {
 		description: "Commands for enforcing server rules.",
 		aliases: ["moderation", "mod"],
 	},
-	[CommandCategory.Config]: {
+	[CommandCategory.Configuration]: {
 		friendlyName: "Configuration",
 		description: "Commands for setting up and customizing settings.",
 		aliases: ["configuration", "config", "conf"],

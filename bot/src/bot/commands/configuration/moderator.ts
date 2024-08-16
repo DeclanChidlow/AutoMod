@@ -14,7 +14,7 @@ export default {
     aliases: [ 'moderators', 'mod', 'mods' ],
     description: 'Allow users to moderate other users.',
     syntax: SYNTAX,
-    category: CommandCategory.Config,
+    category: CommandCategory.Configuration,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!await isBotManager(message)) return message.reply(NO_MANAGER_MSG);
 

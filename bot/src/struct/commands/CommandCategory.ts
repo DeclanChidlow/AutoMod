@@ -1,6 +1,6 @@
 enum CommandCategory {
     Moderation = 'Moderation',
-    Config = 'Config',
+    Configuration = 'Configuration',
     Owner = 'Owner',
     Miscellaneous = 'Miscellaneous',
     None = 'None',

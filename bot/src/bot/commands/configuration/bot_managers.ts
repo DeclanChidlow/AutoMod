@@ -12,7 +12,7 @@ export default {
     aliases: [ 'admins', 'manager', 'managers' ],
     description: "Manage users with permission to modify the configuration.",
     syntax: SYNTAX,
-    category: CommandCategory.Config,
+    category: CommandCategory.Configuration,
     run: async (message: MessageCommandContext, args: string[]) => {
         if (!message.member?.hasPermission(message.member.server!, 'ManageServer'))
             return message.reply('You need **ManageServer** permission to use this command.');

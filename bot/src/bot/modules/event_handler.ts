@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { client, dbs } from "../..";
 import Infraction from "automod/dist/types/antispam/Infraction";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
-import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/admin/botadm";
+import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/owner/botadm";
 import logger from "../logger";
 import { storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";

@@ -13,7 +13,7 @@ export default {
     aliases: [],
     description: 'Allow users or roles to bypass moderation rules.',
     syntax: SYNTAX,
-    category: CommandCategory.Config,
+    category: CommandCategory.Configuration,
     run: async (message: MessageCommandContext, args: string[]) => {
         let config: ServerConfig|null = await dbs.SERVERS.findOne({ id: message.serverContext.id })
         if (!config) config = { id: message.channel!.serverId! };

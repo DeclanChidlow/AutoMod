@@ -15,7 +15,7 @@ export default {
 	name: "botctl",
 	aliases: null,
 	description: "Perform administrative actions.",
-	category: CommandCategory.Config,
+	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
 

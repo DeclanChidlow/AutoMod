@@ -10,11 +10,11 @@ import LogMessage from "automod/dist/types/LogMessage";
 import logger from "./logger";
 import { Channel } from "revolt.js";
 import { Message } from "revolt.js";
-import { isSudo } from "./commands/admin/botadm";
+import { isSudo } from "./commands/owner/botadm";
 import type { SendableEmbed } from "revolt-api";
 import ServerConfig from "automod/dist/types/ServerConfig";
 
-const NO_MANAGER_MSG = "🔒 Missing permission";
+const NO_MANAGER_MSG = "Missing permission";
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
 const USER_MENTION_REGEX = /^<@[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const CHANNEL_MENTION_REGEX = /^<#[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;

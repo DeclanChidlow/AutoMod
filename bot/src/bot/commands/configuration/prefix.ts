@@ -13,7 +13,7 @@ export default {
     aliases: null,
     description: "Change AutoMod's prefix",
     syntax: SYNTAX,
-    category: CommandCategory.Config,
+    category: CommandCategory.Configuration,
     run: async (message: MessageCommandContext, args: string[]) => {
         let config = await dbs.SERVERS.findOne({ id: message.channel!.serverId! });
 
