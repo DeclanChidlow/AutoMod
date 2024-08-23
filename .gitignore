@@ -14,7 +14,7 @@ node_modules
 yarn-error.log
 
 # Docker
-docker-compose.yml
+compose.yml
 
 # Misc
 dist
