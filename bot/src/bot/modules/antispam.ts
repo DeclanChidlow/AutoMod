@@ -9,7 +9,7 @@ import logger from "../logger";
 import { generateInfractionDMEmbed, isModerator, sendLogMessage, storeInfraction } from "../util";
 import { getDmChannel, sanitizeMessageContent } from "../util";
 import ServerConfig from "automod/dist/types/ServerConfig";
-import { WORDLIST_DEFAULT_MESSAGE } from "../commands/configuration/botctl";
+import { WORDLIST_DEFAULT_MESSAGE } from "../commands/configuration/filter";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
 
