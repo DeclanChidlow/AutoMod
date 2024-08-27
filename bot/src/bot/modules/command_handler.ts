@@ -37,6 +37,8 @@ let commands: SimpleCommand[];
     client.on('messageCreate', async msg => {
         logger.debug(`Message -> ${msg.content}`);
 
+        if (msg.systemMessage !== undefined) return;
+
         if (typeof msg.content != 'string' ||
             msg.authorId == client.user?.id ||
             !msg.channel?.server) return;
