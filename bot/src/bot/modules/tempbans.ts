@@ -1,6 +1,5 @@
 import { client, dbs } from "../..";
 import TempBan from "automod/dist/types/TempBan";
-import logger from "../logger";
 
 // Array of ban IDs which should not get processed in this session
 let dontProcess: string[] = [];
@@ -28,11 +27,11 @@ async function processUnban(ban: TempBan) {
         if (expired.includes(ban.id)) return;
 
         let server = client.servers.get(ban.server) || await client.servers.fetch(ban.server);
-        if (!server.havePermission('BanMembers')) return logger.debug(`No permission to process unbans in ${server.id}, skipping`);
+        if (!server.havePermission('BanMembers')) return console.debug(`No permission to process unbans in ${server.id}, skipping`);
         let serverBans = await server.fetchBans();
 
         if (serverBans.find(b => b.id.user == ban.bannedUser)) {
-            logger.debug(`Unbanning user ${ban.bannedUser} from ${server.id}`);
+            console.debug(`Unbanning user ${ban.bannedUser} from ${server.id}`);
 
             let promises = [
                 server.unbanUser(ban.bannedUser),

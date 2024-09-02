@@ -2,7 +2,6 @@ import { Server, ServerMember } from "revolt.js";
 import { client, dbs } from "../..";
 import LogMessage from "automod/dist/types/LogMessage";
 import Xlsx from 'xlsx';
-import logger from "../logger";
 import { sanitizeMessageContent, sendLogMessage } from "../util";
 
 // the `packet` event is emitted before the client's cache
@@ -21,8 +20,8 @@ client.on('messageUpdate', async (message, oldMessage) => {
 
         let channel = message.channel;
         let server = channel?.server;
-        if (!server || !channel) return logger.warn('Received message update in unknown channel or server');
-        if (oldMsg == newMsg) return logger.info('Ignoring message update without edited text');
+        if (!server || !channel) return console.warn('Received message update in unknown channel or server');
+        if (oldMsg == newMsg) return console.info('Ignoring message update without edited text');
 
         let config = await dbs.SERVERS.findOne({ id: server.id });
         if (config?.logs?.messageUpdate) {

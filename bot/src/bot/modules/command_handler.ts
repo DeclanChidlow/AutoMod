@@ -1,5 +1,4 @@
 import SimpleCommand from "../../struct/commands/SimpleCommand";
-import logger from "../logger";
 import { client, dbs } from "../../index";
 import fs from 'fs';
 import path from 'path';
@@ -35,7 +34,7 @@ let commands: SimpleCommand[];
     });
 
     client.on('messageCreate', async msg => {
-        logger.debug(`Message -> ${msg.content}`);
+        console.debug(`Message -> ${msg.content}`);
 
         if (msg.systemMessage !== undefined) return;
 
@@ -55,7 +54,7 @@ let commands: SimpleCommand[];
         // If we can't reply to the message, return
         const member = await getOwnMemberInServer(msg.channel.server);
         if (!member.hasPermission(msg.channel, 'SendMessage')) {
-            logger.debug('Cannot reply to message; returning');
+            console.debug('Cannot reply to message; returning');
             return;
         }
 
@@ -112,7 +111,7 @@ let commands: SimpleCommand[];
         if (isSudo(msg.author!)) updateSudoTimeout(msg.author!);
 
         if (cmd.restrict == 'BOTOWNER' && ownerIDs.indexOf(msg.authorId!) == -1) {
-            logger.warn(`User ${msg.author?.username} tried to run owner-only command: ${cmdName}`);
+            console.warn(`User ${msg.author?.username} tried to run owner-only command: ${cmdName}`);
             msg.reply('🔒 Access denied');
             return;
         }
@@ -133,7 +132,7 @@ let commands: SimpleCommand[];
         let message: MessageCommandContext = msg as MessageCommandContext;
         message.serverContext = serverCtx;
 
-        logger.info(`Command: ${message.author?.username} (${message.author?.id}) in ${message.channel?.server?.name} (${message.channel?.serverId}): ${message.content}`);
+        console.info(`Command: ${message.author?.username} (${message.author?.id}) in ${message.channel?.server?.name} (${message.channel?.serverId}): ${message.content}`);
 
         // Create document for server in DB, if not already present
         if (JSON.stringify(config) == '{}' || !config) await dbs.SERVERS.insert({ id: message.channel!.serverId! });

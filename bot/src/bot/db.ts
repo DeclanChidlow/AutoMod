@@ -1,6 +1,5 @@
 import Monk, { ICollection, IMonkManager } from 'monk';
 import { dbs } from '..';
-import logger from './logger';
 
 export default (): IMonkManager => {
         let dburl = getDBUrl();
@@ -14,8 +13,8 @@ function getDBUrl() {
     if (env['DB_URL']) return env['DB_URL'];
 
     if (!env['DB_HOST']) {
-        logger.error(`Environment variable 'DB_HOST' not set, unable to connect to database`);
-        logger.error(`Specify either 'DB_URL' or 'DB_HOST', 'DB_USERNAME', 'DB_PASS' and 'DB_NAME'`);
+        console.error(`Environment variable 'DB_HOST' not set, unable to connect to database`);
+        console.error(`Specify either 'DB_URL' or 'DB_HOST', 'DB_USERNAME', 'DB_PASS' and 'DB_NAME'`);
         throw 'Missing environment variables';
     }
 
@@ -36,12 +35,12 @@ async function databaseMigrations() {
             const indexes = await collection.indexes();
             for (const index of toIndex) {
                 if (!Object.values(indexes).find(v => v[0][0] == index)) {
-                    logger.info(`Creating index ${index} on ${collection.name}`);
+                    console.info(`Creating index ${index} on ${collection.name}`);
                     await collection.createIndex(index);
                 }
             }
         } catch(e) {
-            logger.warn(`Failed to run migrations for ${collection.name}: ${e}`);
+            console.warn(`Failed to run migrations for ${collection.name}: ${e}`);
         }
     }
 

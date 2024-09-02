@@ -6,7 +6,6 @@ import Infraction from "automod/dist/types/antispam/Infraction";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import logger from "../../logger";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import {
     dedupeArray,
@@ -192,7 +191,7 @@ export default {
                             dmChannel.havePermission("SendEmbeds")
                         ) {
                             await dmChannel.sendMessage({ embeds: [embed] });
-                        } else logger.warn("Missing permission to DM user.");
+                        } else console.warn("Missing permission to DM user.");
                     } catch (e) {
                         console.error(e);
                     }

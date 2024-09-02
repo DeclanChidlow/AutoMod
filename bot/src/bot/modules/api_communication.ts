@@ -3,7 +3,6 @@
  */
 
 import ws from "ws";
-import logger from "../logger";
 import crypto from "crypto";
 import { client as bot, dbs } from "../..";
 import { EventEmitter } from "events";
@@ -22,9 +21,9 @@ const INITIAL_RETRY_DELAY = 3000;
 type WSResponse = { success: false; error: string; statusCode?: number } | { success: true; [key: string]: any };
 
 if (!API_WS_URL || !API_WS_TOKEN) {
-  logger.error("$API_WS_URL or $API_WS_TOKEN not found. Please set these environment variables.");
+  console.error("$API_WS_URL or $API_WS_TOKEN not found. Please set these environment variables.");
 } else {
-  logger.info(`$API_WS_URL and $API_WS_TOKEN set; Connecting to ${API_WS_URL}`);
+  console.info(`$API_WS_URL and $API_WS_TOKEN set; Connecting to ${API_WS_URL}`);
   connect();
 }
 
@@ -33,15 +32,15 @@ function connect() {
 	client = new ws(API_WS_URL!, { headers: { authorization: API_WS_TOKEN! } });
 
 	client.once("open", () => {
-		logger.info("WebSocket connected successfully");
+		console.info("WebSocket connected successfully");
     retryCount = 0;
 		if (wsQueue.length > 0) {
-			logger.debug(`Attempting to send ${wsQueue.length} queued WS messages`);
+			console.debug(`Attempting to send ${wsQueue.length} queued WS messages`);
 
 			while (wsQueue.length > 0) {
 				if (client?.readyState != ws.OPEN) break;
 				const data = JSON.stringify(wsQueue.shift());
-				logger.debug(`[WS] [FROM QUEUE] [>] ${data}`);
+				console.debug(`[WS] [FROM QUEUE] [>] ${data}`);
 				client.send(data);
 			}
 		}
@@ -54,12 +53,12 @@ function connect() {
 
   client.once("error", (err: Error) => {
     client = undefined;
-    logger.error(`WebSocket error: ${err.message}`);
+    console.error(`WebSocket error: ${err.message}`);
     retryConnection();
   });
 
 	client.on("message", (msg: ws.Data) => {
-		logger.debug(`[WS] [<] ${msg.toString("utf8")}`);
+		console.debug(`[WS] [<] ${msg.toString("utf8")}`);
 		try {
 			const jsonMsg = JSON.parse(msg.toString("utf8"));
 			wsEvents.emit("message", jsonMsg);
@@ -86,24 +85,24 @@ function connect() {
 
 function wsSend(data: { [key: string]: any }) {
 	if (client && client.readyState == client.OPEN) {
-		logger.debug(`[WS] [>] ${JSON.stringify(data)}`);
+		console.debug(`[WS] [>] ${JSON.stringify(data)}`);
 		client.send(JSON.stringify(data));
 	} else {
-		logger.debug(`[WS] [QUEUED] [>] ${JSON.stringify(data)}`);
+		console.debug(`[WS] [QUEUED] [>] ${JSON.stringify(data)}`);
 		wsQueue.push(data);
 	}
 }
 
 function retryConnection() {
   if (retryCount >= MAX_RETRIES) {
-    logger.error(`Failed to connect after ${MAX_RETRIES} attempts. Please check your network and API_WS_URL.`);
+    console.error(`Failed to connect after ${MAX_RETRIES} attempts. Please check your network and API_WS_URL.`);
     return;
   }
 
   const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
   retryCount++;
 
-  logger.warn(`WebSocket disconnected. Attempting to reconnect in ${delay / 1000} seconds (Attempt ${retryCount} of ${MAX_RETRIES})`);
+  console.warn(`WebSocket disconnected. Attempting to reconnect in ${delay / 1000} seconds (Attempt ${retryCount} of ${MAX_RETRIES})`);
   setTimeout(connect, delay);
 }
 
@@ -124,7 +123,7 @@ wsEvents.on("req:requestLogin", async (data: any, cb: (data: WSResponse) => void
 			code = c.substring(0, 8).toUpperCase();
 		}
 
-		logger.info(`Attempted login for user ${user.id} with code ${code}`);
+		console.info(`Attempted login for user ${user.id} with code ${code}`);
 
 		const nonce = ulid();
 

@@ -105,13 +105,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-colors@npm:^4.1.1":
-  version: 4.1.3
-  resolution: "ansi-colors@npm:4.1.3"
-  checksum: 10c0/ec87a2f59902f74e61eada7f6e6fe20094a628dab765cfdbd03c3477599368768cffccdb5d3bb19a1b6c99126783a143b1fee31aab729b31ffe5836c7e5e28b9
-  languageName: node
-  linkType: hard
-
 "asynckit@npm:^0.4.0":
   version: 0.4.0
   resolution: "asynckit@npm:0.4.0"
@@ -323,15 +316,6 @@ __metadata:
   version: 4.6.1
   resolution: "lodash.defaultsdeep@npm:4.6.1"
   checksum: 10c0/0031ca3055d5482fc2e9b55d0ee174a3e956039996fac52dbe94ca67eb50bb72ffc75d0eb86bcc782fefc597ebbc1798df941f27382bec23138e53180427700b
-  languageName: node
-  linkType: hard
-
-"log75@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "log75@npm:3.0.1"
-  dependencies:
-    ansi-colors: "npm:^4.1.1"
-  checksum: 10c0/c20ece5b1cb0fcd71244277fb4e6fa271dcb7a31b92c5d01da9b03a2226fe6f5275b1a0c1648f70f5b72432c66880547f2cbd89307ae02663c889126446a855b
   languageName: node
   linkType: hard
 
@@ -554,7 +538,6 @@ __metadata:
     axios: "npm:^1.7.5"
     dayjs: "npm:^1.11.11"
     form-data: "npm:^4.0.0"
-    log75: "npm:^3.0.1"
     monk: "npm:^7.3.4"
     prom-client: "npm:^15.1.3"
     revolt-api: "npm:0.7.13"

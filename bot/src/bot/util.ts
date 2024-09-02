@@ -7,7 +7,6 @@ import axios from 'axios';
 import { Server } from "revolt.js";
 import LogConfig from "automod/dist/types/LogConfig";
 import LogMessage from "automod/dist/types/LogMessage";
-import logger from "./logger";
 import { Channel } from "revolt.js";
 import { Message } from "revolt.js";
 import { isSudo } from "./commands/owner/botadm";
@@ -249,10 +248,10 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
                         : undefined,
                 })
                 .catch((e) =>
-                    logger.error(`Failed to send log message (revolt): ${e}`)
+                    console.error(`Failed to send log message (revolt): ${e}`)
                 );
         } catch (e) {
-            logger.error(
+            console.error(
                 `Failed to send log message in ${config.revolt.channel}: ${e}`
             );
         }
@@ -488,7 +487,7 @@ const yesNoMessage = (
                         break;
 
                     default:
-                        logger.warn(
+                        console.warn(
                             "Received unexpected reaction: " + emoji
                         );
                 }

@@ -4,7 +4,6 @@ import { client, dbs } from "../..";
 import Infraction from "automod/dist/types/antispam/Infraction";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
 import { BLACKLIST_BAN_REASON, BLACKLIST_MESSAGE } from "../commands/owner/botadm";
-import logger from "../logger";
 import { storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";
 import type { SendableEmbed } from "revolt-api";
@@ -86,7 +85,7 @@ client.on('messageCreate', async message => {
             message.nonce?.startsWith("REQUEST_SESSION_TOKEN-") &&
             message.content?.toLowerCase().startsWith("requesting session token.")
         ) {
-            logger.info('Received session token request in DMs.');
+            console.info('Received session token request in DMs.');
         
             const token = crypto.randomBytes(48).toString('base64').replace(/=/g, '');
         
@@ -137,28 +136,28 @@ client.on('serverMemberJoin', (member) => {
                || channels.find(c => c?.name?.toLowerCase() == 'spam')
                || channels[0];
 
-    if (!channel) return logger.debug('Cannot send hello message: No suitable channel found');
+    if (!channel) return console.debug('Cannot send hello message: No suitable channel found');
     channel.sendMessage({
         content: `:wave: "Hi there!")`,
         embeds: [embed],
-    }).catch(e => logger.debug('Cannot send hello message: ' + e));
+    }).catch(e => console.debug('Cannot send hello message: ' + e));
 });
 
-client.on('disconnected', () => logger.warn('Client disconnected!'));
+client.on('disconnected', () => console.warn('Client disconnected!'));
 
 client.events.on('state', (state) => {
     switch(state) {
         case 2:
-            logger.info('Connection state: Connected');
+            console.info('Connection state: Connected');
             break;
         case 1:
-            logger.info('Connection state: Connecting');
+            console.info('Connection state: Connecting');
             break;
         case 3:
-            logger.info('Connection state: Disconnected');
+            console.info('Connection state: Disconnected');
             break;
         case 0:
-            logger.info('Connection state: Idle');
+            console.info('Connection state: Idle');
             break;
     }
 });

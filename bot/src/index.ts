@@ -1,4 +1,3 @@
-import logger from './bot/logger';
 import AutomodClient, { login } from './struct/AutomodClient';
 import MongoDB, { databaseMigrations } from './bot/db';
 import DbUser from 'automod/dist/types/DbUser';
@@ -8,7 +7,7 @@ import PendingLogin from 'automod/dist/types/PendingLogin';
 import TempBan from 'automod/dist/types/TempBan';
 import type { VoteEntry } from './bot/commands/moderation/votekick';
 
-logger.info('Initializing client');
+console.info('Initializing client');
 
 let db = MongoDB();
 let client = new AutomodClient({
@@ -29,7 +28,7 @@ const dbs = {
 
 export { client, dbs }
 
-logger.info(`\
+console.info(`\
     _          _         __  __           _ 
    / \\   _   _| |_  ___ |  \\/  | ___   __| |
   / _ \\ | | | | __|/ _ \\| |\\/| |/ _ \\ / _\` |
@@ -39,11 +38,11 @@ logger.info(`\
 
 (async () => {
     // Wait for a database query to succeed before loading the rest
-    logger.info('Connecting to database...');
+    console.info('Connecting to database...');
     await db.get('servers').findOne({});
-    logger.done('DB ready!');
+    console.log('DB ready!');
 
-    logger.info('Running database migrations...');
+    console.info('Running database migrations...');
     await databaseMigrations();
 
     // Load modules

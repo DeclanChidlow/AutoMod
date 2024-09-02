@@ -5,7 +5,6 @@ import AntispamRule from "automod/dist/types/antispam/AntispamRule";
 import Infraction from "automod/dist/types/antispam/Infraction";
 import InfractionType from "automod/dist/types/antispam/InfractionType";
 import ModerationAction from "automod/dist/types/antispam/ModerationAction";
-import logger from "../logger";
 import { generateInfractionDMEmbed, isModerator, sendLogMessage, storeInfraction } from "../util";
 import { getDmChannel, sanitizeMessageContent } from "../util";
 import ServerConfig from "automod/dist/types/ServerConfig";
@@ -49,20 +48,20 @@ async function antispam(message: Message): Promise<boolean> {
             setTimeout(() => userStore.count--, rule.timeframe * 1000);
 
             if (userStore.count > rule.max_msg) {
-                logger.info(`Antispam rule triggered: ${rule.max_msg}/${rule.timeframe} -> ${ModerationAction[rule.action]}`);
+                console.info(`Antispam rule triggered: ${rule.max_msg}/${rule.timeframe} -> ${ModerationAction[rule.action]}`);
                 ruleTriggered = true;
 
                 switch(Number(rule.action)) {
                     case ModerationAction.Delete:
                         message.delete()
-                            .catch(() => logger.warn('Antispam: Failed to delete message') );
+                            .catch(() => console.warn('Antispam: Failed to delete message') );
                     break;
                     case ModerationAction.Message:
                         if (!userStore.warnTriggered) {
                             userStore.warnTriggered = true;
                             setTimeout(() => userStore.warnTriggered = false, 5000);
                             message.channel?.sendMessage(getWarnMsg(rule, message))
-                                .catch(() => logger.warn('Antispam: Failed to send message'));
+                                .catch(() => console.warn('Antispam: Failed to send message'));
                         }
                     break;
                     case ModerationAction.Warn:
@@ -81,7 +80,7 @@ async function antispam(message: Message): Promise<boolean> {
                             } as Infraction;
 
                             message.channel?.sendMessage('## User has been warned.\n\u200b\n' + getWarnMsg(rule, message))
-                                .catch(() => logger.warn('Antispam: Failed to send warn message'));
+                                .catch(() => console.warn('Antispam: Failed to send warn message'));
 
                             await storeInfraction(inf);
                         }
@@ -92,7 +91,7 @@ async function antispam(message: Message): Promise<boolean> {
                     case ModerationAction.Ban:
                         message.reply('(Ban user)');
                     break;
-                    default: logger.warn(`Unknown Moderation Action: ${rule.action}`);
+                    default: console.warn(`Unknown Moderation Action: ${rule.action}`);
                 }
             }
         }
@@ -146,7 +145,7 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
                         if (dmChannel.havePermission('SendMessage') && dmChannel.havePermission('SendEmbeds')) {
                             await dmChannel.sendMessage({ embeds: [embed] });
                         }
-                        else logger.warn('Missing permission to DM user.');
+                        else console.warn('Missing permission to DM user.');
                     }
                     break;
                 } catch (e) {

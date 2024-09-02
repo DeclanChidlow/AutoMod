@@ -4,7 +4,6 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import PendingLogin from "automod/dist/types/PendingLogin";
-import logger from "../../logger";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
 
 export default {
@@ -35,7 +34,7 @@ export default {
             if (!login) return message.reply(`Unknown code. Make sure you're logged into the correct account.`);
 
             if (login.requirePhishingConfirmation) {
-                logger.info(`Showing phishing warning to ${message.authorId}`);
+                console.info(`Showing phishing warning to ${message.authorId}`);
                 await Promise.all([
                     message.reply(
                         `# If someone told you to run this, stop!\n` +

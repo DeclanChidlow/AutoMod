@@ -1,6 +1,5 @@
 import * as Revolt from "revolt.js";
 import { IMonkManager } from 'monk';
-import logger from '../bot/logger';
 import type { ClientOptions } from "revolt.js";
 
 class AutomodClient extends Revolt.Client {
@@ -14,18 +13,18 @@ class AutomodClient extends Revolt.Client {
 }
 
 let login = (client: Revolt.Client): Promise<void> => new Promise((resolve, reject) => {
-    logger.info('Bot logging in...');
+    console.info('Bot logging in...');
     let env = process.env;
 
     if (!env['BOT_TOKEN']) {
-        logger.error('Environment variable \'BOT_TOKEN\' not provided');
+        console.error('Environment variable \'BOT_TOKEN\' not provided');
         return reject('No bot token provided');
     }
 
     client.loginBot(env['BOT_TOKEN']);
 
     client.once('ready', () => {
-        logger.done(`Bot logged in as ${client.user?.username}!`);
+        console.log(`Bot logged in as ${client.user?.username}!`);
         resolve();
     });
 });

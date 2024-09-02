@@ -25,7 +25,6 @@ import RelativeTime from "dayjs/plugin/relativeTime";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import type { SendableEmbed } from "revolt-api";
 import { User } from "revolt.js";
-import logger from "../../logger";
 
 Day.extend(RelativeTime);
 
@@ -276,7 +275,7 @@ export default {
                                     embeds: [embed],
                                 });
                             } else
-                                logger.warn("Missing permission to DM user.");
+                                console.warn("Missing permission to DM user.");
                         } catch (e) {
                             console.error(e);
                         }
@@ -357,7 +356,7 @@ export default {
                                     embeds: [embed],
                                 });
                             } else
-                                logger.warn("Missing permission to DM user.");
+                                console.warn("Missing permission to DM user.");
                         } catch (e) {
                             console.error(e);
                         }

@@ -1,6 +1,5 @@
 import { Message } from "revolt.js";
 import { dbs } from "../../..";
-import logger from "../../logger";
 import messageContentTrigger from "./message_content_trigger";
 
 import custom_sendMessage from "./actions/sendMessage";
@@ -30,22 +29,22 @@ async function checkCustomRules(message: Message, isEdit: boolean = false) {
                             if (member.hasPermission(message.channel!, 'SendMessage'))
                                 await custom_sendMessage(message, action);
                             else
-                                logger.warn(`Custom rule ${rule._id}: 'sendMessage' action lacks permission`);
+                                console.warn(`Custom rule ${rule._id}: 'sendMessage' action lacks permission`);
                         break;
                         case 'delete':
                             if (member.hasPermission(message.channel!, 'ManageMessages'))
                                 await custom_delete(message, action);
                             else
-                                logger.warn(`Custom rule ${rule._id}: 'delete' action lacks permission`);
+                                console.warn(`Custom rule ${rule._id}: 'delete' action lacks permission`);
                         break;
                         case 'warn':
                             if (member.hasPermission(message.channel!, 'SendMessage'))
                                 await custom_warn(message, action);
                             else
-                                logger.warn(`Custom rule ${rule._id}: 'warn' action lacks permission`);
+                                console.warn(`Custom rule ${rule._id}: 'warn' action lacks permission`);
                         break;
                         default:
-                            logger.warn(`Unknown action ${action.action} in custom rule ${rule._id} in server ${message.channel?.serverId}`);
+                            console.warn(`Unknown action ${action.action} in custom rule ${rule._id} in server ${message.channel?.serverId}`);
                     }
                 }
             }

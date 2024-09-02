@@ -1,6 +1,5 @@
 import axios from "axios";
 import { client, dbs } from "../..";
-import logger from "../logger";
 
 (async () => {
     if (!client.user) await new Promise<void>(r => client.once('ready', () => r()));
@@ -21,7 +20,7 @@ import logger from "../logger";
                     .replace('{{ping_ms}}', `${client.events.ping() ?? -1}`);
 
                 await setStatus(statusText, 'Online');
-                logger.debug(`Bot status updated`);
+                console.debug(`Bot status updated`);
 
                 i++;
                 if (i >= statuses.length) i = 0;

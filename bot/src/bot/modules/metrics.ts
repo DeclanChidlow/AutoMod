@@ -1,6 +1,5 @@
 import prom from 'prom-client';
 import http from 'http';
-import logger from '../logger';
 import { client } from '../..';
 
 const PORT = Number(process.env['BOT_METRICS_PORT']);
@@ -15,7 +14,7 @@ const metrics = {
 }
 
 if (!isNaN(PORT)) {
-    logger.info(`Enabling Prometheus metrics on :${PORT}`);
+    console.info(`Enabling Prometheus metrics on :${PORT}`);
 
     const server = new http.Server();
 
@@ -46,7 +45,7 @@ if (!isNaN(PORT)) {
         setInterval(measureLatency, 10000);
 
         if (process.env['BOT_METRICS_MSG_PING_CHANNEL']) {
-            logger.info('BOT_METRICS_MSG_PING_CHANNEL is set, enabling message latency measuring');
+            console.info('BOT_METRICS_MSG_PING_CHANNEL is set, enabling message latency measuring');
 
             const getMsgPing = async () => {
                 const channel = client.channels.get(process.env['BOT_METRICS_MSG_PING_CHANNEL']!);
@@ -66,7 +65,7 @@ if (!isNaN(PORT)) {
         }
     });
 
-    server.listen(PORT, () => logger.done(`Prometheus metrics ready`));
+    server.listen(PORT, () => console.log(`Prometheus metrics ready`));
 }
 
 export { metrics };
