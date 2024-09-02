@@ -1,9 +1,6 @@
-import { config } from 'dotenv';
 import Express from "express";
 import Log75, { LogLevel } from 'log75';
 import buildDBClient, { redis } from './db';
-
-config();
 
 const PORT = Number(process.env['API_PORT'] || 9000);
 const DEBUG = process.env.NODE_ENV != 'production';

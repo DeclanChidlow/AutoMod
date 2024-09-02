@@ -1,6 +1,3 @@
-import { config } from 'dotenv';
-config();
-
 import logger from './bot/logger';
 import AutomodClient, { login } from './struct/AutomodClient';
 import MongoDB, { databaseMigrations } from './bot/db';
