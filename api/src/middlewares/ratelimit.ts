@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ulid } from "ulid";
-import { app, logger } from "..";
+import { app } from "..";
 import { redis } from "../db";
 
 class RateLimiter {
@@ -23,7 +23,7 @@ class RateLimiter {
                 const redisKey = `ratelimit:${Buffer.from(ip).toString('base64')}:${Buffer.from(this.route).toString('base64')}`;
                 const reqs = await redis.SCARD(redisKey);
                 if (reqs >= this.limit) {
-                    logger.debug(`Ratelimiter: IP address exceeded ratelimit for ${this.route} [${this.limit}/${this.timeframe}]`);
+                    console.debug(`Ratelimiter: IP address exceeded ratelimit for ${this.route} [${this.limit}/${this.timeframe}]`);
                     res
                         .status(429)
                         .send({

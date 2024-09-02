@@ -1,6 +1,5 @@
 import { MongoClient, Db } from 'mongodb';
 import Redis from 'redis';
-import { logger } from '.';
 
 let db: Db;
 
@@ -11,10 +10,10 @@ export default async function buildDBClient(): Promise<Db> {
     try {
         await client.connect();
         db = client.db();
-        logger.info('Connected successfully to MongoDB');
+        console.info('Connected successfully to MongoDB');
         return db;
     } catch (error) {
-        logger.error(`Failed to connect to MongoDB: ${error}`);
+        console.error(`Failed to connect to MongoDB: ${error}`);
         throw error;
     }
 }
@@ -29,8 +28,8 @@ function getDBUrl(): string {
     if (env['DB_URL']) return env['DB_URL'];
     
     if (!env['DB_HOST']) {
-        logger.error(`Environment variable 'DB_HOST' not set, unable to connect to database`);
-        logger.error(`Specify either 'DB_URL' or 'DB_HOST', 'DB_USERNAME', 'DB_PASS' and 'DB_NAME'`);
+        console.error(`Environment variable 'DB_HOST' not set, unable to connect to database`);
+        console.error(`Specify either 'DB_URL' or 'DB_HOST', 'DB_USERNAME', 'DB_PASS' and 'DB_NAME'`);
         throw new Error('Missing environment variables');
     }
 

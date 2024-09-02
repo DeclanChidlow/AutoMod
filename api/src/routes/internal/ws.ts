@@ -5,11 +5,10 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 import { EventEmitter } from 'events';
-import { logger } from "../..";
 import server from '../../server';
 
 if (!process.env['BOT_API_TOKEN']) {
-    logger.error(`$BOT_API_TOKEN is not set. This token is `
+    console.error(`$BOT_API_TOKEN is not set. This token is `
         + `required for the bot to communicate with the API.`);
     process.exit(1);
 }
@@ -23,14 +22,14 @@ wsServer.on('connection', (sock) => {
     sockets.push(sock);
 
     sock.once('close', () => {
-        logger.debug('WS closed');
+        console.debug('WS closed');
         const i = sockets.findIndex(s => s == sock);
         sockets.splice(i, 1);
     });
 
     sock.on('message', (msg) => {
         const jsonBody = JSON.parse(msg.toString());
-        logger.debug(`[WS] [<] ${msg.toString()}`);
+        console.debug(`[WS] [<] ${msg.toString()}`);
         botWS.emit('message', jsonBody);
         if (jsonBody.data && jsonBody.type) {
             botWS.emit(jsonBody.type, jsonBody.data);
@@ -39,12 +38,12 @@ wsServer.on('connection', (sock) => {
 });
 
 server.on('upgrade', (req, socket, head) => {
-    logger.debug(`WS Upgrade ${req.url}`);
+    console.debug(`WS Upgrade ${req.url}`);
 
     switch(req.url) {
         case '/internal/ws':
             if (req.headers['authorization'] !== BOT_API_TOKEN) {
-                logger.debug('WS unauthorized');
+                console.debug('WS unauthorized');
                 head.write(JSON.stringify({ error: 'Not authenticated' }, null, 4));
                 socket.end();
             } else {
@@ -61,7 +60,7 @@ server.on('upgrade', (req, socket, head) => {
 
 function sendBotWS(msg: { [key: string]: any }) {
     const socks = sockets.filter(sock => sock.readyState == sock.OPEN);
-    logger.debug(`[WS] [>] [${socks.length}] ${JSON.stringify(msg)}`);
+    console.debug(`[WS] [>] [${socks.length}] ${JSON.stringify(msg)}`);
     socks.forEach(sock => sock.send(JSON.stringify(msg)));
 }
 

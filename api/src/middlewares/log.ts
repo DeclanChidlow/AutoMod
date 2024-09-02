@@ -1,7 +1,7 @@
 import { Request } from "express";
-import { app, logger } from "..";
+import { app } from "..";
 
 app.use('*', (req: Request, next: () => void) => {
-    logger.debug(`${req.method} ${req.url}`);
+    console.debug(`${req.method} ${req.url}`);
     next();
 });
