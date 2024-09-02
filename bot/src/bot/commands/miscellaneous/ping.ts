@@ -9,12 +9,12 @@ export default {
 	description: "Checks response times.",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
-		let now = Date.now();
+		const now = Date.now();
 		message
 			.reply(`Measuring...`)
 			?.catch(console.error)
 			.then((msg) => {
-				if (msg) msg.edit({ content: `## Ping Pong!\n` + `WebSocket: \`${client.events.ping() ?? "--"}ms\`\n` + `Message: \`${Math.round(Date.now() - now)}ms\`` });
+				if (msg) msg.edit({ content : ["## Ping Pong!", `WebSocket: \`${client.events.ping() ?? "--"}ms\``, `Message: \`${Math.round(Date.now() - now)}ms\``].join("\n") });
 			});
 	},
 } as SimpleCommand;
