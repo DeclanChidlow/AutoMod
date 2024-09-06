@@ -7,7 +7,7 @@ import checkCustomRules from "./custom_rules/custom_rules";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import { fileURLToPath } from 'url';
 import { getOwnMemberInServer } from "../util";
-import { isSudo, updateSudoTimeout } from "../commands/owner/botadm";
+import { isSudo, updateSudoTimeout } from "../commands/owner/override";
 import { metrics } from "./metrics";
 
 // thanks a lot esm

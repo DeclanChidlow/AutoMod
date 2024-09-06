@@ -9,7 +9,7 @@ import LogConfig from "automod/dist/types/LogConfig";
 import LogMessage from "automod/dist/types/LogMessage";
 import { Channel } from "revolt.js";
 import { Message } from "revolt.js";
-import { isSudo } from "./commands/owner/botadm";
+import { isSudo } from "./commands/owner/override";
 import type { SendableEmbed } from "revolt-api";
 import ServerConfig from "automod/dist/types/ServerConfig";
 
