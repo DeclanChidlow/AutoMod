@@ -51,7 +51,7 @@ export default {
 		if (!searchInput) {
 			let msg =
 				`## AutoMod Help\n` +
-				`Type \`${prefix}help [category]\` to view commands within a category, or \`${prefix}help [command]\` to learn more about a specific command.\n\n`;
+				`Type \`${prefix}help [category]\` to view commands within a category, or \`${prefix}help [command]\` to learn more about a specific command. Further information is available on [the wiki](<https://github.com/DeclanChidlow/AutoMod/wiki>).\n\n`;
 
 			let total = 0;
 
