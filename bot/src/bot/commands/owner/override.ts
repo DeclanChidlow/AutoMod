@@ -18,6 +18,7 @@ export default {
 	name: "override",
 	aliases: ["sudo", "doas"],
 	description: "Run any commands regardless of server permissions.",
+	restrict: "BOTOWNER",
 	category: CommandCategory.Owner,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		switch (args[0]?.toLowerCase()) {

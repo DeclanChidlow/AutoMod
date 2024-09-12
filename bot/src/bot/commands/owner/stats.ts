@@ -20,6 +20,7 @@ export default {
 	name: "stats",
 	aliases: ["statistics"],
 	description: "Provides current AutoMod statistics.",
+	restrict: "BOTOWNER",
 	category: CommandCategory.Owner,
 	run: async (message: MessageCommandContext) => {
 		let msg =
