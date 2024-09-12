@@ -5,7 +5,6 @@ import ServerConfig from 'automod/dist/types/ServerConfig';
 import Infraction from 'automod/dist/types/antispam/Infraction';
 import PendingLogin from 'automod/dist/types/PendingLogin';
 import TempBan from 'automod/dist/types/TempBan';
-import type { VoteEntry } from './bot/commands/moderation/votekick';
 
 console.info('Initializing client');
 
@@ -23,7 +22,6 @@ const dbs = {
     PENDING_LOGINS: db.get<PendingLogin>('pending_logins'),
     SESSIONS: db.get('sessions'),
     TEMPBANS: db.get<TempBan>('tempbans'),
-    VOTEKICKS: db.get<VoteEntry>('votekicks'),
 }
 
 export { client, dbs }
