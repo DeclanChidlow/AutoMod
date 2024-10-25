@@ -70,6 +70,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bson@npm:^4.0.5":
+  version: 4.0.5
+  resolution: "@types/bson@npm:4.0.5"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/b3e94a2832de82ea6d101fe2efcc65f32de131d25b22b1ff585cb74bc904fbcdb6cb976fc21adf608b8fcb43075e100693f5f321ffa170ff9a7847a3d1e8fdeb
+  languageName: node
+  linkType: hard
+
 "@types/mongodb@npm:^3.5.25":
   version: 3.6.20
   resolution: "@types/mongodb@npm:3.6.20"
@@ -100,7 +109,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "automod@workspace:."
   dependencies:
+    "@types/bson": "npm:^4.0.5"
     "@types/node": "npm:^20.14.10"
+    bson: "npm:^4.7.0"
     monk: "npm:^7.3.4"
     redis: "npm:^4.6.15"
     tsc-watch: "npm:^6.2.0"
@@ -138,6 +149,15 @@ __metadata:
   version: 1.1.6
   resolution: "bson@npm:1.1.6"
   checksum: 10/db94d70b2de9ff62e84f7682180cc361ccd4146d51226115d150c390501a062e942921db9f0d77ad43da0ff512859542a73e9d118f1831080e0fdaa90840863c
+  languageName: node
+  linkType: hard
+
+"bson@npm:^4.7.0":
+  version: 4.7.2
+  resolution: "bson@npm:4.7.2"
+  dependencies:
+    buffer: "npm:^5.6.0"
+  checksum: 10/9bc1a5c0e3774d171f291b5d44bcc6dacbdbba14184893eb810a5ca889b0dbcae5e0870fb2c731b069ce8ee77f3ebe3750669ed952d30de6a087baca59359781
   languageName: node
   linkType: hard
 

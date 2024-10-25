@@ -8,7 +8,9 @@
     "dev": "rm -rf dist && tsc-watch"
   },
   "devDependencies": {
+    "@types/bson": "^4.0.5",
     "@types/node": "^20.14.10",
+    "bson": "^4.7.0",
     "monk": "^7.3.4",
     "redis": "^4.6.15",
     "tsc-watch": "^6.2.0",
