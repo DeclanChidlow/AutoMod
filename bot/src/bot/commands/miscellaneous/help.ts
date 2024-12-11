@@ -93,16 +93,19 @@ export default {
 				await message.reply(msg);
 			} else {
 				if (searchInput.startsWith(prefix)) searchInput = searchInput.substring(prefix.length);
-				let cmd = commands.find((c) => c.name.toLowerCase() == searchInput) || commands.find((c) => c.aliases && c.aliases.find((k) => k.toLowerCase() == searchInput));
+				let cmd = commands.find((c) => c.name.toLowerCase() === searchInput) ||
+						  commands.find((c) => Array.isArray(c.aliases) && c.aliases.find((k) => k.toLowerCase() === searchInput));
 
 				if (!cmd) {
 					return message.reply(`I can't find any command or category matching \`${searchInput}\`.`);
 				} else {
-					let msg = `## AutoMod Help - ${cmd.name}\n`	+
-						`${cmd.description}\n\n`;
+					let msg = `## AutoMod Help - ${cmd.name}\n` +
+							  `${cmd.description}\n\n`;
 
 					if (cmd.syntax) msg += `Syntax: \`${cmd.syntax}\`\n`;
-					msg += "Aliases: " + (cmd.aliases ? `\`${cmd.aliases.join(`\`, \``)}\`` : "None") + "\n";
+						msg += "Aliases: " + (Array.isArray(cmd.aliases) && cmd.aliases.length > 0 
+											   ? `\`${cmd.aliases.join(`\`, \``)}\`` 
+											   : "None") + "\n";
 
 					message.reply(msg);
 				}
