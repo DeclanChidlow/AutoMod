@@ -21,10 +21,10 @@ const INITIAL_RETRY_DELAY = 3000;
 type WSResponse = { success: false; error: string; statusCode?: number } | { success: true; [key: string]: any };
 
 if (!API_WS_URL || !API_WS_TOKEN) {
-  console.error("$API_WS_URL or $API_WS_TOKEN not found. Please set these environment variables.");
+	console.error("$API_WS_URL or $API_WS_TOKEN not found. Please set these environment variables.");
 } else {
-  console.info(`$API_WS_URL and $API_WS_TOKEN set; Connecting to ${API_WS_URL}`);
-  connect();
+	console.info(`$API_WS_URL and $API_WS_TOKEN set; Connecting to ${API_WS_URL}`);
+	connect();
 }
 
 function connect() {
@@ -33,7 +33,7 @@ function connect() {
 
 	client.once("open", () => {
 		console.info("WebSocket connected successfully");
-    retryCount = 0;
+		retryCount = 0;
 		if (wsQueue.length > 0) {
 			console.debug(`Attempting to send ${wsQueue.length} queued WS messages`);
 
@@ -51,11 +51,11 @@ function connect() {
 		retryConnection();
 	});
 
-  client.once("error", (err: Error) => {
-    client = undefined;
-    console.error(`WebSocket error: ${err.message}`);
-    retryConnection();
-  });
+	client.once("error", (err: Error) => {
+		client = undefined;
+		console.error(`WebSocket error: ${err.message}`);
+		retryConnection();
+	});
 
 	client.on("message", (msg: ws.Data) => {
 		console.debug(`[WS] [<] ${msg.toString("utf8")}`);
@@ -94,16 +94,16 @@ function wsSend(data: { [key: string]: any }) {
 }
 
 function retryConnection() {
-  if (retryCount >= MAX_RETRIES) {
-    console.error(`Failed to connect after ${MAX_RETRIES} attempts. Please check your network and API_WS_URL.`);
-    return;
-  }
+	if (retryCount >= MAX_RETRIES) {
+		console.error(`Failed to connect after ${MAX_RETRIES} attempts. Please check your network and API_WS_URL.`);
+		return;
+	}
 
-  const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
-  retryCount++;
+	const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
+	retryCount++;
 
-  console.warn(`WebSocket disconnected. Attempting to reconnect in ${delay / 1000} seconds (Attempt ${retryCount} of ${MAX_RETRIES})`);
-  setTimeout(connect, delay);
+	console.warn(`WebSocket disconnected. Attempting to reconnect in ${delay / 1000} seconds (Attempt ${retryCount} of ${MAX_RETRIES})`);
+	setTimeout(connect, delay);
 }
 
 wsEvents.on("req:test", (data: any, res: (data: any) => void) => {

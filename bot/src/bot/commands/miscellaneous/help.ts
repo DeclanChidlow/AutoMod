@@ -65,9 +65,7 @@ export default {
 				}
 			}
 
-			msg += `\n##### Categories: ${total}\n\n` +
-				`[Open Server Settings]` +
-				`(<${process.env['WEB_UI_URL'] || "https://automod.vale.rocks"}/dashboard/${message.channel?.serverId}>)`;
+			msg += `\n##### Categories: ${total}\n\n` + `[Open Server Settings]` + `(<${process.env["WEB_UI_URL"] || "https://automod.vale.rocks"}/dashboard/${message.channel?.serverId}>)`;
 
 			await message.reply(msg);
 		} else {
@@ -76,9 +74,7 @@ export default {
 				Object.entries(categories).find((c) => c[1].aliases.find((k) => k.toLowerCase() == searchInput)) ||
 				[];
 			if (category && !searchInput.startsWith(prefix)) {
-				let msg = `## AutoMod Help - ${category.friendlyName}\n` +
-					`${category.description}\n\n` +
-					`Type \`${prefix}help [command]\` to learn more about a specific command.\n\n`;
+				let msg = `## AutoMod Help - ${category.friendlyName}\n` + `${category.description}\n\n` + `Type \`${prefix}help [command]\` to learn more about a specific command.\n\n`;
 
 				let cmdList = commands.filter((c) => (c.category || "uncategorized") == categoryName);
 				if (cmdList.length > 0) {
@@ -93,19 +89,15 @@ export default {
 				await message.reply(msg);
 			} else {
 				if (searchInput.startsWith(prefix)) searchInput = searchInput.substring(prefix.length);
-				let cmd = commands.find((c) => c.name.toLowerCase() === searchInput) ||
-						  commands.find((c) => Array.isArray(c.aliases) && c.aliases.find((k) => k.toLowerCase() === searchInput));
+				let cmd = commands.find((c) => c.name.toLowerCase() === searchInput) || commands.find((c) => Array.isArray(c.aliases) && c.aliases.find((k) => k.toLowerCase() === searchInput));
 
 				if (!cmd) {
 					return message.reply(`I can't find any command or category matching \`${searchInput}\`.`);
 				} else {
-					let msg = `## AutoMod Help - ${cmd.name}\n` +
-							  `${cmd.description}\n\n`;
+					let msg = `## AutoMod Help - ${cmd.name}\n` + `${cmd.description}\n\n`;
 
 					if (cmd.syntax) msg += `Syntax: \`${cmd.syntax}\`\n`;
-						msg += "Aliases: " + (Array.isArray(cmd.aliases) && cmd.aliases.length > 0 
-											   ? `\`${cmd.aliases.join(`\`, \``)}\`` 
-											   : "None") + "\n";
+					msg += "Aliases: " + (Array.isArray(cmd.aliases) && cmd.aliases.length > 0 ? `\`${cmd.aliases.join(`\`, \``)}\`` : "None") + "\n";
 
 					message.reply(msg);
 				}

@@ -1,81 +1,80 @@
-import crypto from 'crypto';
-import { app, SESSION_LIFETIME } from '..';
-import { Request, Response } from 'express';
-import { botReq } from './internal/ws';
-import { Collection, Db } from 'mongodb';
-import { badRequest, isAuthenticated, requireAuth } from '../utils';
-import { RateLimiter } from '../middlewares/ratelimit';
+import crypto from "crypto";
+import { app, SESSION_LIFETIME } from "..";
+import { Request, Response } from "express";
+import { botReq } from "./internal/ws";
+import { Collection, Db } from "mongodb";
+import { badRequest, isAuthenticated, requireAuth } from "../utils";
+import { RateLimiter } from "../middlewares/ratelimit";
 
 let pendingLoginsCollection: Collection;
 let sessionsCollection: Collection;
 
 export function initializeAuthAPI(database: Db) {
-    pendingLoginsCollection = database.collection('pending_logins');
-    sessionsCollection = database.collection('sessions');
+	pendingLoginsCollection = database.collection("pending_logins");
+	sessionsCollection = database.collection("sessions");
 }
 
 class BeginReqBody {
-    user: string;
+	user: string;
 }
 
 class CompleteReqBody {
-    user: string;
-    nonce: string;
-    code: string;
+	user: string;
+	nonce: string;
+	code: string;
 }
 
-const beginRatelimiter = new RateLimiter('/login/begin', { limit: 10, timeframe: 300 });
-const completeRatelimiter = new RateLimiter('/login/complete', { limit: 5, timeframe: 30 });
+const beginRatelimiter = new RateLimiter("/login/begin", { limit: 10, timeframe: 300 });
+const completeRatelimiter = new RateLimiter("/login/complete", { limit: 5, timeframe: 30 });
 
-app.post('/login/begin',
-        (...args) => beginRatelimiter.execute(...args),
-        requireAuth({ noAuthOnly: true }),
-        async (req: Request, res: Response) => {
-    if (typeof await isAuthenticated(req) == 'string') return res.status(403).send({ error: 'You are already authenticated' });
-    const body = req.body as BeginReqBody;
-    if (!body.user || typeof body.user != 'string') return badRequest(res);
-    const r = await botReq('requestLogin', { user: body.user.toLowerCase() });
-    if (!r.success) return res.status(r.statusCode ?? 500).send(JSON.stringify({ error: r.error }, null, 4));
-    res.status(200).send({ success: true, nonce: r['nonce'], code: r['code'], uid: r['uid'] });
-});
+app.post(
+	"/login/begin",
+	(...args) => beginRatelimiter.execute(...args),
+	requireAuth({ noAuthOnly: true }),
+	async (req: Request, res: Response) => {
+		if (typeof (await isAuthenticated(req)) == "string") return res.status(403).send({ error: "You are already authenticated" });
+		const body = req.body as BeginReqBody;
+		if (!body.user || typeof body.user != "string") return badRequest(res);
+		const r = await botReq("requestLogin", { user: body.user.toLowerCase() });
+		if (!r.success) return res.status(r.statusCode ?? 500).send(JSON.stringify({ error: r.error }, null, 4));
+		res.status(200).send({ success: true, nonce: r["nonce"], code: r["code"], uid: r["uid"] });
+	},
+);
 
-app.post('/login/complete',
-        (...args) => completeRatelimiter.execute(...args),
-        requireAuth({ noAuthOnly: true }),
-        async (req: Request, res: Response) => {
-    const body = req.body as CompleteReqBody;
-    if ((!body.user || typeof body.user != 'string') ||
-        (!body.nonce || typeof body.nonce != 'string') ||
-        (!body.code || typeof body.code != 'string')) return badRequest(res);
-    
-    const loginAttempt = await pendingLoginsCollection.findOne({
-        code: body.code,
-        user: body.user,
-        nonce: body.nonce,
-        exchanged: false,
-        invalid: false,
-    });
+app.post(
+	"/login/complete",
+	(...args) => completeRatelimiter.execute(...args),
+	requireAuth({ noAuthOnly: true }),
+	async (req: Request, res: Response) => {
+		const body = req.body as CompleteReqBody;
+		if (!body.user || typeof body.user != "string" || !body.nonce || typeof body.nonce != "string" || !body.code || typeof body.code != "string") return badRequest(res);
 
-    if (!loginAttempt) return res.status(404).send({ error: 'The provided login info could not be found.' });
-    if (!loginAttempt['confirmed']) {
-        return res.status(400).send({ error: "This code is not yet valid." });
-    }
+		const loginAttempt = await pendingLoginsCollection.findOne({
+			code: body.code,
+			user: body.user,
+			nonce: body.nonce,
+			exchanged: false,
+			invalid: false,
+		});
 
-    const sessionToken = crypto.randomBytes(48).toString('base64').replace(/=/g, '');
+		if (!loginAttempt) return res.status(404).send({ error: "The provided login info could not be found." });
+		if (!loginAttempt["confirmed"]) {
+			return res.status(400).send({ error: "This code is not yet valid." });
+		}
 
-    await Promise.all([
-        sessionsCollection.insertOne({
-            user: body.user.toUpperCase(),
-            token: sessionToken,
-            nonce: body.nonce,
-            invalid: false,
-            expires: Date.now() + SESSION_LIFETIME,
-        }),
-        pendingLoginsCollection.updateOne(
-            { _id: loginAttempt._id },
-            { $set: { exchanged: true } }
-        ),
-    ]);
+		const sessionToken = crypto.randomBytes(48).toString("base64").replace(/=/g, "");
 
-    res.status(200).send({ success: true, user: body.user.toUpperCase(), token: sessionToken });
-});
+		await Promise.all([
+			sessionsCollection.insertOne({
+				user: body.user.toUpperCase(),
+				token: sessionToken,
+				nonce: body.nonce,
+				invalid: false,
+				expires: Date.now() + SESSION_LIFETIME,
+			}),
+			pendingLoginsCollection.updateOne({ _id: loginAttempt._id }, { $set: { exchanged: true } }),
+		]);
+
+		res.status(200).send({ success: true, user: body.user.toUpperCase(), token: sessionToken });
+	},
+);
