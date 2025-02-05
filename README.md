@@ -28,13 +28,13 @@ AutoMod is [Revolt's](https://revolt.chat) premier moderation bot, featuring log
 - Configurable command prefix.
 - Intuitive command syntax.
 - Anti-spam measures.
-- Handy extra commands for changing user nicknames and avatars, getting information from an ID, etc.
+- Handy extra commands for changing user nicknames and avatars, getting information from a UUID, etc.
 - WIP web interface for easy configuration.
 
 ## Documentation and Support
 
-All of AutoMod's commands and features are extensively documented [on the wiki](https://github.com/DeclanChidlow/AutoMod/wiki). If you still have questions or need help, you can join the [support server on Revolt](https://rvlt.gg/automod). The Revolt server is also a good way to stay in the loop on updates, changes, and development.
+All of AutoMod's commands and features are [extensively documented](https://automod.vale.rocks/docs). If you still have questions or need help, you can join the [support server on Revolt](https://rvlt.gg/automod). The Revolt server is also a good way to stay in the loop on updates, changes, and development.
 
 ## Invite to Your Server
 
-If you're on the official Revolt instance at [revolt.chat](https://revolt.chat) then you can add AutoMod to your server with [this link](https://app.revolt.chat/bot/01FHGJ3NPP7XANQQH8C2BE44ZY). If you're on a third-party instance, then you'll need to host it yourself. Instructions to do so are available [on the wiki](https://github.com/DeclanChidlow/AutoMod/wiki/Self-Hosting).
+If you're on the official Revolt instance at [revolt.chat](https://revolt.chat) then you can [add AutoMod to your server](https://app.revolt.chat/bot/01FHGJ3NPP7XANQQH8C2BE44ZY). If you're on a third-party instance, then you'll need to host it yourself. Instructions to do so are available [in the docs on the website](https://automod.vale.rocks/docs/self-hosting).
