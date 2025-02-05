@@ -51,7 +51,7 @@ export default {
 		if (!searchInput) {
 			let msg =
 				`## AutoMod Help\n` +
-				`Type \`${prefix}help [category]\` to view commands within a category, or \`${prefix}help [command]\` to learn more about a specific command. Further information is available on [the wiki](<https://github.com/DeclanChidlow/AutoMod/wiki>).\n\n`;
+				`Type \`${prefix}help [category]\` to view commands within a category, or \`${prefix}help [command]\` to learn more about a specific command. Visit [the documentation](https://automod.vale.rocks/docs) for usage information and [the AutoMod server](https://rvlt.gg/automod) for help.\n\n`;
 
 			let total = 0;
 
