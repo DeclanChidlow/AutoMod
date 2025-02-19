@@ -105,7 +105,8 @@ function getInfEmoji(inf: Infraction) {
 export default {
 	name: "infractions",
 	aliases: ["warns", "warnings", "infractions"],
-	description: "Shows a user's previous warns.",
+	description: "Shows a user’s infractions.",
+	documentation: "/docs/commands/moderation/infractions",
 	syntax: '/infractions; /infractions @username ["export-csv"]; /infractions rm [ID]',
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {

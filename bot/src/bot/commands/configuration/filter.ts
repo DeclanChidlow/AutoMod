@@ -14,7 +14,8 @@ const WORDLIST_DEFAULT_MESSAGE = "<@{{user_id}}>, the message you sent contained
 export default {
 	name: "filter",
 	aliases: null,
-	description: "Filter messages.",
+	description: "Allows for messages to be checked against a word list and then action to be taken based on infractions.",
+	documentation: "/docs/commands/configuration/filter",
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);

@@ -9,7 +9,8 @@ import { client } from "../../..";
 export default {
 	name: "nick",
 	aliases: ["setnick"],
-	description: "Manage a user's nickname.",
+	description: "Manage a user’s server-specific nickname.",
+	documentation: "/docs/commands/moderation/nick",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {

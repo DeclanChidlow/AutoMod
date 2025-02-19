@@ -31,7 +31,8 @@ Day.extend(RelativeTime);
 export default {
 	name: "ban",
 	aliases: ["eject"],
-	description: "Bans a user from the server.",
+	description: "Removes a user from the server and prevents them from rejoining.",
+	documentation: "/docs/commands/moderation/ban",
 	syntax: "/ban @username [10m|1h|...?] [reason?]",
 	removeEmptyArgs: true,
 	category: CommandCategory.Moderation,

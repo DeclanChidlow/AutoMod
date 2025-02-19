@@ -40,7 +40,8 @@ const categories: {
 export default {
 	name: "help",
 	aliases: null,
-	description: "Displays usage instructions.",
+	description: "Displays instructions for using the bot’s commands.",
+	documentation: "/docs/commands/miscellaneous/help",
 	removeEmptyArgs: true,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
@@ -51,7 +52,7 @@ export default {
 		if (!searchInput) {
 			let msg =
 				`## AutoMod Help\n` +
-				`Type \`${prefix}help [category]\` to view commands within a category, or \`${prefix}help [command]\` to learn more about a specific command. Visit [the documentation](https://automod.vale.rocks/docs) for usage information and [the AutoMod server](https://rvlt.gg/automod) for help.\n\n`;
+				`Type \`${prefix}help [category]\` to view commands within a category, or \`${prefix}help [command]\` to learn more about a specific command. Visit [the documentation](<https://automod.vale.rocks/docs>) for usage information and [the AutoMod server](https://rvlt.gg/automod) for help.\n\n`;
 
 			let total = 0;
 
@@ -94,7 +95,7 @@ export default {
 				if (!cmd) {
 					return message.reply(`I can't find any command or category matching \`${searchInput}\`.`);
 				} else {
-					let msg = `## AutoMod Help - ${cmd.name}\n` + `${cmd.description}\n\n`;
+					let msg = `## AutoMod Help - ${cmd.name}\n` + `${cmd.description}\n\n` + `Documentation: <https://automod.vale.rocks${cmd.documentation}>\n\n`;
 
 					if (cmd.syntax) msg += `Syntax: \`${cmd.syntax}\`\n`;
 					msg += "Aliases: " + (Array.isArray(cmd.aliases) && cmd.aliases.length > 0 ? `\`${cmd.aliases.join(`\`, \``)}\`` : "None") + "\n";

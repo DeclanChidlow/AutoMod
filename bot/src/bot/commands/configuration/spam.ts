@@ -7,7 +7,8 @@ import { isBotManager, NO_MANAGER_MSG } from "../../util";
 export default {
 	name: "spam",
 	aliases: "antispam",
-	description: "Manage antispam features.",
+	description: "Enable or disable anti-spam features.",
+	documentation: "/docs/commands/configuration/spam",
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);

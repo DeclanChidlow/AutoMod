@@ -11,7 +11,8 @@ const SYNTAX = "/whitelist add @user; /whitelist remove @user; /whitelist list";
 export default {
 	name: "whitelist",
 	aliases: [],
-	description: "Allow users or roles to bypass moderation rules.",
+	description: "Permit users or roles to bypass moderation rules.",
+	documentation: "/docs/commands/configuration/whitelist",
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {

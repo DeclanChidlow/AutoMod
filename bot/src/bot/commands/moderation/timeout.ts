@@ -46,7 +46,8 @@ function parseTimeInput(input: string) {
 export default {
 	name: "timeout",
 	aliases: ["mute", "silence"],
-	description: "Set a timeout on a user.",
+	description: "Sets a timeout on a user, making them unable to send messages for a given duration.",
+	documentation: "/docs/commands/moderation/timeout",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {

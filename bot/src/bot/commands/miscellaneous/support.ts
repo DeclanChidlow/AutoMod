@@ -5,7 +5,8 @@ import MessageCommandContext from "../../../struct/MessageCommandContext";
 export default {
 	name: "support",
 	aliases: ["donate", "tip"],
-	description: "Financially support AutoMod development and hosting.",
+	description: "Provides details regarding how to financially support AutoMod’s development and hosting.",
+	documentation: "/docs/commands/miscellaneous/support",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		message.reply({

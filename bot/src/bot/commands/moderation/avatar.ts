@@ -6,7 +6,8 @@ import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
 export default {
 	name: "avatar",
 	aliases: ["pfp"],
-	description: "Manage or return a user's profile picture.",
+	description: "Allows managing or returning a user’s profile picture.",
+	documentation: "/docs/commands/moderation/avatar",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {

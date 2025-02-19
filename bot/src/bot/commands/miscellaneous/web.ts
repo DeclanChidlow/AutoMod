@@ -9,7 +9,8 @@ import { DEFAULT_PREFIX } from "../../modules/command_handler";
 export default {
 	name: "web",
 	aliases: null,
-	description: "Manage web dashboard login and logout.",
+	description: "Allows you to log in and out of the web dashboard.",
+	documentation: "/docs/commands/miscellaneous/web",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const subcommand = args.shift()?.toLowerCase();

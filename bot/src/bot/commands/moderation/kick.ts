@@ -24,8 +24,9 @@ import {
 
 export default {
 	name: "kick",
-	aliases: ["yeet", "vent"],
-	description: "Kick a user from the server.",
+	aliases: [],
+	description: "Removes a user from the server, but they can rejoin if they have an invite.",
+	documentation: "/docs/commands/moderation/kick",
 	syntax: "/kick @username [reason?]",
 	removeEmptyArgs: true,
 	category: CommandCategory.Moderation,

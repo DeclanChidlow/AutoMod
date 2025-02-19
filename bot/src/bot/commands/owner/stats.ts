@@ -18,8 +18,9 @@ const formattedOwnerIDs = await Promise.all(
 
 export default {
 	name: "stats",
-	aliases: ["statistics"],
-	description: "Provides current AutoMod statistics.",
+	aliases: ["statistics", "status"],
+	description: "Returns information about AutoMod.",
+	documentation: "/docs/commands/owner/stats",
 	restrict: "BOTOWNER",
 	category: CommandCategory.Owner,
 	run: async (message: MessageCommandContext) => {

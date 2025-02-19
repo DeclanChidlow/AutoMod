@@ -16,6 +16,9 @@ class SimpleCommand {
 	// The description is shown in /help.
 	description: string | null;
 
+	// The documentation on the website shown in /help.
+	documentation: string | null;
+
 	// The syntax is shown in /help.
 	syntax?: string | null;
 

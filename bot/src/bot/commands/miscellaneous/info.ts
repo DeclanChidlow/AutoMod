@@ -17,7 +17,8 @@ const formatServerInfo = (context: MessageCommandContext): string => {
 export default {
 	name: "info",
 	aliases: ["debug"],
-	description: "Provides info from a UUID or server.",
+	description: "Provides information about a given UUID.",
+	documentation: "/docs/commands/miscellaneous/info",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const [input] = args;

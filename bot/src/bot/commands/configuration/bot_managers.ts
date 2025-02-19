@@ -10,7 +10,8 @@ const SYNTAX = "/admin add @user; /admin remove @user; /admin list";
 export default {
 	name: "admin",
 	aliases: ["admins", "manager", "managers"],
-	description: "Manage users with permission to modify the configuration.",
+	description: "Allows managing which users have permissions to modify AutoMod's configuration.",
+	documentation: "/docs/commands/configuration/managers",
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {

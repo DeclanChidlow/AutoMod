@@ -11,7 +11,8 @@ const MAX_PURGE_AMOUNT = 100;
 export default {
 	name: "purge",
 	aliases: ["clear"],
-	description: "Delete messages in bulk.",
+	description: "Allows for bulk deleting messages.",
+	documentation: "/docs/commands/moderation/purge",
 	syntax: SYNTAX,
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {

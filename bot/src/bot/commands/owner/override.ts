@@ -17,7 +17,8 @@ const updateSudoTimeout = (user: User) => {
 export default {
 	name: "override",
 	aliases: ["sudo", "doas"],
-	description: "Run any commands regardless of server permissions.",
+	description: "Allows running any command regardless of the user’s current permissions.",
+	documentation: "/docs/commands/owner/override",
 	restrict: "BOTOWNER",
 	category: CommandCategory.Owner,
 	run: async (message: MessageCommandContext, args: string[]) => {
