@@ -8,13 +8,13 @@
     "dev": "rm -rf dist && tsc-watch"
   },
   "devDependencies": {
-    "@types/bson": "^4.0.5",
-    "@types/node": "^20.14.10",
-    "bson": "^4.7.0",
+    "@types/bson": "^4.2.4",
+    "@types/node": "^22.15.3",
+    "bson": "^6.10.3",
     "monk": "^7.3.4",
-    "redis": "^4.6.15",
-    "tsc-watch": "^6.2.0",
-    "typescript": "^5.5.3"
+    "redis": "^5.0.0",
+    "tsc-watch": "^6.2.1",
+    "typescript": "^5.8.3"
   },
-  "packageManager": "yarn@4.3.1"
+  "packageManager": "yarn@4.9.1"
 }
