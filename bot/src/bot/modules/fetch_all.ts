@@ -3,7 +3,7 @@ import { client } from "../..";
 // Fetch all known users on bot startup.
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const RATE_LIMIT_DELAY = 100;
+const RATE_LIMIT_DELAY = 200;
 
 (async () => {
 	if (!client.user) await new Promise<void>((r) => client.once("ready", () => r()));
