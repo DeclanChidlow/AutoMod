@@ -35,7 +35,7 @@ export default {
 			}
 			case "add": {
 				let strictness: any = "HARD";
-				if (["soft", "hard", "strict"].includes(args[0].toLowerCase())) {
+				if (["soft", "hard", "strict"].includes(args[0]?.toLowerCase())) {
 					strictness = args.shift()!.toUpperCase() as any;
 				}
 
@@ -57,19 +57,53 @@ export default {
 				break;
 			}
 			case "list": {
-				const formData = new FormData();
-				formData.append(`wordlist_${message.channel?.serverId}`, config?.wordlist?.map((w) => `${w.strictness}\t${w.word}`).join("\n") ?? "", `wordlist_${message.channel?.serverId}.txt`);
+				if (!config?.wordlist || config.wordlist.length === 0) {
+					return message.reply("Your word list is currently empty. Add words using the `filter add` command.");
+				}
+
+				// Format the wordlist as a plain text message for reliability
+				const wordlistText = config.wordlist.map((w) => `${w.strictness}\t${w.word}`).join("\n");
+				const formattedWordlist = `# Word List for ${message.channel?.server?.name}\n\n` + `Total words: ${config.wordlist.length}\n\n` + `STRICTNESS\tWORD\n` + `-----------\t----\n` + wordlistText;
 
 				try {
-					const channel = await getDmChannel(message.authorId!);
-					const res = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, { headers: formData.getHeaders(), responseType: "json" });
-					await channel.sendMessage({
-						embeds: [embed(`Here's the current word list for **${message.channel?.server?.name}**.`, "Word List", EmbedColor.Success)],
-						attachments: [(res.data as any).id],
-					});
-					await message.reply(`I have sent the current word list to your direct messages!`);
-				} catch (e) {
-					console.error(e);
+					// Try to use the attachment service
+					// TODO: Fix this mess lol
+					const formData = new FormData();
+					formData.append(`wordlist_${message.channel?.serverId}`, wordlistText, `wordlist_${message.channel?.serverId}.txt`);
+
+					try {
+						const channel = await getDmChannel(message.authorId!);
+						const res = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, {
+							headers: formData.getHeaders(),
+							responseType: "json",
+							timeout: 5000,
+						});
+
+						if (res.data && res.data.id) {
+							await channel.sendMessage({
+								embeds: [embed(`Here's the current word list for **${message.channel?.server?.name}**.`, "Word List", EmbedColor.Success)],
+								attachments: [res.data.id],
+							});
+							await message.reply(`I have sent the current word list to your direct messages!`);
+							return;
+						} else {
+							throw new Error("Invalid response from attachment service");
+						}
+					} catch (error) {
+						// If the attachment upload fails, send the word list as a DM message directly
+						console.log("Attachment upload failed, falling back to direct message:", error instanceof Error ? error.message : "Unknown error");
+
+						const channel = await getDmChannel(message.authorId!);
+						await channel.sendMessage({
+							embeds: [embed(`Here's the current word list for **${message.channel?.server?.name}**.\n\n` + "```\n" + formattedWordlist + "\n```", "Word List", EmbedColor.Success)],
+						});
+						await message.reply(`I have sent the current word list to your direct messages!`);
+					}
+				} catch (error) {
+					console.error("Failed to send word list:", error);
+					const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+					await message.reply(`Failed to send the word list. Error: ${errorMessage}. Please contact the bot administrator.`);
 				}
 				break;
 			}
