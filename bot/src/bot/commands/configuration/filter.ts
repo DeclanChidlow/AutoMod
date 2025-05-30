@@ -193,7 +193,7 @@ export default {
 				await message.reply({
 					embeds: [
 						match
-							? embed("Your word list matches this test phrase!", "Filter Test", EmbedColor.SoftError)
+							? embed(`Your word list matches this test phrase! You would receive the penalty **${config?.wordlistAction?.action ?? "LOG"}**.`, "Filter Test", EmbedColor.SoftError)
 							: embed("Your word list does not match this test phrase!", "Filter Test", EmbedColor.Success),
 					],
 				});
