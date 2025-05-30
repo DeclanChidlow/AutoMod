@@ -58,52 +58,80 @@ export default {
 			}
 			case "list": {
 				if (!config?.wordlist || config.wordlist.length === 0) {
-					return message.reply("Your word list is currently empty. Add words using the `filter add` command.");
+					return message.reply("Your filter list is currently empty. Add words using the `filter add` command.");
 				}
 
-				// Format the wordlist as a plain text message for reliability
 				const wordlistText = config.wordlist.map((w) => `${w.strictness}\t${w.word}`).join("\n");
 				const formattedWordlist = `# Word List for ${message.channel?.server?.name}\n\n` + `Total words: ${config.wordlist.length}\n\n` + `STRICTNESS\tWORD\n` + `-----------\t----\n` + wordlistText;
 
 				try {
-					// Try to use the attachment service
-					// TODO: Fix this mess lol
+					const channel = await getDmChannel(message.authorId!);
 					const formData = new FormData();
-					formData.append(`wordlist_${message.channel?.serverId}`, wordlistText, `wordlist_${message.channel?.serverId}.txt`);
+					const filename = `wordlist_${message.channel?.serverId}_${Date.now()}.txt`;
+					const fileBuffer = Buffer.from(formattedWordlist, "utf-8");
+					formData.append("file", fileBuffer, {
+						filename: filename,
+						contentType: "text/plain",
+					});
 
-					try {
-						const channel = await getDmChannel(message.authorId!);
-						const res = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, {
-							headers: formData.getHeaders(),
-							responseType: "json",
-							timeout: 5000,
-						});
+					const uploadResponse = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, {
+						headers: {
+							...formData.getHeaders(),
+							"x-bot-token": process.env["BOT_TOKEN"]!,
+						},
+						timeout: 10000,
+					});
 
-						if (res.data && res.data.id) {
-							await channel.sendMessage({
-								embeds: [embed(`Here's the current word list for **${message.channel?.server?.name}**.`, "Word List", EmbedColor.Success)],
-								attachments: [res.data.id],
-							});
-							await message.reply(`I have sent the current word list to your direct messages!`);
-							return;
-						} else {
-							throw new Error("Invalid response from attachment service");
-						}
-					} catch (error) {
-						// If the attachment upload fails, send the word list as a DM message directly
-						console.log("Attachment upload failed, falling back to direct message:", error instanceof Error ? error.message : "Unknown error");
-
-						const channel = await getDmChannel(message.authorId!);
+					if (uploadResponse.data && uploadResponse.data.id) {
 						await channel.sendMessage({
-							embeds: [embed(`Here's the current word list for **${message.channel?.server?.name}**.\n\n` + "```\n" + formattedWordlist + "\n```", "Word List", EmbedColor.Success)],
+							content: `Here's the current filter list for **${message.channel?.server?.name}**.`,
+							attachments: [uploadResponse.data.id],
 						});
-						await message.reply(`I have sent the current word list to your direct messages!`);
+
+						await message.reply(`The current filter list has been sent to your direct messages as a file.`);
+					} else {
+						throw new Error("Invalid response from attachment service");
 					}
 				} catch (error) {
-					console.error("Failed to send word list:", error);
-					const errorMessage = error instanceof Error ? error.message : "Unknown error";
+					console.error("Failed to upload filter list file:", error);
+					try {
+						const channel = await getDmChannel(message.authorId!);
 
-					await message.reply(`Failed to send the word list. Error: ${errorMessage}. Please contact the bot administrator.`);
+						if (formattedWordlist.length > 1900) {
+							const chunks = [];
+							const lines = formattedWordlist.split("\n");
+							let currentChunk = "";
+
+							for (const line of lines) {
+								if ((currentChunk + line + "\n").length > 1900) {
+									if (currentChunk) chunks.push(currentChunk);
+									currentChunk = line + "\n";
+								} else {
+									currentChunk += line + "\n";
+								}
+							}
+							if (currentChunk) chunks.push(currentChunk);
+
+							await channel.sendMessage({
+								embeds: [embed(`Here's the current filter list for **${message.channel?.server?.name}** (sent as multiple messages due to length):`, "Word List", EmbedColor.Success)],
+							});
+
+							for (let i = 0; i < chunks.length; i++) {
+								await channel.sendMessage({
+									content: `**Part ${i + 1}/${chunks.length}:**\n\`\`\`\n${chunks[i]}\n\`\`\``,
+								});
+							}
+						} else {
+							await channel.sendMessage({
+								embeds: [embed(`Here's the current filter list for **${message.channel?.server?.name}**:\n\n\`\`\`\n${formattedWordlist}\n\`\`\``, "Word List", EmbedColor.Success)],
+							});
+						}
+
+						await message.reply(`File upload failed, but I've sent the filter list as text messages to your DMs.`);
+					} catch (dmError) {
+						console.error("Failed to send fallback DM:", dmError);
+						await message.reply(`Failed to send the word list. Unable to upload file or send DM. ` + `Please check that DMs are enabled and try again later.`);
+					}
 				}
 				break;
 			}
