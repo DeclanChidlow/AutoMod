@@ -33,27 +33,54 @@ export default {
 				await message.reply("Word filter is now **disabled** in this server.");
 				break;
 			}
+
 			case "add": {
 				let strictness: any = "HARD";
 				if (["soft", "hard", "strict"].includes(args[0]?.toLowerCase())) {
 					strictness = args.shift()!.toUpperCase() as any;
 				}
 
-				const word = args.join(" ").toLowerCase();
-				if (!word) return message.reply("You didn't provide a word to add to the list!");
-				if (config?.wordlist?.find((w) => w.word == word)) return await message.reply("That word is already on the list!");
+				const rawInput = args.join(" ");
+				if (!rawInput) return message.reply("You didn't provide any words to add to the list!");
 
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $push: { wordlist: { strictness, word } } }, { upsert: true });
-				await message.reply(`'${word}' added with strictness **${strictness}**.`);
+				const words = rawInput
+					.split(",")
+					.map((w) => w.trim().toLowerCase())
+					.filter((w) => w.length > 0);
+				if (words.length === 0) return message.reply("No valid words found in your input.");
+
+				const existingWords = config?.wordlist?.map((w) => w.word) ?? [];
+				const newWords = words.filter((word) => !existingWords.includes(word));
+
+				if (newWords.length === 0) {
+					return await message.reply("All the words you provided are already on the list!");
+				}
+
+				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $push: { wordlist: { $each: newWords.map((word) => ({ strictness, word })) } } }, { upsert: true });
+
+				await message.reply(`${newWords.map((w) => `'${w}'`).join(", ")} added with strictness **${strictness}**.`);
 				break;
 			}
 			case "remove": {
-				const word = args.join(" ").toLowerCase();
-				if (!word) return message.reply("You need to provide the word to remove from the list.");
+				const rawInput = args.join(" ");
+				if (!rawInput) return message.reply("You need to provide the word(s) to remove from the list.");
 
-				if (!config?.wordlist?.find((w) => w.word == word)) return await message.reply("That word is not on the list.");
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $pull: { wordlist: { word } } }, { upsert: true });
-				await message.reply(`Word removed successfully.`);
+				const words = rawInput
+					.split(",")
+					.map((w) => w.trim().toLowerCase())
+					.filter((w) => w.length > 0);
+				if (words.length === 0) return message.reply("No valid words found in your input.");
+
+				const existingWords = config?.wordlist?.map((w) => w.word) ?? [];
+				const wordsToRemove = words.filter((word) => existingWords.includes(word));
+
+				if (wordsToRemove.length === 0) {
+					return await message.reply("None of those words are on the list.");
+				}
+
+				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $pull: { wordlist: { word: { $in: wordsToRemove } } } }, { upsert: true });
+
+				await message.reply(`Removed: ${wordsToRemove.map((w) => `'${w}'`).join(", ")}.`);
 				break;
 			}
 			case "list": {
