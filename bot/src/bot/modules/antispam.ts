@@ -233,17 +233,55 @@ function checkMessageForFilteredWords(message: string, config: ServerConfig): bo
 		"₩": "w",
 		"×": "x",
 		"¥": "y",
+		"×": "x",
+		"¥": "y",
+                 ".": "", // Just for added measure :D
+                 "-": "", // Just for added measure :D
 	};
+
+	// Replace chars like 0->o, 1->i, etc
 	const replaceChars = (input: string) => {
 		input = `${input}`;
-		for (const pair of Object.entries(replace)) {
-			input = input.replaceAll(pair[0], pair[1]);
+		for (const [from, to] of Object.entries(replace)) {
+			input = input.replaceAll(from, to);
 		}
 		return input;
 	};
-	const replacedMsg = replaceChars(message.toLowerCase().replace(/\s/g, ""));
+
+	// Normalize string:
+	const normalizeForStrictCheck = (input: string) => {
+		const lowered = input.toLowerCase();
+
+		// Replace common chars
+		let replaced = replaceChars(lowered);
+
+		// Remove spaces and separator characters
+		replaced = replaced.replace(/[\s\.\,\-\_\*\`\~\!\@\#\$\%\^\&\(\)\[\]\{\}\\\/\|]/g, "");
+
+		return replaced;
+	};
+
+	const replacedMsg = normalizeForStrictCheck(message);
+
+	// Direct substring match after normalization
 	for (const word of words.strict) {
-		if (replacedMsg.includes(replaceChars(word.toLowerCase()))) return true;
+		const normWord = normalizeForStrictCheck(word);
+		if (replacedMsg.includes(normWord)) return true;
+	}
+
+	// This catches words like "k.y.s" matching "kys"
+	const outOfOrderCheck = (text: string, pattern: string) => {
+		let idx = 0;
+		for (const char of text) {
+			if (char === pattern[idx]) idx++;
+			if (idx === pattern.length) return true;
+		}
+		return false;
+	};
+
+	for (const word of words.strict) {
+		const normWord = normalizeForStrictCheck(word);
+		if (outOfOrderCheck(replacedMsg, normWord)) return true;
 	}
 
 	return false;
