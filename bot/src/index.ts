@@ -6,7 +6,7 @@ import Infraction from "automod/dist/types/antispam/Infraction";
 import PendingLogin from "automod/dist/types/PendingLogin";
 import TempBan from "automod/dist/types/TempBan";
 
-console.info("Initializing client");
+console.info("Initialising client");
 
 let db = MongoDB();
 let client = new AutomodClient(

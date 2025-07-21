@@ -31,7 +31,7 @@ const categories: {
 		aliases: ["miscellaneous", "misc"],
 	},
 	[CommandCategory.None]: {
-		friendlyName: "Uncategorized",
+		friendlyName: "Uncategorised",
 		description: "Commands that haven't been assigned to a specific category.",
 		aliases: [],
 	},
@@ -77,7 +77,7 @@ export default {
 			if (category && !searchInput.startsWith(prefix)) {
 				let msg = `## AutoMod Help - ${category.friendlyName}\n` + `${category.description}\n\n` + `Type \`${prefix}help [command]\` to learn more about a specific command.\n\n`;
 
-				let cmdList = commands.filter((c) => (c.category || "uncategorized") == categoryName);
+				let cmdList = commands.filter((c) => (c.category || "uncategorised") == categoryName);
 				if (cmdList.length > 0) {
 					for (const cmd of cmdList) {
 						msg += `**${prefix}${cmd.name}** - ${cmd.description}`;
