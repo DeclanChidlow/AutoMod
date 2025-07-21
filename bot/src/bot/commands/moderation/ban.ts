@@ -49,7 +49,7 @@ export default {
 			return message.reply({
 				embeds: [
 					embed(
-						`Please specify one or more users by replying to their message while running this command or ` + `by specifying a comma-separated list of usernames.`,
+						`Please specify one or more users by replying to their message while running this command or by specifying a comma-separated list of usernames.`,
 						"No target user specified",
 						EmbedColor.SoftError,
 					),
@@ -96,7 +96,7 @@ export default {
 
 		if (reason.length > 500)
 			return message.reply({
-				embeds: [embed("Ban reason may not be longer than 500 characters.", null, EmbedColor.SoftError)],
+				embeds: [embed("Ban reason may not exceed 500 characters.", null, EmbedColor.SoftError)],
 			});
 
 		const embeds: SendableEmbed[] = [];
@@ -105,7 +105,7 @@ export default {
 
 		const targetInput = dedupeArray(
 			message.replyIds?.length
-				? (await Promise.allSettled(message.replyIds.map((msg) => message.channel?.fetchMessage(msg)))).filter((m) => m.status == "fulfilled").map((m) => (m as any).value.author_id)
+				? (await Promise.allSettled(message.replyIds.map((msg) => message.channel?.fetchMessage(msg)))).filter((m) => m.status == "fulfilled").map((m) => (m as any).value.authorId)
 				: userInput!.split(","),
 		);
 
@@ -113,7 +113,7 @@ export default {
 			try {
 				let user = await parseUserOrId(userStr);
 				if (!user) {
-					embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, EmbedColor.SoftError));
+					embeds.push(embed(`AutoMod can not resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, EmbedColor.SoftError));
 					continue;
 				}
 
@@ -122,12 +122,12 @@ export default {
 				handledUsers.push(user.id);
 
 				if (user.id == message.authorId!) {
-					embeds.push(embed("I recommend against banning yourself :yeahokayyy:", null, EmbedColor.Warning));
+					embeds.push(embed("Banning yourself is inadvisable.", null, EmbedColor.Warning));
 					continue;
 				}
 
 				if (user.id == client.user!.id) {
-					embeds.push(embed("I'm not going to ban myself :flushee:", null, EmbedColor.Warning));
+					embeds.push(embed("Try as you might, you cannot use the AutoMod to ban the AutoMod.", null, EmbedColor.Warning));
 					continue;
 				}
 
@@ -142,10 +142,8 @@ export default {
 			let res = await yesNoMessage(
 				message.channel!,
 				message.authorId!,
-				`This will ban the author${targetUsers.length > 1 ? "s" : ""} ` +
-					`of the message${message.replyIds.length > 1 ? "s" : ""} you replied to.\n` +
-					`The following user${targetUsers.length > 1 ? "s" : ""} will be affected: ` +
-					`${targetUsers.map((u) => `<@${u.id}>`).join(", ")}.\n` +
+				`This will ban the author${targetUsers.length > 1 ? "s" : ""} of the message${message.replyIds.length > 1 ? "s" : ""} you replied to.\n` +
+					`The following user${targetUsers.length > 1 ? "s" : ""} will be affected: ${targetUsers.map((u) => `<@${u.id}>`).join(", ")}.\n` +
 					`Are you sure?`,
 				"Confirm action",
 			);
@@ -179,7 +177,7 @@ export default {
 					}
 
 					if (member && !memberRanking(member).bannable) {
-						embeds.push(embed(`I don't have permission to ban \`${member?.user?.username || user.id}\`.`, null, EmbedColor.SoftError));
+						embeds.push(embed(`AutoMod lacks permission to ban \`${member?.user?.username || user.id}\`.`, null, EmbedColor.SoftError));
 						continue;
 					}
 
@@ -205,12 +203,11 @@ export default {
 					await logModAction("ban", message.serverContext, message.member!, user.id, reason, infraction._id, `Ban duration: **Permanent**`);
 
 					embeds.push({
-						title: `User ${Math.random() > 0.8 ? "ejected" : "banned"}`,
+						title: `User banned`,
 						icon_url: user instanceof User ? user.avatarURL : undefined,
 						colour: EmbedColor.Success,
 						description:
-							`This is ${userWarnCount == 1 ? "**the first infraction**" : `infraction number **${userWarnCount}**`}` +
-							` for ${await fetchUsername(user.id)}.\n` +
+							`This is ${userWarnCount == 1 ? "**the first infraction**" : `infraction number **${userWarnCount}**`} for ${await fetchUsername(user.id)}.\n` +
 							`**User ID:** \`${user.id}\`\n` +
 							`**Infraction ID:** \`${infraction._id}\`\n` +
 							`**Reason:** \`${infraction.reason}\``,
@@ -266,8 +263,7 @@ export default {
 						icon_url: user instanceof User ? user.avatarURL : undefined,
 						colour: EmbedColor.Success,
 						description:
-							`This is ${userWarnCount == 1 ? "**the first infraction**" : `infraction number **${userWarnCount}**`}` +
-							` for ${await fetchUsername(user.id)}.\n` +
+							`This is ${userWarnCount == 1 ? "**the first infraction**" : `infraction number **${userWarnCount}**`} for ${await fetchUsername(user.id)}.\n` +
 							`**Ban duration:** ${banDurationFancy}\n` +
 							`**User ID:** \`${user.id}\`\n` +
 							`**Infraction ID:** \`${infraction._id}\`\n` +

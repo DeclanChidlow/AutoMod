@@ -78,12 +78,12 @@ export default {
 				handledUsers.push(user.id);
 
 				if (user.id == message.authorId) {
-					embeds.push(embed("You might want to avoid kicking yourself...", null, EmbedColor.Warning));
+					embeds.push(embed("Kicking yourself is inadvisable.", null, EmbedColor.Warning));
 					continue;
 				}
 
 				if (user.id == client.user!.id) {
-					embeds.push(embed("I won't allow you to get rid of me this easily :trol:", null, EmbedColor.Warning));
+					embeds.push(embed("Try as you might, you cannot use the AutoMod to kick the AutoMod.", null, EmbedColor.Warning));
 					continue;
 				}
 
@@ -98,10 +98,8 @@ export default {
 			let res = await yesNoMessage(
 				message.channel!,
 				message.authorId!,
-				`This will kick the author${targetUsers.length > 1 ? "s" : ""} ` +
-					`of the message${message.replyIds.length > 1 ? "s" : ""} you replied to.\n` +
-					`The following user${targetUsers.length > 1 ? "s" : ""} will be affected: ` +
-					`${targetUsers.map((u) => `<@${u.id}>`).join(", ")}.\n` +
+				`This will kick the author${targetUsers.length > 1 ? "s" : ""} of the message${message.replyIds.length > 1 ? "s" : ""} you replied to.\n` +
+					`The following user${targetUsers.length > 1 ? "s" : ""} will be affected: ${targetUsers.map((u) => `<@${u.id}>`).join(", ")}.\n` +
 					`Are you sure?`,
 				"Confirm action",
 			);
