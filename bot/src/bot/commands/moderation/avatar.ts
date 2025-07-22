@@ -31,7 +31,6 @@ export default {
 				}
 			} else {
 				// Print server and global avatar
-
 				await message.reply(
 					`### \`@${targetUser.username}\`'s avatar\n` +
 						(targetUser.avatar ? `[\\[Global\\]](<${targetUser.avatarURL}>)` : "[No global avatar]") +
