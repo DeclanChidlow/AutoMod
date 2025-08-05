@@ -64,5 +64,5 @@ services:
     restart: unless-stopped
 
   redis:
-    image: eqalpha/keydb
+    image: valkey/valkey
     restart: always
