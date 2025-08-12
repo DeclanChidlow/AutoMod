@@ -5,7 +5,7 @@ services:
   bot:
     build:
       context: .
-      dockerfile: ./bot/Dockerfile
+      dockerfile: ./packages/bot/Dockerfile
     environment:
       - DB_HOST=mongo:27017
       - DB_USERNAME=mogus
@@ -35,7 +35,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./api/Dockerfile
+      dockerfile: ./packages/api/Dockerfile
     environment:
       - BOT_API_TOKEN=${INTERNAL_API_TOKEN}
       - DB_HOST=mongo:27017

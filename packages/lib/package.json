@@ -1,0 +1,19 @@
+{
+  "name": "automod-lib",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Shared code for AutoMod",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "dev": "rm -rf dist && tsc-watch"
+  },
+  "devDependencies": {
+    "@types/bson": "^4.2.4",
+    "@types/node": "^22.15.3",
+    "bson": "^6.10.3",
+    "monk": "^7.3.4",
+    "redis": "^5.0.0",
+    "tsc-watch": "^6.2.1",
+    "typescript": "^5.8.3"
+  }
+}

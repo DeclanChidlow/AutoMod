@@ -1,0 +1,7 @@
+{
+  "name": "automod",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}
