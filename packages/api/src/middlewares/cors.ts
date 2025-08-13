@@ -4,6 +4,12 @@ import { app } from "..";
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-auth-user, x-auth-token");
-	res.header("Access-Control-Allow-Methods", "*");
+	res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+
+	if (req.method === "OPTIONS") {
+		res.status(200).end();
+		return;
+	}
+
 	next();
 });

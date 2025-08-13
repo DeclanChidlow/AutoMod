@@ -20,7 +20,7 @@ export default async function buildDBClient(): Promise<Db> {
 
 const redis = Redis.createClient({ url: process.env["REDIS_URL"] });
 
-export { redis };
+export { redis, db };
 
 // Checks if all required env vars were supplied, and returns the mongo db URL
 function getDBUrl(): string {

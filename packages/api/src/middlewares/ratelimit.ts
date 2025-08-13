@@ -21,6 +21,7 @@ class RateLimiter {
 				const reqId = ulid();
 				// ratelimit:ip_address_base64:route_base64
 				const redisKey = `ratelimit:${Buffer.from(ip).toString("base64")}:${Buffer.from(this.route).toString("base64")}`;
+
 				const reqs = await redis.SCARD(redisKey);
 				if (reqs >= this.limit) {
 					console.debug(`Ratelimiter: IP address exceeded ratelimit for ${this.route} [${this.limit}/${this.timeframe}]`);
@@ -30,8 +31,11 @@ class RateLimiter {
 						timeframe: this.timeframe,
 					});
 				} else {
-					await redis.SADD(redisKey, reqId);
-					await redis.sendCommand(["EXPIREMEMBER", redisKey, reqId, this.timeframe.toString()]);
+					const multi = redis.multi();
+					multi.SADD(redisKey, reqId);
+					multi.EXPIRE(redisKey, this.timeframe);
+					await multi.exec();
+
 					next();
 				}
 			} catch (e) {
@@ -39,6 +43,10 @@ class RateLimiter {
 				next(e);
 			}
 		};
+	}
+
+	execute(req: Request, res: Response, next: NextFunction) {
+		return this.middleware()(req, res, next);
 	}
 }
 
