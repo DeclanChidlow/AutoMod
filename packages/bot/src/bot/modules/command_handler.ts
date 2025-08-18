@@ -35,7 +35,7 @@ let commands: SimpleCommand[];
 	client.on("messageCreate", async (msg) => {
 		console.debug(`Message -> ${msg.content}`);
 
-		if (msg.systemMessage !== undefined) return;
+		if (msg.systemMessage !== undefined || msg.webhook !== undefined) return;
 
 		if (typeof msg.content != "string" || msg.authorId == client.user?.id || !msg.channel?.server) return;
 
