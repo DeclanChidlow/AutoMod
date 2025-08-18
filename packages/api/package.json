@@ -11,7 +11,6 @@
 	},
 	"dependencies": {
 		"@types/express": "^4.17.21",
-		"automod": "^0.1.0",
 		"express": "^4.21.2",
 		"mongodb": "^6.16.0",
 		"redis": "^5.0.0",
