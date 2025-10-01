@@ -7,14 +7,6 @@ import fs from "fs";
 import path from "path";
 
 const pjson = JSON.parse((await fs.promises.readFile(path.join(process.cwd(), "package.json"))).toString());
-const now = Date.now();
-
-const formattedOwnerIDs = await Promise.all(
-	ownerIDs.map(async (id) => {
-		const user = await client.users.fetch(id);
-		return user ? `${user.username}#${user.discriminator} (\`${id}\`)` : `Unknown (\`${id}\`)`;
-	}),
-);
 
 export default {
 	name: "stats",
@@ -24,6 +16,19 @@ export default {
 	restrict: "BOTOWNER",
 	category: CommandCategory.Owner,
 	run: async (message: MessageCommandContext) => {
+		const now = Date.now();
+
+		const formattedOwnerIDs = await Promise.all(
+			ownerIDs.map(async (id) => {
+				try {
+					const user = await client.users.fetch(id);
+					return user ? `${user.username}#${user.discriminator} (\`${id}\`)` : `Unknown (\`${id}\`)`;
+				} catch (error) {
+					return `Unknown (\`${id}\`)`;
+				}
+			}),
+		);
+
 		let msg =
 			`## AutoMod Stats\n` +
 			`### Cache\n` +

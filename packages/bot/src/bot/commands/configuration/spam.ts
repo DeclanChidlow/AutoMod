@@ -24,7 +24,7 @@ export default {
 			case "disable": {
 				if (message.serverContext.discoverable) {
 					return message.reply(
-						"Your server is currently listed in Discover. As part of [Revolt's Discover Guidelines](<https://support.revolt.chat/kb/safety/discover-guidelines>), all servers on Discover are automatically enrolled into AutoMod's antispam features.",
+						"Your server is currently listed in Discover. As part of [Stoat's Discover Guidelines](<https://support.stoat.chat/kb/safety/discover-guidelines>), all servers on Discover are automatically enrolled into AutoMod's antispam features.",
 					);
 				}
 

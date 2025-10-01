@@ -12,7 +12,7 @@ let db = MongoDB();
 let client = new AutomodClient(
 	{
 		autoReconnect: true,
-		baseURL: process.env["REVOLT_API_URL"] || "https://api.revolt.chat/0.8",
+		baseURL: process.env["STOAT_API_URL"] || "https://api.stoat.chat/0.8",
 	},
 	db,
 );
