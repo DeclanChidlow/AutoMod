@@ -1,4 +1,4 @@
-import { Message } from "revolt.js";
+import { Message } from "stoat.js";
 import { client } from "../../../..";
 import CustomRuleAction from "automod-lib/dist/types/antispam/CustomRuleAction";
 

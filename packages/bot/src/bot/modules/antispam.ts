@@ -1,4 +1,4 @@
-import { Message } from "revolt.js";
+import { Message } from "stoat.js";
 import { ulid } from "ulid";
 import { dbs } from "../..";
 import AntispamRule from "automod-lib/dist/types/antispam/AntispamRule";

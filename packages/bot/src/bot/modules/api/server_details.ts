@@ -1,5 +1,4 @@
-import { ServerMember } from "revolt.js";
-import { User } from "revolt.js";
+import { ServerMember, User } from "stoat.js";
 import { client, dbs } from "../../..";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import { getPermissionLevel } from "../../util";
@@ -75,7 +74,7 @@ wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSRespo
 					id: c!.id,
 					name: c!.name ?? "",
 					nsfw: false, // todo?
-					type: c!.type == "VoiceChannel" ? "VOICE" : "TEXT",
+					type: "TEXT",
 					icon: c!.iconURL,
 				})),
 			dmOnKick: serverConfig?.dmOnKick,

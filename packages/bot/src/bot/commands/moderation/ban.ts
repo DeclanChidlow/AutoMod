@@ -23,8 +23,8 @@ import {
 import Day from "dayjs";
 import RelativeTime from "dayjs/plugin/relativeTime";
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import type { SendableEmbed } from "revolt-api";
-import { User } from "revolt.js";
+import type { SendableEmbed } from "stoat-api";
+import { User } from "stoat.js";
 
 Day.extend(RelativeTime);
 

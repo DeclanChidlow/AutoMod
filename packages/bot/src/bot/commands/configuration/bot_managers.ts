@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import { parseUser } from "../../util";
 import { client, dbs } from "../../..";
-import { User } from "revolt.js";
+import { User } from "stoat.js";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 

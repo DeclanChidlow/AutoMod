@@ -40,8 +40,8 @@ export default {
 			`WebSocket: \`${client.events.ping() ?? "--"}ms\`\n` +
 			`Message: \`${Math.round(Date.now() - now)}ms\`\n` +
 			`### Dependencies\n` +
-			`revolt.js: \`${pjson.dependencies["revolt.js"]}\`\n` +
-			`revolt-api: \`${pjson.dependencies["revolt-api"]}\`\n` +
+			`stoat.js: \`${pjson.dependencies["stoat.js"]}\`\n` +
+			`stoat-api: \`${pjson.dependencies["stoat-api"]}\`\n` +
 			`axios: \`${pjson.dependencies["axios"]}\`\n` +
 			`typescript: \`${pjson.devDependencies["typescript"]}\`\n` +
 			`### Miscellaneous\n` +

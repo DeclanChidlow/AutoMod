@@ -10,13 +10,11 @@ export default class LogMessage {
 	image?: { type: "BIG" | "THUMBNAIL"; url: string };
 	attachments?: { name: string; content: Buffer }[];
 	overrides?: {
-		// These take priority over `revolt`
-		revoltEmbed?: Override;
-		revoltQuoteblock?: Override;
+		// These take priority over `stoat`
+		stoatEmbed?: Override;
+		stoatQuoteblock?: Override;
 
-		revolt?: Override;
-
-		discord?: Override;
+		stoat?: Override;
 	};
 }
 

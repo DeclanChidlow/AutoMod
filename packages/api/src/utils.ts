@@ -19,7 +19,7 @@ class Session {
 /**
  *
  * @param req
- * @returns false if not authenticated, otherwise the (Revolt) user ID
+ * @returns false if not authenticated, otherwise the (Stoat) user ID
  */
 async function isAuthenticated(req: Request, res?: Response, send401?: boolean): Promise<string | false> {
 	const user = req.header("x-auth-user");

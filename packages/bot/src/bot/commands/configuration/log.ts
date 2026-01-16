@@ -39,7 +39,7 @@ export default {
 					{ id: message.channel!.serverId! },
 					{
 						$set: {
-							"logs.messageUpdate.revolt": {
+							"logs.messageUpdate.stoat": {
 								channel: channel.id,
 								type: "EMBED",
 							},
@@ -59,7 +59,7 @@ export default {
 					{ id: message.channel!.serverId! },
 					{
 						$set: {
-							"logs.modAction.revolt": {
+							"logs.modAction.stoat": {
 								channel: channel.id,
 								type: "EMBED",
 							},

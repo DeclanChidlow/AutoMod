@@ -1,4 +1,4 @@
-import { User } from "revolt.js";
+import { User } from "stoat.js";
 import { client } from "../../..";
 import { getPermissionLevel, parseUser } from "../../util";
 import type { WSResponse } from "../api_communication";

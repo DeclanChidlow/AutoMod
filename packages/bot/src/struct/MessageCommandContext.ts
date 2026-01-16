@@ -1,5 +1,5 @@
-import { Message } from "revolt.js";
-import { Server } from "revolt.js";
+import { Message } from "stoat.js";
+import { Server } from "stoat.js";
 
 class MessageCommandContext extends Message {
 	// The server to which the command should be applied.

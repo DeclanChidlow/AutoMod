@@ -1,4 +1,4 @@
-import { User } from "revolt.js";
+import { User } from "stoat.js";
 import { client, dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";

@@ -1,5 +1,5 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { Message } from "revolt.js";
+import { Message } from "stoat.js";
 import { decodeTime } from "ulid";
 import { isModerator, parseUserOrId } from "../../util";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
@@ -182,7 +182,7 @@ class PurgeHandler {
 			messages = [...messages, newerMsg];
 		}
 
-		// Filter to exact range (Revolt sometimes returns extra messages)
+		// Filter to exact range (stoat sometimes returns extra messages)
 		messages = messages.filter((m) => {
 			const messageTime = decodeTime(m.id);
 			return messageTime >= decodeTime(olderMsg.id) && messageTime <= decodeTime(newerMsg.id);

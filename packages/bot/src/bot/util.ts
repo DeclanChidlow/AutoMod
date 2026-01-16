@@ -1,16 +1,12 @@
-import { ServerMember } from "revolt.js";
-import { User } from "revolt.js";
+import { ServerMember, User, Server, Channel, Message } from "stoat.js";
 import { client, dbs } from "..";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import FormData from "form-data";
 import axios from "axios";
-import { Server } from "revolt.js";
 import LogConfig from "automod-lib/dist/types/LogConfig";
 import LogMessage from "automod-lib/dist/types/LogMessage";
-import { Channel } from "revolt.js";
-import { Message } from "revolt.js";
 import { isSudo } from "./commands/owner/override";
-import type { SendableEmbed } from "revolt-api";
+import type { SendableEmbed } from "stoat-api";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 
 const NO_MANAGER_MSG = "Missing permission";
@@ -138,16 +134,16 @@ async function uploadFile(file: any, filename: string): Promise<string> {
 }
 
 async function sendLogMessage(config: LogConfig, content: LogMessage) {
-	if (config.revolt?.channel) {
-		let c = { ...content, ...content.overrides?.revolt };
+	if (config.stoat?.channel) {
+		let c = { ...content, ...content.overrides?.stoat };
 		try {
-			const channel = client.channels.get(config.revolt.channel) || (await client.channels.fetch(config.revolt.channel));
+			const channel = client.channels.get(config.stoat.channel) || (await client.channels.fetch(config.stoat.channel));
 
 			let message = "";
 			let embed: SendableEmbed | undefined = undefined;
-			switch (config.revolt.type) {
+			switch (config.stoat.type) {
 				case "EMBED":
-					c = { ...c, ...content.overrides?.revoltEmbed };
+					c = { ...c, ...content.overrides?.stoatEmbed };
 					embed = {
 						title: c.title,
 						description: c.description,
@@ -165,8 +161,8 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
 					// Wrap entire message in quotes
 					// please disregard this mess
 
-					c = { ...c, ...content.overrides?.revoltQuoteblock };
-					const quote = config.revolt.type == "PLAIN" ? "" : ">";
+					c = { ...c, ...content.overrides?.stoatQuoteblock };
+					const quote = config.stoat.type == "PLAIN" ? "" : ">";
 
 					if (c.title) message += `## ${c.title}\n`;
 					if (c.description) message += `${c.description}\n`;
@@ -195,15 +191,15 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
 					embeds: embed ? [embed] : undefined,
 					attachments: content.attachments ? await Promise.all(content.attachments?.map((a) => uploadFile(a.content, a.name))) : undefined,
 				})
-				.catch((e) => console.error(`Failed to send log message (revolt): ${e}`));
+				.catch((e) => console.error(`Failed to send log message (stoat): ${e}`));
 		} catch (e) {
-			console.error(`Failed to send log message in ${config.revolt.channel}: ${e}`);
+			console.error(`Failed to send log message in ${config.stoat.channel}: ${e}`);
 		}
 	}
 }
 
 /**
- * Attempts to escape a message's markdown content (qoutes, headers, **bold** / *italic*, etc)
+ * Attempts to escape a message's markdown content (quotes, headers, **bold** / *italic*, etc)
  */
 function sanitizeMessageContent(msg: string): string {
 	let str = "";

@@ -1,5 +1,5 @@
-import { User } from "revolt.js";
-import type { SendableEmbed } from "revolt-api";
+import { User } from "stoat.js";
+import type { SendableEmbed } from "stoat-api";
 import { ulid } from "ulid";
 import { client } from "../../../";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";

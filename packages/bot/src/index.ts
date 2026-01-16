@@ -8,6 +8,17 @@ import TempBan from "automod-lib/dist/types/TempBan";
 
 console.info("Initialising client");
 
+process.on("uncaughtException", (err) => {
+  if (
+    err instanceof TypeError &&
+    err.message.includes("policy_changes")
+  ) {
+    console.warn("Ignored Stoat policy_changes crash");
+    return;
+  }
+  throw err;
+});
+
 let db = MongoDB();
 let client = new AutomodClient(
 	{

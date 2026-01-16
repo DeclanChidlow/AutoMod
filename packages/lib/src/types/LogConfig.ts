@@ -1,12 +1,9 @@
 export default class LogConfig {
-	revolt?: {
+	stoat?: {
 		channel?: string;
 
-		// EMBED uses Revolt's embeds.
+		// EMBED uses stoat's embeds.
 		// PLAIN is like QUOTEBLOCK but without the quotes.
 		type?: "EMBED" | "QUOTEBLOCK" | "PLAIN";
-	};
-	discord?: {
-		webhookUrl?: string;
 	};
 }

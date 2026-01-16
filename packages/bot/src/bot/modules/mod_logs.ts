@@ -1,4 +1,4 @@
-import { Server, ServerMember } from "revolt.js";
+import { Server, ServerMember } from "stoat.js";
 import { client, dbs } from "../..";
 import LogMessage from "automod-lib/dist/types/LogMessage";
 import Xlsx from "xlsx";

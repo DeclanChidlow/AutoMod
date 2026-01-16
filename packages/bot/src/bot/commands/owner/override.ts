@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import { User } from "revolt.js";
+import { User } from "stoat.js";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
 
 const sudoOverrides: { [key: string]: number | null } = {};

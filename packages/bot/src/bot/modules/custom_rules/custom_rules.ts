@@ -1,4 +1,4 @@
-import { Message } from "revolt.js";
+import { Message } from "stoat.js";
 import { dbs } from "../../..";
 import messageContentTrigger from "./message_content_trigger";
 

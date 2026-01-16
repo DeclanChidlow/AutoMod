@@ -1,8 +1,8 @@
-import * as Revolt from "revolt.js";
+import * as Stoat from "stoat.js";
 import { IMonkManager } from "monk";
-import type { ClientOptions } from "revolt.js";
+import type { ClientOptions } from "stoat.js";
 
-class AutomodClient extends Revolt.Client {
+class AutomodClient extends Stoat.Client {
 	db: IMonkManager;
 
 	constructor(options: Partial<ClientOptions> | undefined, monk: IMonkManager) {
@@ -12,7 +12,7 @@ class AutomodClient extends Revolt.Client {
 	}
 }
 
-let login = (client: Revolt.Client): Promise<void> =>
+let login = (client: Stoat.Client): Promise<void> =>
 	new Promise((resolve, reject) => {
 		console.info("Bot logging in...");
 		let env = process.env;

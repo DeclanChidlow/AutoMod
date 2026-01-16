@@ -5,8 +5,8 @@ import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import { storeInfraction } from "../util";
 import { DEFAULT_PREFIX } from "./command_handler";
-import type { SendableEmbed } from "revolt-api";
-import { UserSystemMessage } from "revolt.js";
+import type { SendableEmbed } from "stoat-api";
+import { UserSystemMessage } from "stoat.js";
 
 const DM_SESSION_LIFETIME = 1000 * 60 * 60 * 24 * 30;
 
