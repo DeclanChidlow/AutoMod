@@ -28,8 +28,10 @@ services:
     #ports:
     #  - 127.0.0.1:${BOT_METRICS_PORT}:${BOT_METRICS_PORT}
     depends_on:
-      - mongo
-      - api
+      mongo:
+        condition: service_healthy
+      api:
+        condition: service_started
     restart: unless-stopped
 
   api:
@@ -48,8 +50,10 @@ services:
     ports:
       - "9000:9000"
     depends_on:
-      - mongo
-      - redis
+      mongo:
+          condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
 
   mongo:
@@ -61,6 +65,17 @@ services:
       - 27017
     volumes:
       - ./db:/data/db:rw
+    healthcheck:
+      test: >
+        mongosh --quiet
+        -u mogus
+        -p "$$MONGO_INITDB_ROOT_PASSWORD"
+        --authenticationDatabase admin
+        --eval "db.adminCommand('ping').ok"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
 
   redis:
