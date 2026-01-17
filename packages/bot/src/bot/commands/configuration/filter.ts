@@ -24,12 +24,12 @@ export default {
 
 		switch (args.shift()?.toLowerCase()) {
 			case "enable": {
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $set: { wordlistEnabled: true } }, { upsert: true });
+				await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { wordlistEnabled: true } }, { upsert: true });
 				await message.reply(`Word filtering is now **enabled** in this server.\nThere are currently ${config?.wordlist?.length ?? 0} words on your list.`);
 				break;
 			}
 			case "disable": {
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $set: { wordlistEnabled: false } }, { upsert: true });
+				await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { wordlistEnabled: false } }, { upsert: true });
 				await message.reply("Word filter is now **disabled** in this server.");
 				break;
 			}
@@ -56,7 +56,7 @@ export default {
 					return await message.reply("All the words you provided are already on the list!");
 				}
 
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $push: { wordlist: { $each: newWords.map((word) => ({ strictness, word })) } } }, { upsert: true });
+				await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $push: { wordlist: { $each: newWords.map((word) => ({ strictness, word })) } } }, { upsert: true });
 
 				await message.reply(`${newWords.map((w) => `'${w}'`).join(", ")} added with strictness **${strictness}**.`);
 				break;
@@ -78,7 +78,7 @@ export default {
 					return await message.reply("None of those words are on the list.");
 				}
 
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $pull: { wordlist: { word: { $in: wordsToRemove } } } }, { upsert: true });
+				await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $pull: { wordlist: { word: { $in: wordsToRemove } } } }, { upsert: true });
 
 				await message.reply(`Removed: ${wordsToRemove.map((w) => `'${w}'`).join(", ")}.`);
 				break;
@@ -177,7 +177,7 @@ export default {
 					return;
 				}
 
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $set: { wordlistAction: { action: config?.wordlistAction?.action ?? "LOG", message: msg } } }, { upsert: true });
+				await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { wordlistAction: { action: config?.wordlistAction?.action ?? "LOG", message: msg } } }, { upsert: true });
 				await message.reply("Filter message set!");
 				break;
 			}
@@ -200,7 +200,7 @@ export default {
 						return;
 				}
 
-				await dbs.SERVERS.update(
+				await dbs.SERVERS.updateOne(
 					{ id: message.channel!.serverId! },
 					{
 						$set: {

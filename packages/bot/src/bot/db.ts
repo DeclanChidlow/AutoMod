@@ -1,13 +1,22 @@
-import Monk, { ICollection, IMonkManager } from "monk";
+import { MongoClient, Db, Collection } from "mongodb";
 import { dbs } from "..";
 
-export default (): IMonkManager => {
-	let dburl = getDBUrl();
-	let db = Monk(dburl);
-	return db;
+let client: MongoClient;
+let dbInstance: Db;
+
+export default async (): Promise<Db> => {
+	if (dbInstance) return dbInstance;
+
+	const dburl = getDBUrl();
+	client = new MongoClient(dburl);
+
+	await client.connect();
+	const dbName = dburl.split("/").pop()?.split("?")[0] || "automod";
+	dbInstance = client.db(dbName);
+
+	return dbInstance;
 };
 
-// Checks if all required env vars were supplied, and returns the mongo db URL
 function getDBUrl() {
 	let env = process.env;
 	if (env["DB_URL"]) return env["DB_URL"];
@@ -18,31 +27,31 @@ function getDBUrl() {
 		throw "Missing environment variables";
 	}
 
-	// mongodb://username:password@hostname:port/dbname
 	let dburl = "mongodb://";
 	if (env["DB_USERNAME"]) dburl += env["DB_USERNAME"];
 	if (env["DB_PASS"]) dburl += `:${env["DB_PASS"]}`;
-	dburl += `${process.env["DB_USERNAME"] ? "@" : ""}${env["DB_HOST"]}`; // DB_HOST is assumed to contain the port
+	dburl += `${process.env["DB_USERNAME"] ? "@" : ""}${env["DB_HOST"]}`;
 	dburl += `/${env["DB_NAME"] ?? "automod"}`;
 
 	return dburl;
 }
 
 async function databaseMigrations() {
-	// prettier-ignore
-	async function setIndexes(collection: ICollection, toIndex: string[]) {
-        try {
-            const indexes = await collection.indexes();
-            for (const index of toIndex) {
-                if (!Object.values(indexes).find(v => v[0][0] == index)) {
-                    console.info(`Creating index ${index} on ${collection.name}`);
-                    await collection.createIndex(index);
-                }
-            }
-        } catch(e) {
-            console.warn(`Failed to run migrations for ${collection.name}: ${e}`);
-        }
-    }
+	// Ensure the DB is connected before running migrations
+	if (!dbInstance) await module.exports.default();
+
+	async function setIndexes(collection: Collection<any>, toIndex: string[]) {
+		try {
+			if (!collection) return;
+
+			for (const index of toIndex) {
+				console.info(`Ensuring index ${index} on ${collection.collectionName}`);
+				await collection.createIndex({ [index]: 1 });
+			}
+		} catch (e) {
+			console.warn(`Failed to run migrations: ${e}`);
+		}
+	}
 
 	await setIndexes(dbs.INFRACTIONS, ["createdBy", "user", "server"]);
 	await setIndexes(dbs.PENDING_LOGINS, ["code", "user"]);

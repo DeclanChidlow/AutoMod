@@ -32,7 +32,7 @@ export default {
 					return message.reply(val);
 				}
 
-				await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $set: { prefix: newPrefix } });
+				await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { prefix: newPrefix } });
 
 				message.reply(`✅ Prefix has been changed from \`${oldPrefix}\` to \`${newPrefix}\`.\n${MENTION_TEXT}`);
 				break;
@@ -46,7 +46,7 @@ export default {
 				if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
 
 				if (config?.prefix != null) {
-					await dbs.SERVERS.update({ id: message.channel!.serverId! }, { $set: { prefix: undefined } });
+					await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { prefix: undefined } });
 				}
 
 				message.reply(`✅ Prefix has been reset to the default: \`${DEFAULT_PREFIX}\`.`);

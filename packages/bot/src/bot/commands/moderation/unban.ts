@@ -19,7 +19,7 @@ export default {
 		}
 
 		let checkTempBans = async (id: string): Promise<number> => {
-			let tempbans = await dbs.TEMPBANS.find({ bannedUser: id, server: message.serverContext.id });
+			let tempbans = await dbs.TEMPBANS.find({ bannedUser: id, server: message.serverContext.id }).toArray();
 			if (tempbans.length > 0) {
 				for (const ban of tempbans) {
 					await removeTempBan(ban.id);

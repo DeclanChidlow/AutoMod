@@ -123,7 +123,7 @@ let commands: SimpleCommand[];
 		console.info(`Command: ${message.author?.username} (${message.author?.id}) in ${message.channel?.server?.name} (${message.channel?.serverId}): ${message.content}`);
 
 		// Create document for server in DB, if not already present
-		if (JSON.stringify(config) == "{}" || !config) await dbs.SERVERS.insert({ id: message.channel!.serverId! });
+		if (JSON.stringify(config) == "{}" || !config) await dbs.SERVERS.insertOne({ id: message.channel!.serverId! });
 
 		if (cmd.removeEmptyArgs !== false) {
 			args = args.filter((a) => a.length > 0);

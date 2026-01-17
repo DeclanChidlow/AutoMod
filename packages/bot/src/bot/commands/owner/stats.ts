@@ -43,7 +43,9 @@ export default {
 			`stoat.js: \`${pjson.dependencies["stoat.js"]}\`\n` +
 			`stoat-api: \`${pjson.dependencies["stoat-api"]}\`\n` +
 			`axios: \`${pjson.dependencies["axios"]}\`\n` +
-			`typescript: \`${pjson.devDependencies["typescript"]}\`\n` +
+			`typescript: \`${pjson.devDependencies?.["typescript"] ?? "N/A"}\`\n` +
+			`mongodb: \`${pjson.devDependencies?.["mongodb"]}\`\n` +
+			`ulid: \`${pjson.devDependencies?.["ulid"]}\`\n` +
 			`### Miscellaneous\n` +
 			`Command count: \`${commands.length}\`\n` +
 			`Environment: \`${process.env["NODE_ENV"] || "testing"}\`\n` +

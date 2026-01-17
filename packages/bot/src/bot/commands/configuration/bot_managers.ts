@@ -31,7 +31,7 @@ export default {
 				if (admins.indexOf(user.id) > -1) return message.reply("This user is already added as bot admin.");
 
 				admins.push(user.id);
-				await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { botManagers: admins } });
+				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { botManagers: admins } });
 
 				message.reply(`✅ Added [@${user.username}](/@${user.id}) to bot admins.`);
 				break;
@@ -46,7 +46,7 @@ export default {
 				if (admins.indexOf(user.id) == -1) return message.reply("This user is not added as bot admin.");
 
 				admins = admins.filter((a) => a != user?.id);
-				await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { botManagers: admins } });
+				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { botManagers: admins } });
 
 				message.reply(`✅ Removed [@${user.username}](/@${user.id}) from bot admins.`);
 				break;

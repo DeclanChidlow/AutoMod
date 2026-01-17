@@ -1,14 +1,13 @@
 import * as Stoat from "stoat.js";
-import { IMonkManager } from "monk";
+import { Db } from "mongodb";
 import type { ClientOptions } from "stoat.js";
 
 class AutomodClient extends Stoat.Client {
-	db: IMonkManager;
+	db: Db;
 
-	constructor(options: Partial<ClientOptions> | undefined, monk: IMonkManager) {
+	constructor(options: Partial<ClientOptions> | undefined, db: Db) {
 		super(options);
-
-		this.db = monk;
+		this.db = db;
 	}
 }
 

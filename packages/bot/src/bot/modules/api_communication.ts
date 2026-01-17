@@ -118,7 +118,7 @@ wsEvents.on("req:requestLogin", async (data: any, cb: (data: WSResponse) => void
 		let code: string | null = null;
 		while (!code) {
 			const c = crypto.randomBytes(8).toString("hex");
-			const found = await dbs.PENDING_LOGINS.find({ code: c, user: user.id, confirmed: false });
+			const found = await dbs.PENDING_LOGINS.find({ code: c, user: user.id, confirmed: false }).toArray();
 			if (found.length > 0) continue;
 			code = c.substring(0, 8).toUpperCase();
 		}
@@ -128,13 +128,13 @@ wsEvents.on("req:requestLogin", async (data: any, cb: (data: WSResponse) => void
 		const nonce = ulid();
 
 		const [previousLogins, currentValidLogins] = await Promise.all([
-			dbs.PENDING_LOGINS.find({ user: user.id, confirmed: true }),
-			dbs.PENDING_LOGINS.find({ user: user.id, confirmed: false, expires: { $gt: Date.now() } }),
+			dbs.PENDING_LOGINS.find({ user: user.id, confirmed: true }).toArray(),
+			dbs.PENDING_LOGINS.find({ user: user.id, confirmed: false, expires: { $gt: Date.now() } }).toArray(),
 		]);
 
 		if (currentValidLogins.length >= 5) return cb({ success: false, statusCode: 403, error: "Too many pending logins. Try again later." });
 
-		await dbs.PENDING_LOGINS.insert({
+		await dbs.PENDING_LOGINS.insertOne({
 			code,
 			expires: Date.now() + 1000 * 60 * 15, // Expires in 15 minutes
 			user: user.id,

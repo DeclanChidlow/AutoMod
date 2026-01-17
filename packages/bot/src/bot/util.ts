@@ -112,12 +112,12 @@ async function getOwnMemberInServer(server: Server): Promise<ServerMember> {
 // Utility functions
 async function storeInfraction(infraction: Infraction): Promise<{ userWarnCount: number }> {
 	const [, previousInfractions] = await Promise.all([
-		dbs.INFRACTIONS.insert(infraction, { castIds: false }),
+		dbs.INFRACTIONS.insertOne(infraction),
 		dbs.INFRACTIONS.find({
 			server: infraction.server,
 			user: infraction.user,
 			_id: { $not: { $eq: infraction._id } },
-		}),
+		}).toArray(),
 	]);
 
 	return { userWarnCount: previousInfractions.length + 1 };

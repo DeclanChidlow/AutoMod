@@ -58,7 +58,7 @@ client.on("messageCreate", async (message) => {
 
 			const token = crypto.randomBytes(48).toString("base64").replace(/=/g, "");
 
-			await client.db.get("sessions").insert({
+			await client.db.collection("sessions").insertOne({
 				user: message.authorId,
 				token: token,
 				nonce: message.nonce,

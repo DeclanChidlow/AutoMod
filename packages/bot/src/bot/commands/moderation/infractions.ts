@@ -203,7 +203,7 @@ export default {
 			return message.reply(NO_MANAGER_MSG);
 		}
 
-		const infractions: Array<Infraction> = await dbs.INFRACTIONS.find({ server: serverId });
+		const infractions: Array<Infraction> = await dbs.INFRACTIONS.find({ server: serverId }).toArray();
 		const userInfractions: Map<string, Infraction[]> = new Map();
 
 		infractions.forEach((inf) => {

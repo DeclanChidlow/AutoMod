@@ -17,7 +17,7 @@ export default {
 
 		switch (args.shift()?.toLowerCase()) {
 			case "enable": {
-				await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { antispamEnabled: true } });
+				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { antispamEnabled: true } });
 				await message.reply("Spam detection is now **enabled** in this server.\n" + "Please ensure AutoMod has permission to Manage Messages");
 				break;
 			}
@@ -28,7 +28,7 @@ export default {
 					);
 				}
 
-				await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { antispamEnabled: false } });
+				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { antispamEnabled: false } });
 				await message.reply("Spam detection is now **disabled** in this server.");
 				break;
 			}

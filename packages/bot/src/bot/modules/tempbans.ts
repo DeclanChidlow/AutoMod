@@ -6,7 +6,7 @@ let dontProcess: string[] = [];
 let expired: string[] = [];
 
 async function tick() {
-	let found = await dbs.TEMPBANS.find({ until: { $lt: Date.now() + 60000 } });
+	let found = await dbs.TEMPBANS.find({ until: { $lt: Date.now() + 60000 } }).toArray();
 
 	for (const ban of found) {
 		if (!dontProcess.includes(ban.id)) setTimeout(() => processUnban(ban), ban.until - Date.now());
@@ -32,10 +32,10 @@ async function processUnban(ban: TempBan) {
 		if (serverBans.find((b) => b.id.user == ban.bannedUser)) {
 			console.debug(`Unbanning user ${ban.bannedUser} from ${server.id}`);
 
-			let promises = [server.unbanUser(ban.bannedUser), dbs.TEMPBANS.remove({ id: ban.id })];
+			let promises = [server.unbanUser(ban.bannedUser), dbs.TEMPBANS.deleteOne({ id: ban.id })];
 
 			await Promise.allSettled(promises);
-		} else dbs.TEMPBANS.remove({ id: ban.id });
+		} else dbs.TEMPBANS.deleteOne({ id: ban.id });
 	} catch (e) {
 		console.error(e);
 	}
@@ -50,7 +50,7 @@ async function storeTempBan(ban: TempBan): Promise<void> {
 		}, ban.until - Date.now());
 	}
 
-	dbs.TEMPBANS.insert(ban);
+	dbs.TEMPBANS.insertOne(ban);
 }
 
 async function removeTempBan(banID: string): Promise<TempBan> {

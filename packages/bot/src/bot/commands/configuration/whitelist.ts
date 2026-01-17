@@ -34,7 +34,7 @@ export default {
 					if (config.whitelist!.roles?.includes(role)) return message.reply("That role is already whitelisted.");
 
 					config.whitelist!.roles = [role, ...(config.whitelist!.roles ?? [])];
-					await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
+					await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
 					return message.reply(`Added role to whitelist!`);
 				}
 
@@ -44,7 +44,7 @@ export default {
 				if (config.whitelist!.users?.includes(user.id)) return message.reply("That user is already whitelisted.");
 
 				config.whitelist!.users = [user.id, ...(config.whitelist!.users ?? [])];
-				await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
+				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
 				return message.reply("Added user to whitelist!");
 				break;
 			case "rm":
@@ -59,7 +59,7 @@ export default {
 					if (!config.whitelist!.roles?.includes(role)) return message.reply("That role is not whitelisted.");
 
 					config.whitelist!.roles = config.whitelist!.roles.filter((r) => r != role);
-					await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
+					await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
 					return message.reply(`Removed role from whitelist!`);
 				}
 
@@ -68,7 +68,7 @@ export default {
 				if (!config.whitelist!.users?.includes(user.id)) return message.reply("That user is not whitelisted.");
 
 				config.whitelist!.users = config.whitelist!.users.filter((u) => u != user?.id);
-				await dbs.SERVERS.update({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
+				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
 				return message.reply("Removed user from whitelist!");
 				break;
 			case "l":
