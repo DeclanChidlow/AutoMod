@@ -369,7 +369,7 @@
 
     "stoat-api": ["stoat-api@0.8.9-4", "", { "dependencies": { "json-with-bigint": "^3.4.4" } }, "sha512-6N4kfE1x+j/XYVaBuvYqzbWxjgqbxSarvNjMv8GEcBaqbkiyPzUwsCj12NJsNNp4uyZmsqoUYUj2jIq018uqiA=="],
 
-    "stoat.js": ["stoat.js@7.3.5", "", { "dependencies": { "@solid-primitives/map": "^0.7.1", "@solid-primitives/set": "^0.7.1", "@vladfrangu/async_event_emitter": "^2.4.6", "json-with-bigint": "^3.4.4", "solid-js": "^1.9.6", "stoat-api": "0.8.9-4", "ulid": "^2.4.0" } }, "sha512-Fzy0GAM0G9hnMIYhbZ6BQXf0lSrcdneHt8fNRe6tTd8NXzV32TFGbt+s3uFisoMRApmg1VG2ZlIdQWgr3AJOEQ=="],
+    "stoat.js": ["stoat.js@7.3.6", "", { "dependencies": { "@solid-primitives/map": "^0.7.1", "@solid-primitives/set": "^0.7.1", "@vladfrangu/async_event_emitter": "^2.4.6", "json-with-bigint": "^3.4.4", "solid-js": "^1.9.6", "stoat-api": "0.8.9-4", "ulid": "^2.4.0" } }, "sha512-q2+00tjuaGHVSBA5Sg8vBDp73k3yZtsfDyS8OUqYgHYT2uL8x5RZHsrViuloPwHHuKNldzQjib/VdQMISZIfOg=="],
 
     "stream-combiner": ["stream-combiner@0.0.4", "", { "dependencies": { "duplexer": "~0.1.1" } }, "sha512-rT00SPnTVyRsaSz5zgSPma/aHSOic5U1prhYdRy5HS2kTZviFpmDgzilbtsJsxiroqACmayynDN/9VzIbX5DOw=="],
 

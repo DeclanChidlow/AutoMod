@@ -16,7 +16,7 @@
 		"monk": "^7.3.4",
 		"prom-client": "^15.1.3",
 		"stoat-api": "0.8.9-4",
-		"stoat.js": "^7.3.5",
+		"stoat.js": "^7.3.6",
 		"ulid": "^3.0.2",
 		"xlsx": "^0.18.5",
 		"automod-lib": "workspace:*"
