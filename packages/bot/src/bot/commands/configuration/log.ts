@@ -34,12 +34,12 @@ export default {
 		if (!channel.havePermission("SendEmbeds")) return message.reply("I don't have permission to **send embeds** in that channel.");
 
 		switch (args[0]?.toLowerCase()) {
-			case "messageupdateOne": {
+			case "messageupdate": {
 				await dbs.SERVERS.updateOne(
 					{ id: message.channel!.serverId! },
 					{
 						$set: {
-							"logs.messageupdateOne.stoat": {
+							"logs.messageupdate.stoat": {
 								channel: channel.id,
 								type: "EMBED",
 							},
