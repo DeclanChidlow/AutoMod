@@ -88,6 +88,8 @@ client.on("messageDelete", async (message) => {
 });
 
 client.on("messageDeleteBulk", async (messages) => {
+	if (!messages || messages.length === 0) return;
+
 	const channel = client.channels.get(messages[0].channelId);
 	if (!channel) return;
 
@@ -100,7 +102,7 @@ client.on("messageDeleteBulk", async (messages) => {
 				data.push([
 					message.id,
 					message.authorId ?? "",
-					message.authorId ? client.users.get(message.authorId)?.username ?? "" : "",
+					message.authorId ? (client.users.get(message.authorId)?.username ?? "") : "",
 					message.content ?? "",
 					message.attachments?.map((a) => a.id).join(", ") ?? "",
 				]);
