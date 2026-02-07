@@ -9,7 +9,12 @@ async function tick() {
 	let found = await dbs.TEMPBANS.find({ until: { $lt: Date.now() + 60000 } }).toArray();
 
 	for (const ban of found) {
-		if (!dontProcess.includes(ban.id)) setTimeout(() => processUnban(ban), ban.until - Date.now());
+		if (!dontProcess.includes(ban.id)) {
+			const delay = Math.max(0, ban.until - Date.now());
+			setTimeout(() => processUnban(ban), delay);
+
+			dontProcess.push(ban.id);
+		}
 	}
 }
 
@@ -44,13 +49,14 @@ async function processUnban(ban: TempBan) {
 async function storeTempBan(ban: TempBan): Promise<void> {
 	if (Date.now() >= ban.until - 60000) {
 		dontProcess.push(ban.id);
+		const delay = Math.max(0, ban.until - Date.now());
 		setTimeout(() => {
 			processUnban(ban);
 			dontProcess = dontProcess.filter((id) => id != ban.id);
-		}, ban.until - Date.now());
+		}, delay);
 	}
 
-	dbs.TEMPBANS.insertOne(ban);
+	await dbs.TEMPBANS.insertOne(ban);
 }
 
 async function removeTempBan(banID: string): Promise<TempBan> {

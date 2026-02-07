@@ -28,15 +28,22 @@ if (!API_WS_URL || !API_WS_TOKEN) {
 }
 
 function connect() {
-	if (client && client.readyState == ws.OPEN) client.close();
+	if (client) {
+		client.removeAllListeners();
+		try {
+			client.terminate();
+		} catch (e) {}
+		client = undefined;
+	}
+
 	client = new ws(API_WS_URL!, { headers: { authorization: API_WS_TOKEN! } });
 
 	client.once("open", () => {
 		console.info("WebSocket connected successfully");
 		retryCount = 0;
+
 		if (wsQueue.length > 0) {
 			console.debug(`Attempting to send ${wsQueue.length} queued WS messages`);
-
 			while (wsQueue.length > 0) {
 				if (client?.readyState != ws.OPEN) break;
 				const data = JSON.stringify(wsQueue.shift());
@@ -51,10 +58,8 @@ function connect() {
 		retryConnection();
 	});
 
-	client.once("error", (err: Error) => {
-		client = undefined;
+	client.on("error", (err: Error) => {
 		console.error(`WebSocket error: ${err.message}`);
-		retryConnection();
 	});
 
 	client.on("message", (msg: ws.Data) => {
@@ -70,10 +75,7 @@ function connect() {
 					wsSend({
 						nonce: jsonMsg.nonce,
 						type: `response:${jsonMsg.nonce}`,
-						data: {
-							success: false,
-							error: "No event listeners available for event",
-						},
+						data: { success: false, error: "No event listeners available for event" },
 					});
 				}
 			}
