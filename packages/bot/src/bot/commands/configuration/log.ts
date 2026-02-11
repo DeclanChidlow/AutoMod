@@ -39,7 +39,7 @@ export default {
 					{ id: message.channel!.serverId! },
 					{
 						$set: {
-							"logs.messageupdate.stoat": {
+							"logs.messageUpdate.stoat": {
 								channel: channel.id,
 								type: "EMBED",
 							},
