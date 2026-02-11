@@ -20,13 +20,13 @@ export default {
 		if (!config) config = { id: message.channel!.serverId! };
 		if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true };
 
-		if (!isBotManager(message)) return message.reply(NO_MANAGER_MSG);
+		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
 
 		let user: User | null, role: string | undefined;
 		switch (args[0]?.toLowerCase()) {
 			case "add":
 			case "set":
-				if (!args[1]) return message.reply("You need to spefify a user or role name.");
+				if (!args[1]) return message.reply("You need to specify a user or role name.");
 
 				role = Object.entries(message.serverContext.roles ?? {}).find((r) => r[1].name?.toLowerCase() == args[1].toLowerCase() || r[0] == args[1].toUpperCase())?.[0];
 
@@ -97,7 +97,11 @@ export default {
 
 				str += `\nAdmins and bot managers: **${config.whitelist.managers === false ? "No" : "Yes"}**`;
 
-				message.reply(str)?.catch((e) => message.reply(String(e)));
+				try {
+					await message.reply(str);
+				} catch (e) {
+					await message.reply(String(e));
+				}
 				break;
 			default:
 				message.reply(`Command syntax: ${SYNTAX}`);
