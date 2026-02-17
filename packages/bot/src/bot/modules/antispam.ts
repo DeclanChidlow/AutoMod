@@ -194,7 +194,10 @@ function checkMessageForFilteredWords(message: string, config: ServerConfig): bo
 		strict: config.wordlist.filter((w) => w.strictness == "STRICT").map((w) => w.word),
 	};
 
-	const softSegments = message.split(/\s/g).map((s) => s.toLowerCase());
+	const softSegments = message
+		.toLowerCase()
+		.replace(/[^\w\s]/g, "")
+		.split(/\s+/);
 	for (const word of words.soft) {
 		if (softSegments.includes(word.toLowerCase())) return true;
 	}
