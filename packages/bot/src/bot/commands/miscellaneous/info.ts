@@ -45,7 +45,7 @@ export default {
 	name: "info",
 	aliases: ["debug"],
 	description: "Provides information about a given ULID.",
-	documentation: "/docs/commands/miscellaneous/info",
+	documentation: "/docs/automod/commands/miscellaneous/info",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const [input] = args;

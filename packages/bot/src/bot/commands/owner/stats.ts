@@ -12,7 +12,7 @@ export default {
 	name: "stats",
 	aliases: ["statistics", "status"],
 	description: "Returns information about AutoMod.",
-	documentation: "/docs/commands/owner/stats",
+	documentation: "/docs/automod/commands/owner/stats",
 	restrict: "BOTOWNER",
 	category: CommandCategory.Owner,
 	run: async (message: MessageCommandContext) => {

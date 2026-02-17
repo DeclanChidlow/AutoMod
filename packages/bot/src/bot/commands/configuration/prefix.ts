@@ -12,7 +12,7 @@ export default {
 	name: "prefix",
 	aliases: null,
 	description: "Manage AutoMod's prefix.",
-	documentation: "/docs/commands/configuration/prefix",
+	documentation: "/docs/automod/commands/configuration/prefix",
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {

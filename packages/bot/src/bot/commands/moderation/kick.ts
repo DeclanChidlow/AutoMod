@@ -26,7 +26,7 @@ export default {
 	name: "kick",
 	aliases: [],
 	description: "Removes a user from the server, but they can rejoin if they have an invite.",
-	documentation: "/docs/commands/moderation/kick",
+	documentation: "/docs/automod/commands/moderation/kick",
 	syntax: "/kick @username [reason?]",
 	removeEmptyArgs: true,
 	category: CommandCategory.Moderation,

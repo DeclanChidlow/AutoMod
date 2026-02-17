@@ -9,7 +9,7 @@ export default {
 	name: "unban",
 	aliases: ["pardon"],
 	description: "Removes a user’s server ban, allowing them to rejoin the server if they have an invite.",
-	documentation: "/docs/commands/moderation/unban",
+	documentation: "/docs/automod/commands/moderation/unban",
 	syntax: "/unban [@user or ID]",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {

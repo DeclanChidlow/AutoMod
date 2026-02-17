@@ -13,7 +13,7 @@ export default {
 	aliases: null,
 	removeEmptyArgs: false,
 	description: "Adds an infraction to a user’s record.",
-	documentation: "/docs/commands/moderation/warn",
+	documentation: "/docs/automod/commands/moderation/warn",
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {
 		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);

@@ -228,7 +228,7 @@ export default {
 	name: "purge",
 	aliases: ["clear"],
 	description: "Allows for bulk deleting messages.",
-	documentation: "/docs/commands/moderation/purge",
+	documentation: "/docs/automod/commands/moderation/purge",
 	syntax: SYNTAX,
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {

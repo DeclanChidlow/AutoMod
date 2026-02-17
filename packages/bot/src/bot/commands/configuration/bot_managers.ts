@@ -11,7 +11,7 @@ export default {
 	name: "admin",
 	aliases: ["admins", "manager", "managers"],
 	description: "Allows managing which users have permissions to modify AutoMod's configuration.",
-	documentation: "/docs/commands/configuration/managers",
+	documentation: "/docs/automod/commands/configuration/managers",
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {

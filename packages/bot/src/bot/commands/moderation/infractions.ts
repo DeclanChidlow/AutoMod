@@ -192,7 +192,7 @@ export default {
 	name: "infractions",
 	aliases: ["warns", "warnings"],
 	description: "Shows a user's infractions.",
-	documentation: "/docs/commands/moderation/infractions",
+	documentation: "/docs/automod/commands/moderation/infractions",
 	syntax: '/infractions; /infractions @username ["export-csv"]; /infractions rm [ID]',
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {

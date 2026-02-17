@@ -7,7 +7,7 @@ export default {
 	name: "ping",
 	aliases: null,
 	description: "Checks how long it takes AutoMod to respond.",
-	documentation: "/docs/commands/miscellaneous/ping",
+	documentation: "/docs/automod/commands/miscellaneous/ping",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		const now = Date.now();

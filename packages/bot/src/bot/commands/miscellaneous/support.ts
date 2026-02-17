@@ -6,7 +6,7 @@ export default {
 	name: "support",
 	aliases: ["donate", "tip"],
 	description: "Provides details regarding how to financially support AutoMod’s development and hosting.",
-	documentation: "/docs/commands/miscellaneous/support",
+	documentation: "/docs/automod/commands/miscellaneous/support",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		message.reply({
