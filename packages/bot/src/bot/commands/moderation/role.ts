@@ -26,13 +26,16 @@ export default {
 			const target = await message.channel?.server?.fetchMember(targetUser);
 			if (!target) return message.reply("The target is not part of this server.");
 
-			const roleId = args.shift();
-			if (!roleId) return message.reply("No role ID specified.");
+			const roleArg = args.shift();
+			if (!roleArg) return message.reply("No role specified.");
+
+			const roleIdMatch = roleArg.match(/^<%([A-Z0-9]+)>$/i);
+			const roleId = roleIdMatch ? roleIdMatch[1] : roleArg;
 
 			// Check if the role exists in the server
 			const server = message.channel?.server;
 			if (!server || !server.roles || !server.roles.get(roleId)) {
-				return message.reply(`Role with ID "${roleId}" does not exist in this server.`);
+				return message.reply(`Role "${roleArg}" does not exist in this server.`);
 			}
 
 			const currentRoles = target.roles || [];
