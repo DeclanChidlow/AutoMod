@@ -5,6 +5,7 @@ import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import PendingLogin from "automod-lib/dist/types/PendingLogin";
 import TempBan from "automod-lib/dist/types/TempBan";
+import ReactionRoles from "automod-lib/dist/types/ReactionRoles";
 import { Collection } from "mongodb";
 
 console.info("Initialising client");
@@ -17,6 +18,7 @@ let dbs: {
 	PENDING_LOGINS: Collection<PendingLogin>;
 	SESSIONS: Collection<any>;
 	TEMPBANS: Collection<TempBan>;
+	REACTION_ROLES: Collection<ReactionRoles>;
 };
 
 export { client, dbs };
@@ -42,6 +44,7 @@ console.info(`\
 			PENDING_LOGINS: db.collection<PendingLogin>("pending_logins"),
 			SESSIONS: db.collection("sessions"),
 			TEMPBANS: db.collection<TempBan>("tempbans"),
+			REACTION_ROLES: db.collection<ReactionRoles>("reaction_roles"),
 		};
 
 		client = new AutomodClient(
@@ -62,6 +65,7 @@ console.info(`\
 		await import("./bot/modules/mod_logs");
 		await import("./bot/modules/event_handler");
 		await import("./bot/modules/tempbans");
+		await import("./bot/modules/reaction_roles");
 		await import("./bot/modules/api_communication");
 		await import("./bot/modules/metrics");
 		await import("./bot/modules/bot_status");

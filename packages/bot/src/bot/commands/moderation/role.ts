@@ -2,11 +2,12 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { dbs } from "../../..";
 
 export default {
 	name: "role",
 	aliases: ["roles"],
-	description: "Add or remove roles from a user.",
+	description: "Add and remove roles from a member, or manage reaction roles.",
 	documentation: "/docs/automod/commands/moderation/role",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
@@ -15,8 +16,87 @@ export default {
 			if (!message.member.hasPermission(message.member.server!, "ManageRole") && !(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
 
 			const action = args.shift()?.toLowerCase();
+
+			const normalizeEmoji = (emoji: string) => {
+				return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/\uFE0F/g, "");
+			};
+
+			if (action === "reaction") {
+				const subAction = args.shift()?.toLowerCase();
+
+				if (subAction === "add") {
+					const messageId = args.shift()?.trim();
+					const emojiRaw = args.shift()?.trim();
+					const roleArg = args.shift()?.trim();
+
+					if (!messageId || !emojiRaw || !roleArg) {
+						return message.reply("Usage: `/role reaction add <message-id> <emoji> <role-id>`");
+					}
+
+					const roleIdMatch = roleArg.match(/^<%([A-Z0-9]+)>$/i);
+					const roleId = roleIdMatch ? roleIdMatch[1] : roleArg;
+
+					const server = message.channel?.server;
+					if (!server || !server.roles || !server.roles.get(roleId)) {
+						return message.reply(`Role "${roleArg}" does not exist in this server.`);
+					}
+
+					const emoji = normalizeEmoji(emojiRaw);
+
+					await dbs.REACTION_ROLES.insertOne({
+						server: server.id,
+						messageId: messageId,
+						emoji: emoji,
+						roleId: roleId,
+					});
+
+					const channel = message.channel;
+					if (channel) {
+						try {
+							const targetMsg = await channel.fetchMessage(messageId);
+							await targetMsg.react(emoji);
+						} catch (e) {
+							console.error("Could not add initial reaction:", e);
+						}
+					}
+
+					const displayEmoji = /^[A-Z0-9]{26}$/i.test(emoji) ? `:${emoji}:` : emoji;
+					return message.reply(`Reaction role added! Reacting to message \`${messageId}\` with ${displayEmoji} will now grant the role.`);
+				}
+
+				if (subAction === "rm" || subAction === "remove") {
+					const messageId = args.shift()?.trim();
+					const emojiRaw = args.shift()?.trim();
+
+					if (!messageId || !emojiRaw) {
+						return message.reply("Usage: `/role reaction rm <message-id> <emoji>`");
+					}
+
+					const emoji = normalizeEmoji(emojiRaw);
+
+					const result = await dbs.REACTION_ROLES.deleteOne({ messageId, emoji });
+					if (result.deletedCount === 0) {
+						return message.reply("No reaction role found for that message and emoji combination.");
+					}
+
+					const channel = message.channel;
+					if (channel) {
+						try {
+							const targetMsg = await channel.fetchMessage(messageId);
+							await targetMsg.unreact(emoji);
+						} catch (e) {
+							console.error("Could not remove bot reaction:", e);
+						}
+					}
+
+					return message.reply("Reaction role removed successfully.");
+				}
+
+				return message.reply("Invalid reaction action. Use `add` or `rm`.");
+			}
+
 			if (!action || (action !== "add" && action !== "rm" && action !== "remove")) {
-				return message.reply("Invalid action. Use `/role add @user role-id` or `/role rm @user role-id`.");
+				return message.reply("Invalid action. Use `/role add @user role`, `/role remove @user role`, or `/role reaction add/remove ...`.");
 			}
 
 			const targetStr = args.shift();
@@ -32,7 +112,6 @@ export default {
 			const roleIdMatch = roleArg.match(/^<%([A-Z0-9]+)>$/i);
 			const roleId = roleIdMatch ? roleIdMatch[1] : roleArg;
 
-			// Check if the role exists in the server
 			const server = message.channel?.server;
 			if (!server || !server.roles || !server.roles.get(roleId)) {
 				return message.reply(`Role "${roleArg}" does not exist in this server.`);
@@ -41,32 +120,22 @@ export default {
 			const currentRoles = target.roles || [];
 
 			if (action === "add") {
-				// Only add if not already present
 				if (currentRoles.includes(roleId)) {
 					return message.reply(`User \`@${targetUser.username}\` already has the role \`${roleId}\`.`);
 				}
-
-				// Add role
 				try {
-					await target.edit({
-						roles: [...currentRoles, roleId],
-					});
+					await target.edit({ roles: [...currentRoles, roleId] });
 					await message.reply(`Role \`${roleId}\` has been added to \`@${targetUser.username}\`.`);
 				} catch (error) {
 					console.error("Role add error:", error);
 					return message.reply(`Failed to add role: ${error}`);
 				}
 			} else {
-				// Check if user has the role
 				if (!currentRoles.includes(roleId)) {
 					return message.reply(`User \`@${targetUser.username}\` doesn't have the role \`${roleId}\`.`);
 				}
-
-				// Remove role
 				try {
-					await target.edit({
-						roles: currentRoles.filter((role) => role !== roleId),
-					});
+					await target.edit({ roles: currentRoles.filter((role) => role !== roleId) });
 					await message.reply(`Role \`${roleId}\` has been removed from \`@${targetUser.username}\`.`);
 				} catch (error) {
 					console.error("Role remove error:", error);

@@ -59,6 +59,7 @@ async function databaseMigrations() {
 	await setIndexes(dbs.SESSIONS, ["user", "token"]);
 	await setIndexes(dbs.TEMPBANS, ["id", "until"]);
 	await setIndexes(dbs.USERS, ["id"]);
+	await setIndexes(dbs.REACTION_ROLES, ["server", "messageId"]);
 }
 
 export { databaseMigrations };
