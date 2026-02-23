@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
-import { client } from "../../..";
+import { client, dbs } from "../../..";
 import { commands, ownerIDs } from "../../modules/command_handler";
 import fs from "fs";
 import path from "path";
@@ -35,6 +35,7 @@ export default {
 			`Servers: \`${client.servers.size()}\`\n` +
 			`Channels: \`${client.channels.size()}\`\n` +
 			`Users: \`${client.users.size()}\`\n` +
+			`Infractions: \`${await dbs.INFRACTIONS.countDocuments({})}\`\n` +
 			`### Connection\n` +
 			`API Endpoint: \`${client.options.baseURL}\`\n` +
 			`WebSocket: \`${client.events.ping() ?? "--"}ms\`\n` +
@@ -43,9 +44,8 @@ export default {
 			`stoat.js: \`${pjson.dependencies["stoat.js"]}\`\n` +
 			`stoat-api: \`${pjson.dependencies["stoat-api"]}\`\n` +
 			`axios: \`${pjson.dependencies["axios"]}\`\n` +
-			`typescript: \`${pjson.devDependencies?.["typescript"] ?? "N/A"}\`\n` +
-			`mongodb: \`${pjson.devDependencies?.["mongodb"]}\`\n` +
-			`ulid: \`${pjson.devDependencies?.["ulid"]}\`\n` +
+			`mongodb: \`${pjson.dependencies?.["mongodb"]}\`\n` +
+			`ulid: \`${pjson.dependencies?.["ulid"]}\`\n` +
 			`### Miscellaneous\n` +
 			`Command count: \`${commands.length}\`\n` +
 			`Environment: \`${process.env["NODE_ENV"] || "testing"}\`\n` +

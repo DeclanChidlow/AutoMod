@@ -14,7 +14,7 @@ import { client, dbs } from "../..";
 				const statusText = statuses[i]
 					.replace("{{servers}}", `${client.servers.size()}`)
 					.replace("{{users}}", `${client.users.size()}`)
-					.replace("{{infractions_total}}", `${await dbs.INFRACTIONS.count({})}`)
+					.replace("{{infractions_total}}", `~${await dbs.INFRACTIONS.estimatedDocumentCount({})}`)
 					.replace("{{ping_ms}}", `${client.events.ping() ?? -1}`);
 
 				await setStatus(statusText, "Online");
