@@ -26,13 +26,11 @@
       "name": "automod-bot",
       "version": "1.0.0",
       "dependencies": {
-        "@types/monk": "^6.0.0",
         "automod-lib": "workspace:*",
         "axios": "^1.13.2",
         "dayjs": "^1.11.19",
         "form-data": "^4.0.5",
         "mongodb": "^7.0.0",
-        "monk": "^7.3.4",
         "prom-client": "^15.1.3",
         "stoat-api": "0.8.9-4",
         "stoat.js": "^7.3.6",
@@ -93,8 +91,6 @@
     "@types/mime": ["@types/mime@1.3.5", "", {}, "sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w=="],
 
     "@types/mongodb": ["@types/mongodb@3.6.20", "", { "dependencies": { "@types/bson": "*", "@types/node": "*" } }, "sha512-WcdpPJCakFzcWWD9juKoZbRtQxKIMYF/JIAM4JrNHrMcnJL6/a2NWjXxW7fo9hxboxxkg+icff8d7+WIEvKgYQ=="],
-
-    "@types/monk": ["@types/monk@6.0.0", "", { "dependencies": { "monk": "*" } }, "sha512-9qy4Gva0uVgaQsDqlcWD+XOXUmgInPAoxyyoN8uFUTjNFvswyCH1hwpnYuh2MVr60ekZgYiquWEjBYvfYfE1Jw=="],
 
     "@types/node": ["@types/node@25.0.9", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-/rpCXHlCWeqClNBwUhDcusJxXYDjZTyE8v5oTO7WbL8eij2nKhUeU89/6xgjU7N4/Vh3He0BtyhJdQbDyhiXAw=="],
 
@@ -424,6 +420,8 @@
 
     "automod-bot/ulid": ["ulid@3.0.2", "", { "bin": { "ulid": "dist/cli.js" } }, "sha512-yu26mwteFYzBAot7KVMqFGCVpsF6g8wXfJzQUHvu1no3+rRRSFcSV2nKeYvNPLD2J4b08jYBDhHUjeH0ygIl9w=="],
 
+    "automod-lib/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
+
     "monk/mongodb": ["mongodb@3.7.4", "", { "dependencies": { "bl": "^2.2.1", "bson": "^1.1.4", "denque": "^1.4.1", "optional-require": "^1.1.8", "safe-buffer": "^5.1.2" }, "optionalDependencies": { "saslprep": "^1.0.0" } }, "sha512-K5q8aBqEXMwWdVNh94UQTwZ6BejVbFhh1uB6c5FKtPE9eUMZPUO3sRZdgIEcHSrAWmxzpG/FeODDKL388sqRmw=="],
 
     "readable-stream/safe-buffer": ["safe-buffer@5.1.2", "", {}, "sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g=="],
@@ -435,6 +433,8 @@
     "automod-bot/mongodb/bson": ["bson@7.0.0", "", {}, "sha512-Kwc6Wh4lQ5OmkqqKhYGKIuELXl+EPYSCObVE6bWsp1T/cGkOCBN0I8wF/T44BiuhHyNi1mmKVPXk60d41xZ7kw=="],
 
     "automod-bot/mongodb/mongodb-connection-string-url": ["mongodb-connection-string-url@7.0.0", "", { "dependencies": { "@types/whatwg-url": "^13.0.0", "whatwg-url": "^14.1.0" } }, "sha512-irhhjRVLE20hbkRl4zpAYLnDMM+zIZnp0IDB9akAFFUZp/3XdOfwwddc7y6cNvF2WCEtfTYRwYbIfYa2kVY0og=="],
+
+    "automod-lib/@types/bun/bun-types": ["bun-types@1.3.9", "", { "dependencies": { "@types/node": "*" } }, "sha512-+UBWWOakIP4Tswh0Bt0QD0alpTY8cb5hvgiYeWCMet9YukHbzuruIEeXC2D7nMJPB12kbh8C7XJykSexEqGKJg=="],
 
     "monk/mongodb/bson": ["bson@1.1.6", "", {}, "sha512-EvVNVeGo4tHxwi8L6bPj3y3itEvStdwvvlojVxxbyYfoaxJ6keLgrTuKdyfEAszFK+H3olzBuafE0yoh0D1gdg=="],
 

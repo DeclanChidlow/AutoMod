@@ -1,6 +1,0 @@
-# IDE / editor specific ignores
-.idea/
-.vscode/
-
-# JavaScript
-node_modules

@@ -4,15 +4,11 @@
 	"type": "module",
 	"description": "Shared code for AutoMod",
 	"scripts": {
-		"build": "rm -rf dist && tsc",
-		"dev": "rm -rf dist && tsc-watch"
+		"clean": "rm -rf dist",
+		"build": "bun run clean && bunx --bun tsc -p tsconfig.json",
+		"dev": "bunx --bun tsc -p tsconfig.json -w --preserveWatchOutput"
 	},
 	"devDependencies": {
-		"@types/bson": "^4.2.4",
-		"@types/bun": "latest",
-		"bson": "^6.10.4",
-		"monk": "^7.3.4",
-		"redis": "^5.10.0",
-		"tsc-watch": "^7.2.0"
+		"@types/bun": "latest"
 	}
 }

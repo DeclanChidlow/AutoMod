@@ -8,8 +8,11 @@ COPY packages/lib/package.json ./packages/lib/
 RUN bun install --frozen-lockfile
 
 COPY packages/lib ./packages/lib
-
 COPY packages/bot ./packages/bot
+
+WORKDIR /build/packages/lib
+RUN bun run build
+
 WORKDIR /build/packages/bot
 RUN bun run build
 
