@@ -9,7 +9,7 @@ prom.collectDefaultMetrics({ prefix: "automod_" });
 const metrics = {
 	commands: new prom.Counter({ name: "commands_executed", help: "Command usage stats", labelNames: ["command"] }),
 	servers: new prom.Gauge({ name: "server_count", help: "Amount of servers the bot is in" }),
-	wsPing: new prom.Gauge({ name: "ws_ping", help: "WebSocket ping as returned by stoat.js" }),
+	wsPing: new prom.Gauge({ name: "ws_ping", help: "WebSocket ping as returned by Stoat.js" }),
 	msgPing: new prom.Gauge({ name: "msg_ping", help: "Amount of time it takes for the bot to send a message" }),
 };
 
