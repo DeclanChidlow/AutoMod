@@ -18,7 +18,7 @@ export default {
 			const action = args.shift()?.toLowerCase();
 
 			const normalizeEmoji = (emoji: string) => {
-				return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/\uFE0F/g, "");
+				return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/[\uFE0F\uE0E2]/g, "");
 			};
 
 			if (action === "reaction") {
@@ -30,7 +30,7 @@ export default {
 					const roleArg = args.shift()?.trim();
 
 					if (!messageId || !emojiRaw || !roleArg) {
-						return message.reply("Usage: `/role reaction add <message-id> <emoji> <role-id>`");
+						return message.reply("Usage: `/role reaction add <message-id> <emoji> <role>`");
 					}
 
 					const roleIdMatch = roleArg.match(/^<%([A-Z0-9]+)>$/i);
@@ -43,25 +43,36 @@ export default {
 
 					const emoji = normalizeEmoji(emojiRaw);
 
-					await dbs.REACTION_ROLES.insertOne({
-						server: server.id,
-						messageId: messageId,
-						emoji: emoji,
-						roleId: roleId,
-					});
+					const isCustomEmoji = /^[A-Z0-9]{26}$/i.test(emoji);
+					const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+					const graphemeCount = [...segmenter.segment(emoji)].length;
 
-					const channel = message.channel;
-					if (channel) {
-						try {
-							const targetMsg = await channel.fetchMessage(messageId);
-							await targetMsg.react(emoji);
-						} catch (e) {
-							console.error("Could not add initial reaction:", e);
-						}
+					if (!isCustomEmoji && graphemeCount > 1) {
+						return message.reply("Please provide exactly **one** valid emoji.");
 					}
 
-					const displayEmoji = /^[A-Z0-9]{26}$/i.test(emoji) ? `:${emoji}:` : emoji;
-					return message.reply(`Reaction role added! Reacting to message \`${messageId}\` with ${displayEmoji} will now grant the role.`);
+					const channel = message.channel;
+					if (!channel) {
+						return message.reply("This command must be used in a channel.");
+					}
+
+					try {
+						const targetMsg = await channel.fetchMessage(messageId);
+						await targetMsg.react(emoji);
+
+						await dbs.REACTION_ROLES.insertOne({
+							server: server.id,
+							messageId: messageId,
+							emoji: emoji,
+							roleId: roleId,
+						});
+
+						const displayEmoji = isCustomEmoji ? `:${emoji}:` : emoji;
+						return message.reply(`Reaction role added! Reacting to message \`${messageId}\` with ${displayEmoji} will now grant the role.`);
+					} catch (e) {
+						console.error("Could not add initial reaction:", e);
+						return message.reply(`Failed to add reaction role. Ensure the message ID is correct and the emoji is valid.`);
+					}
 				}
 
 				if (subAction === "rm" || subAction === "remove") {

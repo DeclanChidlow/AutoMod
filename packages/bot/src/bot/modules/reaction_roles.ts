@@ -1,10 +1,14 @@
 import { client, dbs } from "../../index";
 
+const normalizeEmoji = (emoji: string) => {
+	return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/[\uFE0F\uE0E2]/g, "");
+};
+
 client.on("messageReactionAdd", async (message, user, emoji) => {
 	if (user === client.user?.id) return;
 
 	try {
-		const normalizedEmoji = emoji.replace(/\uFE0F/g, "");
+		const normalizedEmoji = normalizeEmoji(emoji);
 
 		const reactionRole = await dbs.REACTION_ROLES.findOne({ messageId: message.id, emoji: normalizedEmoji });
 		if (!reactionRole) return;
@@ -29,7 +33,7 @@ client.on("messageReactionRemove", async (message, user, emoji) => {
 	if (user === client.user?.id) return;
 
 	try {
-		const normalizedEmoji = emoji.replace(/\uFE0F/g, "");
+		const normalizedEmoji = normalizeEmoji(emoji);
 
 		const reactionRole = await dbs.REACTION_ROLES.findOne({ messageId: message.id, emoji: normalizedEmoji });
 		if (!reactionRole) return;
