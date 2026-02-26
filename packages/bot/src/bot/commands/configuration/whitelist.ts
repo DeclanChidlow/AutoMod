@@ -12,7 +12,7 @@ export default {
 	name: "whitelist",
 	aliases: [],
 	description: "Permit users or roles to bypass moderation rules.",
-	documentation: "/docs/automod/commands/configuration/whitelist",
+	documentation: "/configuration/whitelist",
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {

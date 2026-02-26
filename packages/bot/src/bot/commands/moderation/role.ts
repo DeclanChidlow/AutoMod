@@ -8,7 +8,7 @@ export default {
 	name: "role",
 	aliases: ["roles"],
 	description: "Add and remove roles from a member, or manage reaction roles.",
-	documentation: "/docs/automod/commands/moderation/role",
+	documentation: "/moderation/role",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {

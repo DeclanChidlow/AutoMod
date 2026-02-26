@@ -47,7 +47,7 @@ export default {
 	name: "timeout",
 	aliases: ["mute", "silence"],
 	description: "Sets a timeout on a user, making them unable to send messages for a given duration.",
-	documentation: "/docs/automod/commands/moderation/timeout",
+	documentation: "/moderation/timeout",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {

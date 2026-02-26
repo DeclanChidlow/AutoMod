@@ -6,7 +6,7 @@ export default {
 	name: "test",
 	aliases: null,
 	description: "Checks that the bot works.",
-	documentation: "/docs/automod/commands/miscellaneous/test",
+	documentation: "/miscellaneous/test",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		message.reply({

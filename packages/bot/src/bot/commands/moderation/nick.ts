@@ -17,7 +17,7 @@ export default {
 	name: "nick",
 	aliases: ["setnick"],
 	description: "Manage a user's server-specific nickname.",
-	documentation: "/docs/automod/commands/moderation/nick",
+	documentation: "/moderation/nick",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {

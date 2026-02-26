@@ -15,7 +15,7 @@ export default {
 	name: "filter",
 	aliases: null,
 	description: "Allows for messages to be checked against a word list and then action to be taken based on infractions.",
-	documentation: "/docs/automod/commands/configuration/filter",
+	documentation: "/configuration/filter",
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);

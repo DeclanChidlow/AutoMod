@@ -9,7 +9,7 @@ export default {
 	name: "logs",
 	aliases: null,
 	description: "Configure log collection.",
-	documentation: "/docs/automod/commands/configuration/logs",
+	documentation: "/configuration/logs",
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);

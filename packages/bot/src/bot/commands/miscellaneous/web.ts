@@ -10,7 +10,7 @@ export default {
 	name: "web",
 	aliases: null,
 	description: "Allows you to log in and out of the web dashboard.",
-	documentation: "/docs/automod/commands/miscellaneous/web",
+	documentation: "/miscellaneous/web",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const subcommand = args.shift()?.toLowerCase();

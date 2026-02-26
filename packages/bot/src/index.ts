@@ -51,7 +51,7 @@ console.info(`\
 			{
 				autoReconnect: true,
 				baseURL: process.env["STOAT_API_URL"] || "https://api.stoat.chat/0.8",
-				heartbeatInterval: 60000,
+				heartbeatInterval: 45000,
 			},
 			db,
 		);

@@ -7,7 +7,7 @@ export default {
 	name: "avatar",
 	aliases: ["pfp"],
 	description: "Allows managing or returning a user’s profile picture.",
-	documentation: "/docs/automod/commands/moderation/avatar",
+	documentation: "/moderation/avatar",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {

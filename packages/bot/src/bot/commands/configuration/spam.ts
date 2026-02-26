@@ -8,7 +8,7 @@ export default {
 	name: "spam",
 	aliases: "antispam",
 	description: "Enable or disable anti-spam features.",
-	documentation: "/docs/automod/commands/configuration/spam",
+	documentation: "/configuration/spam",
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
