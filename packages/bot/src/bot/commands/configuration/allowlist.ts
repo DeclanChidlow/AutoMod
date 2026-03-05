@@ -6,13 +6,13 @@ import MessageCommandContext from "../../../struct/MessageCommandContext";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../../util";
 
-const SYNTAX = "/whitelist add @user; /whitelist remove @user; /whitelist list";
+const SYNTAX = "/allowlist add <user|role>; /allowlist remove <user|role>; /allowlist list";
 
 export default {
-	name: "whitelist",
-	aliases: [],
+	name: "allowlist",
+	aliases: ["whitelist"],
 	description: "Permit users or roles to bypass moderation rules.",
-	documentation: "/configuration/whitelist",
+	documentation: "/configuration/allowlist",
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
@@ -31,7 +31,7 @@ export default {
 				role = Object.entries(message.serverContext.roles ?? {}).find((r) => r[1].name?.toLowerCase() == args[1].toLowerCase() || r[0] == args[1].toUpperCase())?.[0];
 
 				if (role) {
-					if (config.whitelist!.roles?.includes(role)) return message.reply("That role is already whitelisted.");
+					if (config.whitelist!.roles?.includes(role)) return message.reply("That role is already in the allowlist.");
 
 					config.whitelist!.roles = [role, ...(config.whitelist!.roles ?? [])];
 					await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
@@ -40,49 +40,49 @@ export default {
 
 				user = await parseUser(args[1]);
 				if (user == null) return message.reply("I can't find that user or role.");
-				if (user.bot != null) return message.reply("Bots cannot be whitelisted.");
-				if (config.whitelist!.users?.includes(user.id)) return message.reply("That user is already whitelisted.");
+				if (user.bot != null) return message.reply("Bots cannot be added to the allowlist.");
+				if (config.whitelist!.users?.includes(user.id)) return message.reply("That user is already in the allowlist.");
 
 				config.whitelist!.users = [user.id, ...(config.whitelist!.users ?? [])];
 				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
-				return message.reply("Added user to whitelist!");
+				return message.reply("Added user to the allowlist!");
 				break;
 			case "rm":
 			case "del":
 			case "remove":
 			case "delete":
-				if (!args[1]) return message.reply("You need to spefify a user or role name.");
+				if (!args[1]) return message.reply("You need to specify a user or role name.");
 
 				role = Object.entries(message.serverContext.roles ?? {}).find((r) => r[1].name?.toLowerCase() == args[1].toLowerCase() || r[0] == args[1].toUpperCase())?.[0];
 
 				if (role) {
-					if (!config.whitelist!.roles?.includes(role)) return message.reply("That role is not whitelisted.");
+					if (!config.whitelist!.roles?.includes(role)) return message.reply("That role is not in the allowlist.");
 
 					config.whitelist!.roles = config.whitelist!.roles.filter((r) => r != role);
 					await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
-					return message.reply(`Removed role from whitelist!`);
+					return message.reply(`Removed role from the allowlist!`);
 				}
 
 				user = await parseUser(args[1]);
 				if (user == null) return message.reply("I can't find that user or role.");
-				if (!config.whitelist!.users?.includes(user.id)) return message.reply("That user is not whitelisted.");
+				if (!config.whitelist!.users?.includes(user.id)) return message.reply("That user is not in the allowlist.");
 
 				config.whitelist!.users = config.whitelist!.users.filter((u) => u != user?.id);
 				await dbs.SERVERS.updateOne({ id: message.serverContext.id }, { $set: { whitelist: config.whitelist } });
-				return message.reply("Removed user from whitelist!");
+				return message.reply("Removed user from the allowlist!");
 				break;
 			case "l":
 			case "ls":
 			case "list":
 			case "show":
-				let str = `## Whitelisted users\n` + `### Users\n`;
+				let str = `## Allowlist\n ### Users\n`;
 
 				if (config.whitelist.users?.length) {
 					config.whitelist.users?.forEach((u, index) => {
 						if (index < 15) str += `* [@${client.users.get(u)?.username || u}](/@${u})\n`;
 						if (index == 15) str += `**${index - 15} more user${config?.whitelist?.users?.length == 16 ? "" : "s"}**\n`;
 					});
-				} else str += `**No whitelisted users**\n`;
+				} else str += `**No users in the allowlist**\n`;
 
 				str += `### Roles\n`;
 
@@ -93,7 +93,7 @@ export default {
 							if (index < 15) str += `* ${r}\n`;
 							if (index == 15) str += `**${config!.whitelist!.roles!.length - 15} more role${config?.whitelist?.roles?.length == 16 ? "" : "s"}**\n`;
 						});
-				} else str += `**No whitelisted roles**\n`;
+				} else str += `**No roles in the allowlist**\n`;
 
 				str += `\nAdmins and bot managers: **${config.whitelist.managers === false ? "No" : "Yes"}**`;
 
@@ -104,7 +104,7 @@ export default {
 				}
 				break;
 			default:
-				message.reply(`Command syntax: ${SYNTAX}`);
+				message.reply(`Command syntax: \`${SYNTAX}\``);
 		}
 	},
 } as SimpleCommand;
