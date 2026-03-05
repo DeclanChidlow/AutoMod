@@ -6,7 +6,7 @@ import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
 export default {
 	name: "spam",
-	aliases: "antispam",
+	aliases: ["antispam"],
 	description: "Enable or disable anti-spam features.",
 	documentation: "/configuration/spam",
 	category: CommandCategory.Configuration,
