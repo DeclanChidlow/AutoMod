@@ -28,7 +28,7 @@ export default {
 
 			if (config.whitelist.users?.length) {
 				config.whitelist.users.forEach((u, index) => {
-					if (index < 15) str += `* <@${u}>\n`;
+					if (index < 15) str += `- <@${u}>\n`;
 					if (index === 15) str += `**${config!.whitelist!.users!.length - 15} more user${config!.whitelist!.users!.length === 16 ? "" : "s"}**\n`;
 				});
 			} else str += `**No users in the allowlist**\n`;
@@ -37,7 +37,7 @@ export default {
 
 			if (config.whitelist.roles?.length) {
 				config.whitelist.roles.forEach((r, index) => {
-					if (index < 15) str += `* <%${r}>\n`;
+					if (index < 15) str += `- <%${r}>\n`;
 					if (index === 15) str += `**${config!.whitelist!.roles!.length - 15} more role${config!.whitelist!.roles!.length === 16 ? "" : "s"}**\n`;
 				});
 			} else str += `**No roles in the allowlist**\n`;
