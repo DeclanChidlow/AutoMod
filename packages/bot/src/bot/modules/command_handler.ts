@@ -102,7 +102,7 @@ let commands: SimpleCommand[];
 			try {
 				serverCtx = client.servers.get(config.linkedServer) || (await client.servers.fetch(config.linkedServer));
 			} catch (e) {
-				msg.reply(`# Error\n` + `Failed to fetch linked server. This command will be executed in the context of this server.\n\n` + `Error: \`\`\`js\n${e}\n\`\`\``);
+				msg.reply(`# Error\n Failed to fetch linked server. This command will be executed in the context of this server.\n\n` + `Error: \`\`\`js\n${e}\n\`\`\``);
 			}
 		}
 

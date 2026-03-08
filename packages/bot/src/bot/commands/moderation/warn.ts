@@ -18,12 +18,12 @@ export default {
 	run: async (message, args, serverConfig) => {
 		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
 
-		const userInput = args.shift() || "";
+		const userInput = !message.replyIds?.length ? args.shift() || "" : undefined;
 		if (!userInput && !message.replyIds?.length)
 			return message.reply({
 				embeds: [
 					embed(
-						`Please specify one or more users by replying to their message while running this command or ` + `by specifying a comma-separated list of usernames.`,
+						`Please specify one or more users by replying to their message while running this command or by specifying a comma-separated list of usernames.`,
 						"No target user specified",
 						EmbedColor.SoftError,
 					),
@@ -42,21 +42,16 @@ export default {
 		const targetUsers: User | { id: string }[] = [];
 
 		const targetInput = dedupeArray(
-			// Replied messages
-			(await Promise.allSettled((message.replyIds ?? []).map((msg) => message.channel?.fetchMessage(msg)))).filter((m) => m.status == "fulfilled").map((m) => (m as any).value.author_id),
-			// Provided users
-			userInput.split(","),
+			message.replyIds?.length
+				? (await Promise.allSettled(message.replyIds.map((msg) => message.channel?.fetchMessage(msg)))).filter((m) => m.status == "fulfilled").map((m) => (m as any).value.authorId)
+				: userInput!.split(","),
 		);
 
 		for (const userStr of targetInput) {
 			try {
 				let user = await parseUserOrId(userStr);
 				if (!user) {
-					if (message.replyIds?.length && userStr == userInput) {
-						reason = reason ? `${userInput} ${reason}` : userInput;
-					} else {
-						embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, EmbedColor.SoftError));
-					}
+					embeds.push(embed(`I can't resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, EmbedColor.SoftError));
 					continue;
 				}
 
@@ -64,7 +59,10 @@ export default {
 				if (handledUsers.includes(user.id)) continue;
 				handledUsers.push(user.id);
 
-				if ((user as any)?.bot != null) return await message.reply({ embeds: [embed("You cannot warn bots.", null, EmbedColor.SoftError)] });
+				if ((user as any)?.bot != null) {
+					embeds.push(embed("You cannot warn bots.", null, EmbedColor.SoftError));
+					continue;
+				}
 
 				targetUsers.push(user);
 			} catch (e) {
