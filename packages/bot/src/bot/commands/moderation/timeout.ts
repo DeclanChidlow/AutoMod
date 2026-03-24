@@ -2,18 +2,13 @@ import { client } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import {
-    dedupeArray,
-    embed,
-    EmbedColor,
-    isModerator,
-    NO_MANAGER_MSG,
-    parseUserOrId,
-    sanitizeMessageContent
-} from "../../util";
-import { logModAction } from "../../modules/mod_logs";
+import { dedupeArray, embed, EmbedColor, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import Infraction from "automod-lib/dist/types/antispam/Infraction";
+import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
+import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import { ulid } from "ulid";
 import type { SendableEmbed } from "stoat-api";
+import { User } from "stoat.js";
 
 function parseTimeInput(input: string) {
     if (!/([0-9]{1,3}[smhdwy])+/g.test(input)) return null;
@@ -60,11 +55,11 @@ export default {
     description: "Sets a timeout on a user, making them unable to send messages for a given duration.",
     documentation: "/moderation/timeout",
     category: CommandCategory.Moderation,
-    run: async (message: MessageCommandContext, args: string[]) => {
+    run: async (message: MessageCommandContext, args: string[], serverConfig) => {
         try {
             if (!(await isModerator(message))) return await message.reply(NO_MANAGER_MSG);
 
-            // Support for multi users
+            // Multi Users
             const userInput = !message.replyIds?.length ? args.shift() || "" : undefined;
             if (!userInput && !message.replyIds?.length) {
                 return message.reply({
@@ -78,7 +73,7 @@ export default {
                 });
             }
 
-			// Time
+            // Time
             let durationInput = args.shift();
             const duration = durationInput ? parseTimeInput(durationInput) : null;
             // Reason
@@ -91,9 +86,9 @@ export default {
 
             const embeds: SendableEmbed[] = [];
             const handledUsers: string[] = [];
-            const targetUsers: { id: string; username?: string }[] = [];
+            const targetUsers: (User | { id: string })[] = [];
 
-            // Build User Lists
+            // Build user lists
             const targetInput = dedupeArray(
                 message.replyIds?.length
                     ? (await Promise.allSettled(message.replyIds.map((msg) => message.channel?.fetchMessage(msg))))
@@ -119,7 +114,7 @@ export default {
                     if (handledUsers.includes(user.id)) continue;
                     handledUsers.push(user.id);
 
-                    // Checks
+                    // Check
                     if (user.id == message.authorId) {
                         embeds.push(embed("You cannot timeout yourself.", null, EmbedColor.Warning));
                         continue;
@@ -140,7 +135,7 @@ export default {
                         ),
                     );
                 }
-            }
+			}
 
             if (targetUsers.length === 0) {
                 if (embeds.length > 0) {
@@ -162,37 +157,52 @@ export default {
                 });
             }
 
-            // Timeout/Clear for each users
+            // Timeout for each users
             for (const user of targetUsers) {
                 try {
-                    // Generate a Case ID
                     const infractionId = ulid();
-                    let extraText = ""; // 
 
                     if (duration === null) {
-                        // Clear Timeout
+                        // Timeout Clear
                         await client.api.patch(
                             `/servers/${message.serverContext.id}/members/${user.id}` as "/servers/{server}/members/{target}",
                             {
                                 timeout: new Date(0).toISOString(),
                             } as any,
                         );
+
                         // Log
                         await logModAction(
-                            "timeout", 
-                            message.serverContext, 
-                            message.member!, 
-                            user.id, 
-                            reason, 
-                            infractionId, 
-                            "Timeout cleared." // Extra Text
+                            "timeout",
+                            message.serverContext,
+                            message.member!,
+                            user.id,
+                            reason,
+                            infractionId,
+                            "Timeout cleared."
                         );
+
                         embeds.push({
                             title: `Timeout cleared`,
                             colour: EmbedColor.Success,
                             description: `Timeout cleared for <@${user.id}> (\`${user.id}\`)`,
                         });
                     } else {
+                        // Create Record
+                        const infraction: Infraction = {
+                            _id: infractionId,
+                            createdBy: message.authorId!,
+                            date: Date.now(),
+                            reason: reason || "No reason provided",
+                            server: message.serverContext.id,
+                            type: InfractionType.Manual,
+                            user: user.id,
+                            actionType: "timeout", // Mark as timeout
+                        };
+
+                        // Store Record
+                        const { userWarnCount } = await storeInfraction(infraction);
+
                         // Timeout Set
                         await client.api.patch(
                             `/servers/${message.serverContext.id}/members/${user.id}` as "/servers/{server}/members/{target}",
@@ -200,7 +210,8 @@ export default {
                                 timeout: new Date(Date.now() + duration).toISOString(),
                             } as any,
                         );
-                        // ms -> READABLE
+
+                        // MS --> READABLE
                         const durationMs = duration;
                         const days = Math.floor(durationMs / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((durationMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -211,22 +222,27 @@ export default {
                         if (hours > 0) durationStr += `${hours}h `;
                         if (minutes > 0) durationStr += `${minutes}m `;
                         if (seconds > 0 || durationStr === "") durationStr += `${seconds}s`;
-                        extraText = `Timeout duration: **${durationStr.trim()}**`;
 
-                        // Record Timeout
+                        // Log
                         await logModAction(
-                            "timeout", 
+                            "timeout",
                             message.serverContext,
                             message.member!,
                             user.id,
-                            reason + (durationInput ? ` (${durationInput})` : ""), // Reason + Time
+                            reason + (durationInput ? ` (${durationInput})` : ""),
                             infractionId,
-                            extraText // Extra Text
+                            `Timeout duration: **${durationStr.trim()}**`
                         );
+
                         embeds.push({
                             title: `User timed out`,
                             colour: EmbedColor.Success,
-                            description: `Successfully timed out <@${user.id}> (\`${user.id}\`) for ${durationStr.trim()}`,
+                            description: 
+                                `This is ${userWarnCount == 1 ? "**the first infraction**" : `infraction number **${userWarnCount}**`} for ${await fetchUsername(user.id)}.\n` +
+                                `**Timeout duration:** ${durationStr.trim()}\n` +
+                                `**User ID:** \`${user.id}\`\n` +
+                                `**Infraction ID:** \`${infractionId}\`\n` +
+                                `**Reason:** \`${infraction.reason}\``,
                         });
                     }
                 } catch (e: any) {
