@@ -173,7 +173,7 @@ async function logModAction(
             let description = `\`@${mod.user?.username}\` **${aType}** \`` +
                 `${await fetchUsername(target)}\`${["warn", "timeout"].includes(type) ? "." : ` from ${server.name}.`}\n` +
                 `**Reason**: \`${reason ? reason : "No reason provided."}\`\n` +
-                `**Case ID**: \`${infractionID}\`\n` + // Case ID
+                `**Infraction ID**: \`${infractionID}\`\n` + // ID
                 (extraText ? extraText : "");
 
             // Send
