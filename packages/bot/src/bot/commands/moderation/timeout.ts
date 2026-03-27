@@ -55,7 +55,7 @@ export default {
     description: "Sets a timeout on a user, making them unable to send messages for a given duration.",
     documentation: "/moderation/timeout",
     category: CommandCategory.Moderation,
-    run: async (message: MessageCommandContext, args: string[], serverConfig) => {
+    run: async (message: MessageCommandContext, args: string[]) => {
         try {
             if (!(await isModerator(message))) return await message.reply(NO_MANAGER_MSG);
 
