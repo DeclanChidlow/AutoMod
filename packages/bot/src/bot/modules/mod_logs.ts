@@ -126,37 +126,66 @@ client.on("messageDeleteBulk", async (messages) => {
 });
 
 async function logModAction(
-	type: "warn" | "kick" | "ban" | "votekick",
-	server: Server,
-	mod: ServerMember,
-	target: string,
-	reason: string | null,
-	infractionID: string,
-	extraText?: string,
+    // Added Timeout
+    type: "warn" | "kick" | "ban" | "votekick" | "timeout",
+    server: Server,
+    mod: ServerMember,
+    target: string,
+    reason: string | null,
+    infractionID: string,
+    extraText?: string,
 ): Promise<void> {
-	try {
-		let config = await dbs.SERVERS.findOne({ id: server.id });
+    try {
+        let config = await dbs.SERVERS.findOne({ id: server.id });
 
-		if (config?.logs?.modAction) {
-			let aType = type == "ban" ? "banned" : type + "ed";
-			let embedColor = "#0576ff";
-			if (type == "kick") embedColor = "#ff861d";
-			if (type == "ban") embedColor = "#ff2f05";
+        if (config?.logs?.modAction) {
+            let aType: string;
+            let embedColor: string;
 
-			sendLogMessage(config.logs.modAction, {
-				title: `User ${aType}`,
-				description:
-					`\`@${mod.user?.username}\` **${aType}** \`` +
-					`${await fetchUsername(target)}\`${type == "warn" ? "." : ` from ${server.name}.`}\n` +
-					`**Reason**: \`${reason ? reason : "No reason provided."}\`\n` +
-					`**Warn ID**: \`${infractionID}\`\n` +
-					(extraText ?? ""),
-				color: embedColor,
-			});
-		}
-	} catch (e) {
-		console.error(e);
-	}
+            switch (type) {
+                case "warn":
+                    aType = "warned";
+                    embedColor = "#0576ff"; // Blue
+                    break;
+                case "kick":
+                    aType = "kicked";
+                    embedColor = "#ff861d"; // Orange
+                    break;
+                case "ban":
+                    aType = "banned";
+                    embedColor = "#ff2f05"; // Red
+                    break;
+                case "votekick":
+                    aType = "votekicked";
+                    embedColor = "#ffaa00"; // VOTEKICKED???
+                    break;
+                case "timeout":
+                    // Description for timeout
+                    aType = "timed out";
+                    embedColor = "#9c42f5"; // Purple
+                    break;
+                default:
+                    aType = "acted upon";
+                    embedColor = "#cccccc";
+            }
+
+            // Generate sending texts, and generate extra text for time out
+            let description = `\`@${mod.user?.username}\` **${aType}** \`` +
+                `${await fetchUsername(target)}\`${["warn", "timeout"].includes(type) ? "." : ` from ${server.name}.`}\n` +
+                `**Reason**: \`${reason ? reason : "No reason provided."}\`\n` +
+                `**Infraction ID**: \`${infractionID}\`\n` + // ID
+                (extraText ? extraText : "");
+
+            // Send
+            sendLogMessage(config.logs.modAction, {
+                title: `User ${aType}`, // Such as  “User timed out”
+                description: description,
+                color: embedColor,
+            });
+        }
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 let fetchUsername = async (id: string, fallbackText?: string) => {

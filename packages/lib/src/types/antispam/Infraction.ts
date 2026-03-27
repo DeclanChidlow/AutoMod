@@ -3,7 +3,7 @@ import InfractionType from "./InfractionType";
 class Infraction {
 	_id: string;
 	type: InfractionType;
-	actionType?: "kick" | "ban";
+	actionType?: "kick" | "ban" | "timeout"; // Added timeout
 	user: string;
 	createdBy: string | null;
 	server: string;
