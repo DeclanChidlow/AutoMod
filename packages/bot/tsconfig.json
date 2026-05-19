@@ -7,7 +7,7 @@
     "moduleDetection": "force",
     "allowJs": true,
     // Bundler mode
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     // Best practices
     "strict": true,
     "skipLibCheck": true,

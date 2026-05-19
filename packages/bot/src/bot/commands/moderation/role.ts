@@ -71,7 +71,7 @@ export default {
 						return message.reply(`Reaction role added! Reacting to message \`${messageId}\` with ${displayEmoji} will now grant the role.`);
 					} catch (e) {
 						console.error("Could not add initial reaction:", e);
-						return message.reply(`Failed to add reaction role. Ensure the message ID is correct and the emoji is valid.`);
+						return message.reply(`Failed to add reaction role. Ensure the message ID is correct, the emoji is valid, and you're sending the command in the same channel as the message.`);
 					}
 				}
 
