@@ -11,6 +11,7 @@
 	"dependencies": {
 		"automod-lib": "workspace:*",
 		"axios": "^1.16.1",
+		"bson": "7.2.0",
 		"dayjs": "^1.11.20",
 		"form-data": "^4.0.5",
 		"mongodb": "^7.2.0",
