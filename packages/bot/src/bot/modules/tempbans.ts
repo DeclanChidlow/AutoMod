@@ -8,6 +8,7 @@ let expired: string[] = [];
 async function tick() {
 	let found = await dbs.TEMPBANS.find({ until: { $lt: Date.now() + 60000 } }).toArray();
 
+
 	for (const ban of found) {
 		if (!dontProcess.includes(ban.id)) {
 			const delay = Math.max(0, ban.until - Date.now());
@@ -41,6 +42,7 @@ async function processUnban(ban: TempBan) {
 
 			await Promise.allSettled(promises);
 		} else dbs.TEMPBANS.deleteOne({ id: ban.id });
+			dontProcess = dontProcess.filter((id) => id != ban.id);
 	} catch (e) {
 		console.error(e);
 	}
@@ -64,7 +66,6 @@ async function removeTempBan(banID: string): Promise<TempBan> {
 	if (!ban) throw `Ban ${banID} does not exist; cannot delete`;
 	if (Date.now() >= ban.until - 120000) {
 		expired.push(ban.id);
-		expired = expired.filter((id) => id != ban!.id);
 	}
 	return ban;
 }

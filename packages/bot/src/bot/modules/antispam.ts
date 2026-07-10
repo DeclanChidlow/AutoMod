@@ -47,7 +47,15 @@ async function antispam(message: Message): Promise<boolean> {
 			if (!userStore.count) userStore.count = 1;
 			else userStore.count++;
 
-			setTimeout(() => userStore.count--, rule.timeframe * 1000);
+			setTimeout(() => {
+				userStore.count--;
+				if (userStore.count <= 0) {
+					delete store.users[message.channelId!];
+					if (Object.keys(store.users).length === 0) {
+						msgCountStore.delete(rule.id);
+					}
+				}
+			}, rule.timeframe * 1000);
 
 			if (userStore.count > rule.max_msg) {
 				console.info(`Antispam rule triggered: ${rule.max_msg}/${rule.timeframe} -> ${ModerationAction[rule.action]}`);

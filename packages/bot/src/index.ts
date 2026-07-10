@@ -8,6 +8,14 @@ import TempBan from "automod-lib/dist/types/TempBan";
 import ReactionRoles from "automod-lib/dist/types/ReactionRoles";
 import { Collection } from "mongodb";
 
+process.on("unhandledRejection", (reason, _promise) => {
+	console.error("Unhandled promise rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+	console.error("Uncaught exception:", error);
+});
+
 console.info("Initialising client");
 
 let client: AutomodClient;

@@ -37,9 +37,6 @@ function getDBUrl() {
 }
 
 async function databaseMigrations() {
-	// Ensure the DB is connected before running migrations
-	if (!dbInstance) await module.exports.default();
-
 	async function setIndexes(collection: Collection<any>, toIndex: string[]) {
 		try {
 			if (!collection) return;

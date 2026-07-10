@@ -7,7 +7,10 @@ import { DEFAULT_PREFIX } from "../../modules/command_handler";
 const sudoOverrides: { [key: string]: number | null } = {};
 
 const isSudo = (user: User): boolean => {
-	return !!(sudoOverrides[user.id] && sudoOverrides[user.id]! > Date.now());
+	const entry = sudoOverrides[user.id];
+	if (entry && entry > Date.now()) return true;
+	if (entry !== undefined) delete sudoOverrides[user.id];
+	return false;
 };
 
 const updateSudoTimeout = (user: User) => {

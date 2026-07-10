@@ -33,6 +33,7 @@ let commands: SimpleCommand[];
 	});
 
 	client.on("messageCreate", async (msg) => {
+		try {
 		console.debug(`Message -> ${msg.content}`);
 
 		if (msg.systemMessage !== undefined || msg.webhook !== undefined) return;
@@ -123,6 +124,9 @@ let commands: SimpleCommand[];
 		} catch (e) {
 			console.error(e);
 			message.reply(`### An error has occurred:\n\`\`\`js\n${e}\n\`\`\``);
+		}
+		} catch (e) {
+			console.error("Error processing message:", e);
 		}
 	});
 })();
