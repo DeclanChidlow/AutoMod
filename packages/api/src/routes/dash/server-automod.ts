@@ -1,8 +1,8 @@
 import { app } from "../..";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { badRequest, ensureObjectStructure, isAuthenticated, requireAuth, unauthorized } from "../../utils";
 import { botReq } from "../internal/ws";
-import { Collection, Db } from "mongodb";
+import type { Collection, Db } from "mongodb";
 import { ulid } from "ulid";
 
 let serversCollection: Collection;
@@ -136,7 +136,7 @@ app.post("/dash/server/:server/automod", requireAuth({ permission: 2 }), async (
 					message: rule.message ?? null,
 				},
 			},
-		},
+		} as any,
 	);
 
 	res.status(200).send({ success: result.modifiedCount > 0, id: id });
@@ -164,7 +164,7 @@ app.delete("/dash/server/:server/automod/:ruleid", requireAuth({ permission: 2 }
 				$pull: {
 					"automodSettings.spam": { id: ruleid },
 				},
-			},
+			} as any,
 		);
 	} catch (e) {
 		console.error(e);

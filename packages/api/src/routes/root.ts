@@ -1,5 +1,5 @@
 import { app } from "..";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { getSessionInfo, isAuthenticated } from "../utils";
 
 app.get("/", async (req: Request, res: Response) => {

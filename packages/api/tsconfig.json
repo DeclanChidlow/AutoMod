@@ -26,7 +26,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "useDefineForClassFields": true,
-    "types": ["bun-types"]
+    "types": ["bun"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

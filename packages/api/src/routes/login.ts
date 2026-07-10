@@ -1,8 +1,8 @@
 import crypto from "crypto";
 import { app, SESSION_LIFETIME } from "..";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { botReq } from "./internal/ws";
-import { Collection, Db } from "mongodb";
+import type { Collection, Db } from "mongodb";
 import { badRequest, isAuthenticated, requireAuth } from "../utils";
 import { RateLimiter } from "../middlewares/ratelimit";
 
@@ -15,13 +15,13 @@ export function initializeAuthAPI(database: Db) {
 }
 
 class BeginReqBody {
-	user: string;
+	user!: string;
 }
 
 class CompleteReqBody {
-	user: string;
-	nonce: string;
-	code: string;
+	user!: string;
+	nonce!: string;
+	code!: string;
 }
 
 const beginRatelimiter = new RateLimiter("/login/begin", { limit: 10, timeframe: 300 });

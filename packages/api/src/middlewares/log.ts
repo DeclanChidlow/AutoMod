@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { app } from "..";
 
-app.use("*", (req: Request, res: Response, next: NextFunction) => {
+app.use("*", (req: Request, _res: Response, next: NextFunction) => {
 	console.debug(`${req.method} ${req.url}`);
 	next();
 });

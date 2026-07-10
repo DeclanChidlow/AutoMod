@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { app } from "..";
 
 app.use("*", (req: Request, res: Response, next: NextFunction) => {

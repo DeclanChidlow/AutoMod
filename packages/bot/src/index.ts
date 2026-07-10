@@ -61,16 +61,18 @@ console.info(`\
 
 		await login(client);
 
-		await import("./bot/modules/command_handler");
-		await import("./bot/modules/mod_logs");
-		await import("./bot/modules/event_handler");
-		await import("./bot/modules/tempbans");
-		await import("./bot/modules/reaction_roles");
-		await import("./bot/modules/api_communication");
-		await import("./bot/modules/metrics");
-		await import("./bot/modules/bot_status");
-		await import("./bot/modules/fetch_all");
-		await import("./bot/modules/raid_detection");
+		await Promise.all([
+			import("./bot/modules/command_handler"),
+			import("./bot/modules/mod_logs"),
+			import("./bot/modules/event_handler"),
+			import("./bot/modules/tempbans"),
+			import("./bot/modules/reaction_roles"),
+			import("./bot/modules/api_communication"),
+			import("./bot/modules/metrics"),
+			import("./bot/modules/bot_status"),
+			import("./bot/modules/fetch_all"),
+			import("./bot/modules/raid_detection"),
+		]);
 	} catch (error) {
 		console.error("Failed to start application:", error);
 		process.exit(1);

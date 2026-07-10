@@ -1,5 +1,5 @@
 import { app, db } from "../..";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { badRequest, getPermissionLevel, isAuthenticated, requireAuth, unauthorized } from "../../utils";
 import { botReq } from "../internal/ws";
 
@@ -33,9 +33,9 @@ app.get("/dash/server/:server", requireAuth({ permission: 0 }), async (req: Requ
 		return res.status(response.statusCode ?? 500).send({ error: response.error });
 	}
 
-	if (!response.server) return res.status(404).send({ error: "Not found" });
+	if (!response["server"]) return res.status(404).send({ error: "Not found" });
 
-	const s: ServerDetails = response.server;
+	const s: ServerDetails = response["server"];
 	res.send({ server: s });
 });
 
@@ -51,11 +51,12 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 		const permissionLevelRes = await getPermissionLevel(user, server);
 		if (!permissionLevelRes.success) return res.status(permissionLevelRes.statusCode || 500).send({ error: permissionLevelRes.error });
 
-		const servers = db.get("servers");
-		const permissionLevel: 0 | 1 | 2 | 3 = permissionLevelRes.level;
+		const dbInstance = await db;
+		const servers = dbInstance.collection("servers");
+		const permissionLevel: 0 | 1 | 2 | 3 = permissionLevelRes["level"];
 		const settings = await servers.findOne({ id: server });
 
-		switch (req.params.option) {
+		switch (req.params["option"]) {
 			case "managers": {
 				if (!item || typeof item != "string") return badRequest(res);
 				if (permissionLevel < 3) return res.status(403).send({ error: "You are not allowed to add other bot managers." });
@@ -65,16 +66,16 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 					return res.status(404).send({ error: "User could not be found" });
 				}
 
-				if (settings.botManagers?.includes(userRes.user.id) === true) {
+				if (settings?.["botManagers"]?.includes(userRes["user"]["id"]) === true) {
 					return res.status(400).send({ error: "This user is already manager" });
 				}
 
-				const newManagers = [...(settings.botManagers ?? []), userRes.user.id];
-				await servers.update({ id: server }, { $set: { botManagers: newManagers } });
+				const newManagers = [...(settings?.["botManagers"] ?? []), userRes["user"]["id"]];
+				await servers.updateOne({ id: server }, { $set: { botManagers: newManagers } });
 				res.send({
 					success: true,
 					managers: newManagers,
-					users: [userRes.user],
+					users: [userRes["user"]],
 				});
 				return;
 			}
@@ -88,16 +89,16 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 					return res.status(404).send({ error: "User could not be found" });
 				}
 
-				if (settings.moderators?.includes(userRes.user.id) === true) {
+				if (settings?.["moderators"]?.includes(userRes["user"]["id"]) === true) {
 					return res.status(400).send({ error: "This user is already moderator" });
 				}
 
-				const newMods = [...(settings.moderators ?? []), userRes.user.id];
-				await servers.update({ id: server }, { $set: { moderators: newMods } });
+				const newMods = [...(settings?.["moderators"] ?? []), userRes["user"]["id"]];
+				await servers.updateOne({ id: server }, { $set: { moderators: newMods } });
 				res.send({
 					success: true,
 					mods: newMods,
-					users: [userRes.user],
+					users: [userRes["user"]],
 				});
 				return;
 			}
@@ -136,7 +137,8 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 
 				const body: RequestBody = req.body;
 
-				await db.get("servers").update(
+				const dbInstance2 = await db;
+				await dbInstance2.collection("servers").updateOne(
 					{ id: server },
 					{
 						$set: JSON.parse(
@@ -174,20 +176,21 @@ app.delete("/dash/server/:server/:option/:target", async (req: Request, res: Res
 	const permissionLevelRes = await getPermissionLevel(user, server);
 	if (!permissionLevelRes.success) return res.status(permissionLevelRes.statusCode || 500).send({ error: permissionLevelRes.error });
 
-	const servers = db.get("servers");
-	const permissionLevel: 0 | 1 | 2 | 3 = permissionLevelRes.level;
-	const settings = await servers.findOne({ id: server });
+	const dbInstance3 = await db;
+	const servers3 = dbInstance3.collection("servers");
+	const permissionLevel3: 0 | 1 | 2 | 3 = permissionLevelRes["level"];
+	const settings3 = await servers3.findOne({ id: server });
 
 	switch (option) {
 		case "managers": {
-			if (permissionLevel < 3) return res.status(403).send({ error: "You are not allowed to remove bot managers." });
+			if (permissionLevel3 < 3) return res.status(403).send({ error: "You are not allowed to remove bot managers." });
 
-			if (!settings.botManagers?.includes(target)) {
+			if (!settings3?.["botManagers"]?.includes(target)) {
 				return res.status(400).send({ error: "This user is not manager" });
 			}
 
-			const newManagers = (settings.botManagers ?? []).filter((i: string) => i != target);
-			await servers.update({ id: server }, { $set: { botManagers: newManagers } });
+			const newManagers = (settings3?.["botManagers"] ?? []).filter((i: string) => i != target);
+			await servers3.updateOne({ id: server }, { $set: { botManagers: newManagers } });
 			res.send({
 				success: true,
 				managers: newManagers,
@@ -195,14 +198,14 @@ app.delete("/dash/server/:server/:option/:target", async (req: Request, res: Res
 			return;
 		}
 		case "mods": {
-			if (permissionLevel < 2) return res.status(403).send({ error: "You are not allowed to remove moderators." });
+			if (permissionLevel3 < 2) return res.status(403).send({ error: "You are not allowed to remove moderators." });
 
-			if (!settings.moderators?.includes(target)) {
+			if (!settings3?.["moderators"]?.includes(target)) {
 				return res.status(400).send({ error: "This user is not moderator" });
 			}
 
-			const newMods = (settings.moderators ?? []).filter((i: string) => i != target);
-			await servers.update({ id: server }, { $set: { moderators: newMods } });
+			const newMods = (settings3?.["moderators"] ?? []).filter((i: string) => i != target);
+			await servers3.updateOne({ id: server }, { $set: { moderators: newMods } });
 			res.send({
 				success: true,
 				mods: newMods,

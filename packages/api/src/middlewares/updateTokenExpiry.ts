@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-import { Collection, Db } from "mongodb";
+import type { Request, Response, NextFunction } from "express";
+import type { Collection, Db } from "mongodb";
 import { app, SESSION_LIFETIME } from "..";
 
 let sessionsCollection: Collection;
@@ -8,7 +8,7 @@ export function initializeSessionsMiddleware(db: Db) {
 	sessionsCollection = db.collection("sessions");
 }
 
-app.use("*", async (req: Request, res: Response, next: NextFunction) => {
+app.use("*", async (req: Request, _res: Response, next: NextFunction) => {
 	next();
 
 	const user = req.header("x-auth-user");

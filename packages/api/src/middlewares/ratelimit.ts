@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { ulid } from "ulid";
 import { app } from "..";
 import { redis } from "../db";
@@ -19,6 +19,7 @@ class RateLimiter {
 			try {
 				const ip = req.ip;
 				const reqId = ulid();
+				if (!ip) { next(); return; }
 				// ratelimit:ip_address_base64:route_base64
 				const redisKey = `ratelimit:${Buffer.from(ip).toString("base64")}:${Buffer.from(this.route).toString("base64")}`;
 

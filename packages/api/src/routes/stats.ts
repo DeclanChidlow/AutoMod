@@ -1,7 +1,8 @@
 import { app, db } from "..";
-import { Response } from "express";
+import type { Response } from "express";
 import { botReq } from "./internal/ws";
-import { WithId, Document, ObjectId } from "mongodb";
+import type { WithId, Document } from "mongodb";
+import { ObjectId } from "mongodb";
 
 let SERVER_COUNT = 0;
 

@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { Collection, Db } from "mongodb";
+import type { Request, Response } from "express";
+import type { Collection, Db } from "mongodb";
 import { botReq } from "./routes/internal/ws";
 
 let sessionsCollection: Collection;
@@ -9,11 +9,11 @@ export function initializeSessionAuthentication(db: Db) {
 }
 
 class Session {
-	user: string;
-	token: string;
-	nonce: string;
-	expires: number;
-	invalid: boolean;
+	user!: string;
+	token!: string;
+	nonce!: string;
+	expires!: number;
+	invalid!: boolean;
 }
 
 /**
