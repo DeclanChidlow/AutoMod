@@ -21,12 +21,12 @@ let login = (client: Stoat.Client): Promise<void> =>
 			return reject("No bot token provided");
 		}
 
-		client.loginBot(env["BOT_TOKEN"]);
-
 		client.once("ready", () => {
 			console.log(`Bot logged in as ${client.user?.username}!`);
 			resolve();
 		});
+
+		client.loginBot(env["BOT_TOKEN"]);
 	});
 
 export default AutomodClient;
