@@ -11,44 +11,68 @@ class AutomodClient extends Stoat.Client {
 	}
 }
 
-const LOGIN_TIMEOUT = 30_000; // 30 seconds
+const LOGIN_TIMEOUT = 15_000; // 15 seconds per attempt
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_BACKOFF_BASE = 2000; // 2s base delay, doubles each attempt
 
-let login = (client: Stoat.Client): Promise<void> =>
-	new Promise((resolve, reject) => {
-		console.info("Bot logging in...");
-		let env = process.env;
+async function login(client: Stoat.Client): Promise<void> {
+	const token = process.env["BOT_TOKEN"];
+	if (!token) {
+		throw new Error("Environment variable 'BOT_TOKEN' not provided");
+	}
 
-		if (!env["BOT_TOKEN"]) {
-			console.error("Environment variable 'BOT_TOKEN' not provided");
-			return reject("No bot token provided");
-		}
+	const apiUrl = process.env["STOAT_API_URL"] || "https://api.stoat.chat/0.8";
 
-		const apiUrl = env["STOAT_API_URL"] || "https://api.stoat.chat/0.8";
-		console.info(`Connecting to Stoat API at ${apiUrl}`);
+	for (let attempt = 1; attempt <= LOGIN_MAX_ATTEMPTS; attempt++) {
+		console.info(`Login attempt ${attempt}/${LOGIN_MAX_ATTEMPTS} — connecting to ${apiUrl}`);
 
-		const timeout = setTimeout(() => {
-			reject(`Login timed out after ${LOGIN_TIMEOUT / 1000}s — could not reach Stoat API at ${apiUrl}`);
-		}, LOGIN_TIMEOUT);
+		let onReady: () => void;
+		let onError: (err: Error) => void;
+		let timeout: ReturnType<typeof setTimeout>;
 
-		const onReady = () => {
-			clearTimeout(timeout);
-			client.removeListener("error", onError);
+		try {
+			await new Promise<void>((resolve, reject) => {
+				timeout = setTimeout(() => {
+					reject(new Error(`Login timed out after ${LOGIN_TIMEOUT / 1000}s`));
+				}, LOGIN_TIMEOUT);
+
+				onReady = () => {
+					clearTimeout(timeout);
+					client.removeListener("error", onError);
+					resolve();
+				};
+
+				onError = (err: Error) => {
+					clearTimeout(timeout);
+					client.removeListener("ready", onReady);
+					reject(err);
+				};
+
+				client.once("ready", onReady);
+				client.once("error", onError);
+
+				client.loginBot(token);
+			});
+
 			console.log(`Bot logged in as ${client.user?.username}!`);
-			resolve();
-		};
+			return;
+		} catch (err: any) {
+			clearTimeout(timeout!);
+			client.removeListener("ready", onReady!);
+			client.removeListener("error", onError!);
 
-		const onError = (err: Error) => {
-			clearTimeout(timeout);
-			client.removeListener("ready", onReady);
-			console.error(`Login failed: ${err.message}`);
-			reject(err);
-		};
+			console.error(`Login attempt ${attempt} failed: ${err.message}`);
 
-		client.once("ready", onReady);
-		client.once("error", onError);
+			if (attempt < LOGIN_MAX_ATTEMPTS) {
+				const delay = LOGIN_BACKOFF_BASE * Math.pow(2, attempt - 1);
+				console.info(`Retrying in ${delay / 1000}s...`);
+				await new Promise((r) => setTimeout(r, delay));
+			}
+		}
+	}
 
-		client.loginBot(env["BOT_TOKEN"]);
-	});
+	throw new Error(`Login failed after ${LOGIN_MAX_ATTEMPTS} attempts`);
+}
 
 export default AutomodClient;
 export { login };
