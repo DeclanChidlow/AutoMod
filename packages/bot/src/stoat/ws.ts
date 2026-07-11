@@ -52,6 +52,8 @@ export class EventClient extends EventEmitter {
 
 	private setState(state: ConnectionState) {
 		this._state = state;
+		const labels = ["Idle", "Connecting", "Connected", "Disconnected"];
+		console.info("[WS] state: %s", labels[state] || state);
 		this.emit("state", state);
 	}
 
@@ -69,12 +71,14 @@ export class EventClient extends EventEmitter {
 
 		this.connectTimer = setTimeout(() => {
 			if (this.options.debug) console.debug("[WS] Connection timeout");
+			this.emit("error", new Error("WebSocket connection timed out"));
 			this.disconnect();
 		}, this.options.connectTimeout * 1000);
 
 		this.socket = new WebSocket(url.toString());
 
 		this.socket.on("open", () => {
+			console.info("[WS] socket opened");
 			if (this.options.debug) console.debug("[WS] Socket open");
 			this.heartbeatTimer = setInterval(() => {
 				this.send({ type: "Ping", data: +new Date() });
@@ -113,10 +117,6 @@ export class EventClient extends EventEmitter {
 			if (this.options.debug) console.debug(`[WS] Socket closed: ${code} ${reason}`);
 			this.cleanup();
 			if (!this.closed) {
-				// If we were still connecting, emit an error so login can reject
-				if (this._state === ConnectionState.Connecting) {
-					this.emit("error", new Error(`WebSocket connection failed: ${code} ${reason || "closed before connect"}`));
-				}
 				this.setState(ConnectionState.Disconnected);
 			}
 		});
@@ -135,6 +135,9 @@ export class EventClient extends EventEmitter {
 			case "Error":
 				this.emit("error", event);
 				this.disconnect();
+				return;
+			case "Bulk":
+				for (const item of event.v) this.handle(item);
 				return;
 		}
 
@@ -172,14 +175,12 @@ export class EventClient extends EventEmitter {
 	disconnect() {
 		this.closed = true;
 		this.cleanup();
-		if (this.socket) {
-			const sock = this.socket;
-			this.socket = undefined;
-			try {
-				sock.close();
-			} catch (_) {
-				// ignore close errors
-			}
+		const sock = this.socket;
+		this.socket = undefined;
+		if (sock) {
+			try { sock.close(); } catch (_) { /* ignore */ }
+		} else {
+			this.setState(ConnectionState.Disconnected);
 		}
 	}
 
