@@ -108,6 +108,18 @@ export class Message {
 		return await this.client.api.delete(`/channels/${this.channelId}/messages/${this.id}`);
 	}
 
+	async react(emoji: string) {
+		return await this.client.api.put(
+			`/channels/${this.channelId}/messages/${this.id}/reactions/${encodeURIComponent(emoji)}`,
+		);
+	}
+
+	async unreact(emoji: string) {
+		return await this.client.api.delete(
+			`/channels/${this.channelId}/messages/${this.id}/reactions/${encodeURIComponent(emoji)}`,
+		);
+	}
+
 	async reply(data: any, mention: boolean = true) {
 		const obj: any = typeof data === "string" ? { content: data } : { ...data };
 		obj.replies = [{ id: this.id, mention }];

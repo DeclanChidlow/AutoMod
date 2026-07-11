@@ -78,6 +78,7 @@ async function databaseMigrations() {
 	await setIndexes(dbs.TEMPBANS, ["id", "until"]);
 	await setIndexes(dbs.USERS, ["id"]);
 	await setIndexes(dbs.REACTION_ROLES, ["server", "messageId"]);
+	await dbs.REACTION_ROLES.createIndex({ messageId: 1, emoji: 1 }).catch((e) => console.warn(`Failed to create compound index on reaction_roles: ${e}`));
 }
 
 export { databaseMigrations };

@@ -19,6 +19,19 @@ export class ServerMemberCollection extends BaseCollection<ServerMember> {
 		return this.getOrCreate(data._id, data);
 	}
 
+	/** Always fetch from the REST API, bypassing the local cache. */
+	async fetchFresh(serverId: string, userId: string): Promise<ServerMember> {
+		const data = await this.client.api.get(`/servers/${serverId}/members/${userId}`);
+		// Update the cache with fresh data
+		const key = serverId + userId;
+		const existing = this.get(key);
+		if (existing) {
+			this.updateUnderlyingObject(key, data);
+			return existing;
+		}
+		return this.getOrCreate(data._id, data);
+	}
+
 	getOrCreate(id: { server: string; user: string }, data: any): ServerMember {
 		const key = id.server + id.user;
 		const existing = this.get(key);

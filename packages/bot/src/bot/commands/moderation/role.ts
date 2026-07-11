@@ -18,7 +18,7 @@ export default {
 			const action = args.shift()?.toLowerCase();
 
 			const normalizeEmoji = (emoji: string) => {
-				return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/[\uFE0F\uE0E2]/g, "");
+				return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/[\uFE0F\uFE0E\uE0E2]/g, "");
 			};
 
 			if (action === "reaction") {
@@ -43,12 +43,8 @@ export default {
 
 					const emoji = normalizeEmoji(emojiRaw);
 
-					const isCustomEmoji = /^[A-Z0-9]{26}$/i.test(emoji);
-					const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
-					const graphemeCount = [...segmenter.segment(emoji)].length;
-
-					if (!isCustomEmoji && graphemeCount > 1) {
-						return message.reply("Please provide exactly **one** valid emoji.");
+					if (!emoji || emoji.includes(" ")) {
+						return message.reply("Please provide a valid emoji.");
 					}
 
 					const channel = message.channel;
@@ -67,12 +63,13 @@ export default {
 							roleId: roleId,
 						});
 
+						const isCustomEmoji = /^[A-Z0-9]{26}$/i.test(emoji);
 						const displayEmoji = isCustomEmoji ? `:${emoji}:` : emoji;
 						return message.reply(`Reaction role added! Reacting to message \`${messageId}\` with ${displayEmoji} will now grant the role.`);
 					} catch (e) {
 						console.error("Could not add initial reaction:", e);
 						return message.reply(
-							`Failed to add reaction role. Check that the message ID is correct, the emoji is valid, you're sending the command in the same channel as the message, and the bot has permission to read messages and add reactions in this channel.`,
+							`Failed to add reaction role. Check that the message ID is correct, the emoji is valid, you're sending the command in the same channel as the message, and the bot has permission to add reactions in this channel.`,
 						);
 					}
 				}

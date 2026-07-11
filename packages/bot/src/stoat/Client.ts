@@ -123,12 +123,7 @@ export class Client extends EventEmitter {
 	 * Process an array in chunks, yielding to the event loop between chunks
 	 * so heartbeats and other I/O are not starved during large data loads.
 	 */
-	private async _processInChunks<T>(
-		items: T[],
-		chunkSize: number,
-		processor: (item: T) => void,
-		label: string = "items",
-	): Promise<void> {
+	private async _processInChunks<T>(items: T[], chunkSize: number, processor: (item: T) => void, label: string = "items"): Promise<void> {
 		for (let i = 0; i < items.length; i += chunkSize) {
 			const end = Math.min(i + chunkSize, items.length);
 			for (let j = i; j < end; j++) {
@@ -160,23 +155,29 @@ export class Client extends EventEmitter {
 				// Channels are the bulk of the data — process in chunks to avoid
 				// blocking the event loop and starving heartbeats.
 				if (event.channels) {
-					await this._processInChunks(event.channels, 5000, (channel: any) => {
-						this.channels.getOrCreate(channel._id, channel);
-					}, "channels");
+					await this._processInChunks(
+						event.channels,
+						5000,
+						(channel: any) => {
+							this.channels.getOrCreate(channel._id, channel);
+						},
+						"channels",
+					);
 				}
 				// If users were not included in Ready (because we used ?ready= to slim the payload),
 				// fetch the bot's own user via REST so this.user is set before we emit 'ready'.
 				if (!this.user) {
-					this.api.get("/users/@me").then((me: any) => {
-						this.user = this.users.getOrCreate(me._id, me);
-					}).catch((e: any) => {
-						console.error("Failed to fetch bot user via REST:", e?.message || e);
-					});
+					this.api
+						.get("/users/@me")
+						.then((me: any) => {
+							this.user = this.users.getOrCreate(me._id, me);
+						})
+						.catch((e: any) => {
+							console.error("Failed to fetch bot user via REST:", e?.message || e);
+						});
 				}
 				const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-				console.info(
-					`[WS] Ready processed: ${this.servers.size()} servers, ${this.channels.size()} channels in ${elapsed}s`,
-				);
+				console.info(`[WS] Ready processed: ${this.servers.size()} servers, ${this.channels.size()} channels in ${elapsed}s`);
 				this.ready = true;
 				this.emit("ready");
 				break;
@@ -223,27 +224,28 @@ export class Client extends EventEmitter {
 				break;
 			}
 			case "MessageReact": {
-				const msg = this.messages.get(event.id);
-				if (msg) {
-					const reactions = this.messages.getUnderlyingObject(event.id).reactions || {};
-					if (!reactions[event.emoji_id]) reactions[event.emoji_id] = [];
-					if (!reactions[event.emoji_id].includes(event.user_id)) reactions[event.emoji_id].push(event.user_id);
-					this.messages.updateUnderlyingObject(event.id, "reactions", reactions);
-					this.emit("messageReactionAdd", msg, event.user_id, event.emoji_id);
-				}
+				// Always create a message wrapper so the event fires even when the message isn't in the local cache
+				const channelId = event.channel_id || event.channel;
+				const msg = this.messages.getOrCreate(event.id, { _id: event.id, channel: channelId });
+				const underlying = this.messages.getUnderlyingObject(event.id);
+				const reactions = underlying.reactions || {};
+				if (!reactions[event.emoji_id]) reactions[event.emoji_id] = [];
+				if (!reactions[event.emoji_id].includes(event.user_id)) reactions[event.emoji_id].push(event.user_id);
+				this.messages.updateUnderlyingObject(event.id, "reactions", reactions);
+				this.emit("messageReactionAdd", msg, event.user_id, event.emoji_id);
 				break;
 			}
 			case "MessageUnreact": {
-				const msg = this.messages.get(event.id);
-				if (msg) {
-					const reactions = this.messages.getUnderlyingObject(event.id).reactions || {};
-					if (reactions[event.emoji_id]) {
-						reactions[event.emoji_id] = reactions[event.emoji_id].filter((uid: string) => uid !== event.user_id);
-						if (reactions[event.emoji_id].length === 0) delete reactions[event.emoji_id];
-					}
-					this.messages.updateUnderlyingObject(event.id, "reactions", reactions);
-					this.emit("messageReactionRemove", msg, event.user_id, event.emoji_id);
+				const channelId = event.channel_id || event.channel;
+				const msg = this.messages.getOrCreate(event.id, { _id: event.id, channel: channelId });
+				const underlying = this.messages.getUnderlyingObject(event.id);
+				const reactions = underlying.reactions || {};
+				if (reactions[event.emoji_id]) {
+					reactions[event.emoji_id] = reactions[event.emoji_id].filter((uid: string) => uid !== event.user_id);
+					if (reactions[event.emoji_id].length === 0) delete reactions[event.emoji_id];
 				}
+				this.messages.updateUnderlyingObject(event.id, "reactions", reactions);
+				this.emit("messageReactionRemove", msg, event.user_id, event.emoji_id);
 				break;
 			}
 			case "ChannelCreate": {
@@ -327,6 +329,7 @@ export class Client extends EventEmitter {
 					const roles = { ...(this.servers.getUnderlyingObject(event.id).roles || {}) };
 					roles[event.role_id] = { ...(roles[event.role_id] || {}), ...event.data };
 					this.servers.updateUnderlyingObject(event.id, "roles", roles);
+					this.emit("serverRoleUpdate", server, event.role_id, event.data);
 				}
 				break;
 			}
@@ -336,6 +339,7 @@ export class Client extends EventEmitter {
 					const roles = { ...(this.servers.getUnderlyingObject(event.id).roles || {}) };
 					delete roles[event.role_id];
 					this.servers.updateUnderlyingObject(event.id, "roles", roles);
+					this.emit("serverRoleDelete", server, event.role_id);
 				}
 				break;
 			}

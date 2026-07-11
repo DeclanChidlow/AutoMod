@@ -129,6 +129,15 @@ export class Server {
 		return this.client.serverMembers.fetch(this.id, userId);
 	}
 
+	/**
+	 * Always fetch member data directly from the REST API, bypassing the local cache.
+	 * Use when you need the most up-to-date role list (eg reaction role handlers).
+	 */
+	async fetchMemberFresh(user: any) {
+		const userId = typeof user === "string" ? user : user.id;
+		return this.client.serverMembers.fetchFresh(this.id, userId);
+	}
+
 	async fetchMembers() {
 		const data: any = await this.client.api.get(`/servers/${this.id}/members`);
 		for (const user of data.users) this.client.users.getOrCreate(user._id, user);
