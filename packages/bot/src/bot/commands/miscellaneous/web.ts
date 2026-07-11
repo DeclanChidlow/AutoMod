@@ -1,31 +1,10 @@
-import { dbs } from "../../..";
-import CommandCategory from "../../../struct/commands/CommandCategory";
-import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
-import PendingLogin from "automod-lib/dist/types/PendingLogin";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { WithId } from "mongodb";
-
-export default {
-	name: "web",
-	aliases: null,
-	description: "Allows you to log in and out of the web dashboard.",
-	documentation: "/miscellaneous/web",
-	category: CommandCategory.Miscellaneous,
-	run: async (message: MessageCommandContext, args: string[]) => {
-		const subcommand = args.shift()?.toLowerCase();
-
-		if (!subcommand || (subcommand !== "login" && subcommand !== "logout")) {
-			return message.reply(`Usage: \`${DEFAULT_PREFIX}web login [Code]\` or \`${DEFAULT_PREFIX}web logout [Code/ALL]\``);
-		}
-
-		if (subcommand === "login") {
-			await handleLogin(message, args);
-		} else if (subcommand === "logout") {
-			await handleLogout(message, args);
-		}
-	},
-} as SimpleCommand;
+import PendingLogin from "automod-lib/dist/types/PendingLogin";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { dbs } from "../../..";
 
 async function handleLogin(message: MessageCommandContext, args: string[]) {
 	try {
@@ -121,3 +100,24 @@ async function handleLogout(message: MessageCommandContext, args: string[]) {
 		message.reply(`An error occurred: ${e}`);
 	}
 }
+
+export default {
+	name: "web",
+	aliases: [],
+	description: "Allows you to log in and out of the web dashboard.",
+	documentation: "/miscellaneous/web",
+	category: CommandCategory.Miscellaneous,
+	run: async (message: MessageCommandContext, args: string[]) => {
+		const subcommand = args.shift()?.toLowerCase();
+
+		if (!subcommand || (subcommand !== "login" && subcommand !== "logout")) {
+			return message.reply(`Usage: \`${DEFAULT_PREFIX}web login [Code]\` or \`${DEFAULT_PREFIX}web logout [Code/ALL]\``);
+		}
+
+		if (subcommand === "login") {
+			await handleLogin(message, args);
+		} else if (subcommand === "logout") {
+			await handleLogout(message, args);
+		}
+	},
+} as SimpleCommand;

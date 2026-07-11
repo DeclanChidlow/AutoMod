@@ -1,10 +1,10 @@
-import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
-import CommandCategory from "../../../struct/commands/CommandCategory";
-import { client, dbs } from "../../..";
-import { commands, ownerIDs } from "../../modules/command_handler";
 import fs from "fs";
 import path from "path";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { commands, ownerIDs } from "../../modules/command_handler";
+import { client, dbs } from "../../..";
 
 const pjson = JSON.parse((await fs.promises.readFile(path.join(process.cwd(), "package.json"))).toString());
 

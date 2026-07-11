@@ -1,19 +1,19 @@
-import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import axios from "axios";
 import FormData from "form-data";
-import { client, dbs } from "../../..";
+import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { checkMessageForFilteredWords } from "../../modules/antispam";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { client, dbs } from "../../..";
 import { embed, EmbedColor, getDmChannel, isBotManager, NO_MANAGER_MSG, sanitizeMessageContent } from "../../util";
 
 const WORDLIST_DEFAULT_MESSAGE = "<@{{user_id}}>, the message you sent contained a blocked word.";
 
 export default {
 	name: "filter",
-	aliases: null,
+	aliases: [],
 	description: "Allows for messages to be checked against a word list and then action to be taken based on infractions.",
 	documentation: "/configuration/filter",
 	category: CommandCategory.Configuration,

@@ -1,6 +1,6 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { User } from "../../../stoat/index.js";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
 
@@ -20,7 +20,7 @@ const updateSudoTimeout = (user: User) => {
 export default {
 	name: "override",
 	aliases: ["sudo", "doas"],
-	description: "Allows running any command regardless of the user’s current permissions.",
+	description: "Allows running any command regardless of the user's current permissions.",
 	documentation: "/owner/override",
 	restrict: "BOTOWNER",
 	category: CommandCategory.Owner,

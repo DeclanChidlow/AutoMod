@@ -1,9 +1,9 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { parseUser } from "../../util";
-import { client, dbs } from "../../..";
-import { User } from "../../../stoat/index.js";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { User } from "../../../stoat/index.js";
+import { client, dbs } from "../../..";
+import { parseUser } from "../../util";
 
 const SYNTAX = "/admin add @user; /admin remove @user; /admin list";
 
@@ -67,3 +67,4 @@ export default {
 		}
 	},
 } as SimpleCommand;
+

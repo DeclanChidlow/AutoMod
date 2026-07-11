@@ -1,11 +1,11 @@
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 
 export default {
 	name: "support",
 	aliases: ["donate", "tip"],
-	description: "Provides details regarding how to financially support AutoMod’s development and hosting.",
+	description: "Provides details regarding how to financially support AutoMod's development and hosting.",
 	documentation: "/miscellaneous/support",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {

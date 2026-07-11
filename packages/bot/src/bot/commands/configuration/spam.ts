@@ -1,14 +1,18 @@
-import { dbs } from "../../..";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
+
+const SYNTAX = "/spam enable; /spam disable";
 
 export default {
 	name: "spam",
 	aliases: ["antispam"],
 	description: "Enable or disable anti-spam features.",
 	documentation: "/configuration/spam",
+	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
@@ -39,4 +43,4 @@ export default {
 			}
 		}
 	},
-};
+} as SimpleCommand;

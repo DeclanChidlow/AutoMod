@@ -1,8 +1,8 @@
-import { client } from "../../..";
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { client } from "../../..";
 
 function parseTimeInput(input: string) {
 	if (!/([0-9]{1,3}[smhdwy])+/g.test(input)) return null;

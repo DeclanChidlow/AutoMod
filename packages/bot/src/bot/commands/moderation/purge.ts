@@ -1,9 +1,9 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { Message } from "../../../stoat/index.js";
 import { decodeTime } from "ulid";
 import { isModerator, parseUserOrId } from "../../util";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
-import CommandCategory from "../../../struct/commands/CommandCategory";
 
 const SYNTAX = "/purge [number] [user[,user...]]";
 const MAX_PURGE_AMOUNT = 100;

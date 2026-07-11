@@ -1,12 +1,12 @@
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
 
 export default {
 	name: "avatar",
 	aliases: ["pfp"],
-	description: "Allows managing or returning a user’s profile picture.",
+	description: "Allows managing or returning a user's profile picture.",
 	documentation: "/moderation/avatar",
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {

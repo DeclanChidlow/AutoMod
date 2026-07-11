@@ -1,6 +1,6 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { ULID_REGEX } from "../../util";
 import { decodeTime } from "ulid";
 

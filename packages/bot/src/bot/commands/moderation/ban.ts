@@ -1,8 +1,12 @@
 import { ulid } from "ulid";
-import { client } from "../../../index";
+import Day from "dayjs";
+import RelativeTime from "dayjs/plugin/relativeTime";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import type { SendableEmbed } from "../../../stoat/index.js";
+import { User } from "../../../stoat/index.js";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import { storeTempBan } from "../../modules/tempbans";
 import {
@@ -20,20 +24,18 @@ import {
 	storeInfraction,
 	yesNoMessage,
 } from "../../util";
-import Day from "dayjs";
-import RelativeTime from "dayjs/plugin/relativeTime";
-import CommandCategory from "../../../struct/commands/CommandCategory";
-import type { SendableEmbed } from "../../../stoat/index.js";
-import { User } from "../../../stoat/index.js";
+import { client } from "../../..";
 
 Day.extend(RelativeTime);
+
+const SYNTAX = "/ban @username [10m|1h|...?] [reason?]";
 
 export default {
 	name: "ban",
 	aliases: ["eject"],
 	description: "Removes a user from the server and prevents them from rejoining.",
 	documentation: "/moderation/ban",
-	syntax: "/ban @username [10m|1h|...?] [reason?]",
+	syntax: SYNTAX,
 	removeEmptyArgs: true,
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {

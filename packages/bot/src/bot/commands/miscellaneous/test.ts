@@ -1,10 +1,10 @@
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 
 export default {
 	name: "test",
-	aliases: null,
+	aliases: [],
 	description: "Checks that the bot works.",
 	documentation: "/miscellaneous/test",
 	category: CommandCategory.Miscellaneous,

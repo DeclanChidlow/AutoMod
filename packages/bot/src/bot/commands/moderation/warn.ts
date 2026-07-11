@@ -1,18 +1,29 @@
-import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
-import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import { ulid } from "ulid";
+import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
-import { fetchUsername, logModAction } from "../../modules/mod_logs";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import type { SendableEmbed } from "../../../stoat/index.js";
 import { User } from "../../../stoat/index.js";
+import { fetchUsername, logModAction } from "../../modules/mod_logs";
+import {
+	dedupeArray,
+	embed,
+	EmbedColor,
+	generateInfractionDMEmbed,
+	getDmChannel,
+	isModerator,
+	NO_MANAGER_MSG,
+	parseUserOrId,
+	sanitizeMessageContent,
+	storeInfraction,
+} from "../../util";
 
 export default {
 	name: "warn",
-	aliases: null,
+	aliases: [],
 	removeEmptyArgs: false,
-	description: "Adds an infraction to a user’s record.",
+	description: "Adds an infraction to a user's record.",
 	documentation: "/moderation/warn",
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {

@@ -1,9 +1,9 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { dbs } from "../../..";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
-import { isBotManager, NO_MANAGER_MSG } from "../../util";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { dbs } from "../../..";
+import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
 const SYNTAX = "/prefix set [new prefix]; /prefix get; prefix clear";
 const MENTION_TEXT = "You can also @mention me instead of using the prefix.";
@@ -56,6 +56,7 @@ export default {
 		}
 	},
 } as SimpleCommand;
+
 
 function validatePrefix(prefix: string): string | true {
 	// Check length

@@ -1,7 +1,7 @@
-import Command from "../../../struct/commands/SimpleCommand";
-import { commands, DEFAULT_PREFIX, ownerIDs } from "../../modules/command_handler";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { commands, DEFAULT_PREFIX, ownerIDs } from "../../modules/command_handler";
 
 const categories: {
 	[key in CommandCategory]: {
@@ -39,8 +39,8 @@ const categories: {
 
 export default {
 	name: "help",
-	aliases: null,
-	description: "Displays instructions for using the bot’s commands.",
+	aliases: [],
+	description: "Displays instructions for using the bot's commands.",
 	documentation: "/miscellaneous/help",
 	removeEmptyArgs: true,
 	category: CommandCategory.Miscellaneous,
@@ -62,7 +62,7 @@ export default {
 				if (cmdCount > 0) {
 					total++;
 					const category = (categories as any)[categoryName];
-					msg += `**${category.friendlyName}**\n` + ` \u2003 ↳ ${category.description} | **${cmdCount}** command${cmdCount == 1 ? "" : "s"}\n`;
+					msg += `**${category.friendlyName}**\n` + `   ↳ ${category.description} | **${cmdCount}** command${cmdCount == 1 ? "" : "s"}\n`;
 				}
 			}
 
@@ -102,4 +102,4 @@ export default {
 			}
 		}
 	},
-} as Command;
+} as SimpleCommand;

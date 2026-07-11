@@ -1,19 +1,20 @@
-import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { dbs } from "../../..";
-import Infraction from "automod-lib/dist/types/antispam/Infraction";
-import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
-import { isModerator, NO_MANAGER_MSG, parseUserOrId, getDmChannel, embed, EmbedColor } from "../../util";
 import Day from "dayjs";
 import RelativeTime from "dayjs/plugin/relativeTime";
-import Xlsx from "xlsx";
-import { fetchUsername } from "../../modules/mod_logs";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import axios from "axios";
 import FormData from "form-data";
-import { client } from "../../..";
+import Xlsx from "xlsx";
+import Infraction from "automod-lib/dist/types/antispam/Infraction";
+import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
+import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { fetchUsername } from "../../modules/mod_logs";
+import { isModerator, NO_MANAGER_MSG, parseUserOrId, getDmChannel, embed, EmbedColor } from "../../util";
+import { client, dbs } from "../../..";
 
 Day.extend(RelativeTime);
+
+const SYNTAX = '/infractions; /infractions @username ["export-csv"]; /infractions rm [ID]';
 
 const formatInfraction = async (inf: Infraction) => {
 	const timestamp = Math.floor(inf.date / 1000);
@@ -193,7 +194,7 @@ export default {
 	aliases: ["warns", "warnings"],
 	description: "Shows a user's infractions.",
 	documentation: "/moderation/infractions",
-	syntax: '/infractions; /infractions @username ["export-csv"]; /infractions rm [ID]',
+	syntax: SYNTAX,
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const { id: serverId, name: serverName } = message.serverContext;

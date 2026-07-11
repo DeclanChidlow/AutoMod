@@ -1,15 +1,18 @@
-import { client, dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { client, dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
+
+const SYNTAX = "/logs [category] [#channel]";
 
 export default {
 	name: "logs",
-	aliases: null,
+	aliases: [],
 	description: "Configure log collection.",
 	documentation: "/configuration/logs",
+	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
@@ -80,3 +83,4 @@ export default {
 		}
 	},
 } as SimpleCommand;
+

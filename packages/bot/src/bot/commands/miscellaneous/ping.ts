@@ -1,18 +1,18 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { client } from "../../..";
-import MessageCommandContext from "../../../struct/MessageCommandContext";
 import CommandCategory from "../../../struct/commands/CommandCategory";
+import MessageCommandContext from "../../../struct/MessageCommandContext";
+import { client } from "../../..";
 
 export default {
 	name: "ping",
-	aliases: null,
+	aliases: [],
 	description: "Checks how long it takes AutoMod to respond.",
 	documentation: "/miscellaneous/ping",
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		const now = Date.now();
 		const wsPing = client.events.ping();
-		const wsDisplay = wsPing === null || wsPing < 0 ? "\`Reconnecting/Syncing…\`" : `\`${wsPing}ms\``;
+		const wsDisplay = wsPing === null || wsPing < 0 ? "`Reconnecting/Syncing…`" : `\`${wsPing}ms\``;
 
 		const uptime = process.uptime();
 		const d = Math.floor(uptime / 86400);

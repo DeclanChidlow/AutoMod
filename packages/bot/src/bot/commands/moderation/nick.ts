@@ -1,5 +1,5 @@
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
 

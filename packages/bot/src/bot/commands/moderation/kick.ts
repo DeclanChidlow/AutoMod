@@ -1,11 +1,10 @@
 import { User } from "../../../stoat/index.js";
 import type { SendableEmbed } from "../../../stoat/index.js";
 import { ulid } from "ulid";
-import { client } from "../../../";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
 import {
 	dedupeArray,
@@ -21,13 +20,16 @@ import {
 	storeInfraction,
 	yesNoMessage,
 } from "../../util";
+import { client } from "../../..";
+
+const SYNTAX = "/kick @username [reason?]";
 
 export default {
 	name: "kick",
 	aliases: [],
 	description: "Removes a user from the server, but they can rejoin if they have an invite.",
 	documentation: "/moderation/kick",
-	syntax: "/kick @username [reason?]",
+	syntax: SYNTAX,
 	removeEmptyArgs: true,
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {

@@ -1,8 +1,8 @@
-import { dbs } from "../../..";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
+import { dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../../util";
 
 const SYNTAX = "/allowlist add <user|role>; /allowlist remove <user|role>; /allowlist list";

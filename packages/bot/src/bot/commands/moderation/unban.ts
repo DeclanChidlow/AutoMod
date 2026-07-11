@@ -1,16 +1,18 @@
-import { dbs } from "../../../";
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { removeTempBan } from "../../modules/tempbans";
+import { dbs } from "../../..";
 import { isModerator, NO_MANAGER_MSG, parseUser, ULID_REGEX, USER_MENTION_REGEX } from "../../util";
+
+const SYNTAX = "/unban [@user or ID]";
 
 export default {
 	name: "unban",
 	aliases: ["pardon"],
-	description: "Removes a user’s server ban, allowing them to rejoin the server if they have an invite.",
+	description: "Removes a user's server ban, allowing them to rejoin the server if they have an invite.",
 	documentation: "/moderation/unban",
-	syntax: "/unban [@user or ID]",
+	syntax: SYNTAX,
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);

@@ -1,5 +1,5 @@
-import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
+import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
 import { dbs } from "../../..";
@@ -71,7 +71,9 @@ export default {
 						return message.reply(`Reaction role added! Reacting to message \`${messageId}\` with ${displayEmoji} will now grant the role.`);
 					} catch (e) {
 						console.error("Could not add initial reaction:", e);
-						return message.reply(`Failed to add reaction role. Check that the message ID is correct, the emoji is valid, you're sending the command in the same channel as the message, and the bot has permission to read messages and add reactions in this channel.`);
+						return message.reply(
+							`Failed to add reaction role. Check that the message ID is correct, the emoji is valid, you're sending the command in the same channel as the message, and the bot has permission to read messages and add reactions in this channel.`,
+						);
 					}
 				}
 
@@ -146,7 +148,7 @@ export default {
 					return message.reply(`User \`@${targetUser.username}\` doesn't have the role \`${roleId}\`.`);
 				}
 				try {
-					await target.edit({ roles: currentRoles.filter((role) => role !== roleId) });
+					await target.edit({ roles: currentRoles.filter((r) => r !== roleId) });
 					await message.reply(`Role \`${roleId}\` has been removed from \`@${targetUser.username}\`.`);
 				} catch (error) {
 					console.error("Role remove error:", error);
