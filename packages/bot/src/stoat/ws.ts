@@ -15,7 +15,7 @@ export interface WsOptions {
 const DEFAULT_OPTIONS: Required<WsOptions> = {
 	heartbeatInterval: 30,
 	pongTimeout: 10,
-	connectTimeout: 15,
+	connectTimeout: 60,
 	autoReconnect: true,
 	retryDelayFunction: (count: number) => (Math.pow(2, count) - 1) * (0.8 + Math.random() * 0.4),
 	debug: false,
@@ -30,6 +30,7 @@ export class EventClient extends EventEmitter {
 	private _state: ConnectionState = ConnectionState.Idle;
 	private _ping: number = -1;
 	private closed = false;
+	private _heartbeatStarted = false;
 
 	constructor(
 		private protocolVersion: number = 1,
@@ -85,13 +86,9 @@ export class EventClient extends EventEmitter {
 		this.socket.on("open", () => {
 			console.info("[WS] socket opened");
 			if (this.options.debug) console.debug("[WS] Socket open");
-			this.heartbeatTimer = setInterval(() => {
-				this.send({ type: "Ping", data: +new Date() });
-				this.pongTimer = setTimeout(() => {
-					if (this.options.debug) console.debug("[WS] Pong timeout");
-					this.disconnect();
-				}, this.options.pongTimeout * 1000);
-			}, this.options.heartbeatInterval * 1000);
+			// Heartbeat starts after Ready — not here.
+			// Starting it too early risks pong timeouts while the server
+			// prepares the initial Ready payload for large bots.
 		});
 
 		this.socket.on("error", (error) => {
@@ -127,6 +124,18 @@ export class EventClient extends EventEmitter {
 		});
 	}
 
+	private _startHeartbeat(): void {
+		if (this._heartbeatStarted) return;
+		this._heartbeatStarted = true;
+		this.heartbeatTimer = setInterval(() => {
+			this.send({ type: "Ping", data: +new Date() });
+			this.pongTimer = setTimeout(() => {
+				if (this.options.debug) console.debug("[WS] Pong timeout");
+				this.disconnect();
+			}, this.options.pongTimeout * 1000);
+		}, this.options.heartbeatInterval * 1000);
+	}
+
 	private handle(event: any) {
 		switch (event.type) {
 			case "Ping":
@@ -149,10 +158,14 @@ export class EventClient extends EventEmitter {
 		switch (this._state) {
 			case ConnectionState.Connecting:
 				if (event.type === "Authenticated") {
-					// no-op, wait for Ready
+					console.info("[WS] Authenticated received");
 				} else if (event.type === "Ready") {
+					const serverCount = event.servers?.length ?? 0;
+					const channelCount = event.channels?.length ?? 0;
+					console.info(`[WS] Ready received: ${serverCount} servers, ${channelCount} channels`);
 					this.emit("event", event);
 					this.setState(ConnectionState.Connected);
+					this._startHeartbeat();
 				}
 				break;
 			case ConnectionState.Connected:
@@ -175,6 +188,7 @@ export class EventClient extends EventEmitter {
 		clearInterval(this.heartbeatTimer);
 		clearTimeout(this.connectTimer);
 		clearTimeout(this.pongTimer);
+		this._heartbeatStarted = false;
 	}
 
 	disconnect() {

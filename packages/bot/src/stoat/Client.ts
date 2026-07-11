@@ -77,7 +77,9 @@ export class Client extends EventEmitter {
 			}
 		});
 
-		this.events.on("event", (event: any) => this._handleEvent(event));
+		this.events.on("event", (event: any) => {
+			this._handleEvent(event).catch((e) => console.error("[Client] Unhandled event error:", e));
+		});
 	}
 
 	private async _fetchConfiguration(): Promise<void> {
@@ -111,21 +113,51 @@ export class Client extends EventEmitter {
 		this.connect();
 	}
 
-	private _handleEvent(event: any): void {
+	/**
+	 * Process an array in chunks, yielding to the event loop between chunks
+	 * so heartbeats and other I/O are not starved during large data loads.
+	 */
+	private async _processInChunks<T>(
+		items: T[],
+		chunkSize: number,
+		processor: (item: T) => void,
+		label: string = "items",
+	): Promise<void> {
+		for (let i = 0; i < items.length; i += chunkSize) {
+			const end = Math.min(i + chunkSize, items.length);
+			for (let j = i; j < end; j++) {
+				processor(items[j]);
+			}
+			console.info(`[WS] Processed ${label}: ${end}/${items.length}`);
+			// Yield to the event loop so heartbeats / pongs can be processed.
+			if (end < items.length) {
+				await new Promise((resolve) => setTimeout(resolve, 0));
+			}
+		}
+	}
+
+	private async _handleEvent(event: any): Promise<void> {
 		switch (event.type) {
 			case "Bulk": {
 				for (const item of event.v) this._handleEvent(item);
 				break;
 			}
 			case "Ready": {
+				const startTime = Date.now();
 				if (event.users)
 					for (const user of event.users) {
 						const u = this.users.getOrCreate(user._id, user);
 						if (user.relationship === "User") this.user = u;
 					}
 				if (event.servers) for (const server of event.servers) this.servers.getOrCreate(server._id, server);
-				if (event.channels) for (const channel of event.channels) this.channels.getOrCreate(channel._id, channel);
 				if (event.members) for (const member of event.members) this.serverMembers.getOrCreate(member._id, member);
+				// Channels are the bulk of the data — process in chunks to avoid
+				// blocking the event loop and starving heartbeats.
+				if (event.channels) {
+					await this._processInChunks(event.channels, 5000, (channel: any) => {
+						this.channels.getOrCreate(channel._id, channel);
+					}, "channels");
+				}
 				// If users were not included in Ready (because we used ?ready= to slim the payload),
 				// fetch the bot's own user via REST so this.user is set before we emit 'ready'.
 				if (!this.user) {
@@ -135,6 +167,10 @@ export class Client extends EventEmitter {
 						console.error("Failed to fetch bot user via REST:", e?.message || e);
 					});
 				}
+				const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+				console.info(
+					`[WS] Ready processed: ${this.servers.size()} servers, ${this.channels.size()} channels in ${elapsed}s`,
+				);
 				this.ready = true;
 				this.emit("ready");
 				break;

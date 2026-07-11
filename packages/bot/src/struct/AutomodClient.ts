@@ -11,7 +11,9 @@ class AutomodClient extends Stoat.Client {
 	}
 }
 
-const LOGIN_TIMEOUT = 30_000; // 30 seconds per attempt
+const LOGIN_TIMEOUT = 180_000; // 3 minutes. Due to it's gargantuan size AutoMod needs time to receive and process the Read
+y payload
+const LOGIN_WARN_AFTER = 30_000; // Log a warning if login hasn't completed after 30s
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_BACKOFF_BASE = 2000; // 2s base delay, doubles each attempt
 
@@ -33,8 +35,13 @@ async function login(client: Stoat.Client): Promise<void> {
 					reject(new Error(`Login timed out after ${LOGIN_TIMEOUT / 1000}s`));
 				}, LOGIN_TIMEOUT);
 
+				const warnTimeout = setTimeout(() => {
+					console.warn(`Login still in progress after ${LOGIN_WARN_AFTER / 1000}s — ` + `this is normal for large bots with many servers/channels. Waiting up to ${LOGIN_TIMEOUT / 1000}s total.`);
+				}, LOGIN_WARN_AFTER);
+
 				const cleanup = () => {
 					clearTimeout(timeout);
+					clearTimeout(warnTimeout);
 					client.removeListener("ready", onReady);
 					client.removeListener("error", onError);
 					client.removeListener("connecting", onConnecting);

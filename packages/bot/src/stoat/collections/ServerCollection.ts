@@ -26,7 +26,7 @@ export class ServerCollection extends BaseCollection<Server> {
 		const existing = this.get(id);
 		if (existing) return existing;
 
-		this.underlying.set(id, { ...data });
+		this.underlying.set(id, data);
 
 		const instance = new Server(this, id);
 		this.objects.set(id, instance);

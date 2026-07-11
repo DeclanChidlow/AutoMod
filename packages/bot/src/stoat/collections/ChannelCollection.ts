@@ -28,7 +28,7 @@ export class ChannelCollection extends BaseCollection<Channel> {
 		const existing = this.get(id);
 		if (existing) return existing;
 
-		this.underlying.set(id, { ...data });
+		this.underlying.set(id, data);
 
 		const instance = new Channel(this, id);
 		this.objects.set(id, instance);
