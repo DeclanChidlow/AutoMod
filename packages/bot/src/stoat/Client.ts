@@ -113,6 +113,12 @@ export class Client extends EventEmitter {
 		this.connect();
 	}
 
+	disconnect(): void {
+		clearTimeout(this._reconnectTimeout);
+		this.options.autoReconnect = false;
+		this.events.disconnect();
+	}
+
 	/**
 	 * Process an array in chunks, yielding to the event loop between chunks
 	 * so heartbeats and other I/O are not starved during large data loads.

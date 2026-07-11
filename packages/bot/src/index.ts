@@ -8,10 +8,14 @@ import TempBan from "automod-lib/dist/types/TempBan";
 import ReactionRoles from "automod-lib/dist/types/ReactionRoles";
 import { Collection } from "mongodb";
 
+process.on("SIGINT", () => process.exit(0));
+process.on("SIGTERM", () => {
+	client?.disconnect();
+	process.exit(0);
+});
+
 process.on("unhandledRejection", (reason, _promise) => {
 	console.error("Unhandled promise rejection:", reason);
-	// Let the process exit so Docker restarts it — an unhandled rejection leaves
-	// the process in an undefined state. Node 15+ exits anyway; be explicit.
 	process.exitCode = 1;
 });
 
