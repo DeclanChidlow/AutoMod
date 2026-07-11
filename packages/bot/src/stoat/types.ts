@@ -5,6 +5,7 @@ export interface ClientOptions {
 	pongTimeout?: number;
 	connectTimeout?: number;
 	debug?: boolean;
+	readyFields?: string[];
 }
 
 /** The bot/user session token */

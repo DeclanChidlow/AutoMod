@@ -39,6 +39,7 @@ export class Client extends EventEmitter {
 			pongTimeout: options.pongTimeout ?? 10,
 			connectTimeout: options.connectTimeout ?? 15,
 			debug: options.debug ?? false,
+			readyFields: options.readyFields,
 		};
 		this.configuration = configuration;
 		this.api = new API({ baseURL: this.options.baseURL });
@@ -101,7 +102,7 @@ export class Client extends EventEmitter {
 		}
 
 		console.info(`Connecting to WebSocket: ${wsUrl}`);
-		this.events.connect(wsUrl, this._session);
+		this.events.connect(wsUrl, this._session, this.options.readyFields);
 	}
 
 	async loginBot(token: string): Promise<void> {
@@ -126,6 +127,15 @@ export class Client extends EventEmitter {
 				if (event.servers) for (const server of event.servers) this.servers.getOrCreate(server._id, server);
 				if (event.channels) for (const channel of event.channels) this.channels.getOrCreate(channel._id, channel);
 				if (event.members) for (const member of event.members) this.serverMembers.getOrCreate(member._id, member);
+				// If users were not included in Ready (because we used ?ready= to slim the payload),
+				// fetch the bot's own user via REST so this.user is set before we emit 'ready'.
+				if (!this.user) {
+					this.api.get("/users/@me").then((me: any) => {
+						this.user = this.users.getOrCreate(me._id, me);
+					}).catch((e: any) => {
+						console.error("Failed to fetch bot user via REST:", e?.message || e);
+					});
+				}
 				this.ready = true;
 				this.emit("ready");
 				break;

@@ -61,6 +61,10 @@ console.info(`\
 
 		const clientOptions: Partial<import("./stoat/index.js").ClientOptions> = {
 			autoReconnect: true,
+			// Only request servers and channels in the Ready event.
+			// Members are fetched via REST in fetch_all.ts; users are loaded on-demand when messages arrive.
+			// Without this, the server sends ALL data which for large bots produces a payload the server cannot deliver and closes the connection with code 1000.
+			readyFields: ["servers", "channels"],
 		};
 
 		const apiUrl = process.env["STOAT_API_URL"];

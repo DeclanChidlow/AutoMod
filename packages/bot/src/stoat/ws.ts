@@ -57,7 +57,7 @@ export class EventClient extends EventEmitter {
 		this.emit("state", state);
 	}
 
-	connect(uri: string, token: string) {
+	connect(uri: string, token: string, readyFields?: string[]) {
 		this.disconnect();
 		this.closed = false;
 		this.setState(ConnectionState.Connecting);
@@ -66,6 +66,11 @@ export class EventClient extends EventEmitter {
 		url.searchParams.set("version", String(this.protocolVersion));
 		url.searchParams.set("format", this.transportFormat);
 		url.searchParams.set("token", token);
+		if (readyFields && readyFields.length > 0) {
+			for (const field of readyFields) {
+				url.searchParams.append("ready", field);
+			}
+		}
 
 		if (this.options.debug) console.debug(`[WS] Connecting to ${url.toString()}`);
 
@@ -178,7 +183,11 @@ export class EventClient extends EventEmitter {
 		const sock = this.socket;
 		this.socket = undefined;
 		if (sock) {
-			try { sock.close(); } catch (_) { /* ignore */ }
+			try {
+				sock.close();
+			} catch (_) {
+				/* ignore */
+			}
 		} else {
 			this.setState(ConnectionState.Disconnected);
 		}
