@@ -11,8 +11,7 @@ class AutomodClient extends Stoat.Client {
 	}
 }
 
-const LOGIN_TIMEOUT = 180_000; // 3 minutes. Due to it's gargantuan size AutoMod needs time to receive and process the Read
-y payload
+const LOGIN_TIMEOUT = 180_000; // 3 minutes. Due to it's gargantuan size AutoMod needs time to receive and process the Ready payload
 const LOGIN_WARN_AFTER = 30_000; // Log a warning if login hasn't completed after 30s
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_BACKOFF_BASE = 2000; // 2s base delay, doubles each attempt
