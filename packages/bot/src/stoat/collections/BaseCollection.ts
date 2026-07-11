@@ -15,10 +15,10 @@ export class BaseCollection<T> {
 		return this.underlying.get(key) || {};
 	}
 
-	updateUnderlyingObject(key: string, updates: any): void {
+	updateUnderlyingObject(key: string, updates: any, value?: any): void {
 		if (typeof updates === "string") {
-			// Called as updateUnderlyingObject(key, propName, value)
-			// We handle this in the specific collections
+			// 3-argument form: updateUnderlyingObject(key, propName, value)
+			this.updateUnderlyingProp(key, updates, value);
 			return;
 		}
 		const existing = this.underlying.get(key) || {};

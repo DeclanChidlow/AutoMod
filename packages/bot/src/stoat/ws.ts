@@ -31,6 +31,7 @@ export class EventClient extends EventEmitter {
 	private _ping: number = -1;
 	private closed = false;
 	private _heartbeatStarted = false;
+	private _connectionGeneration = 0;
 
 	constructor(
 		private protocolVersion: number = 1,
@@ -59,7 +60,7 @@ export class EventClient extends EventEmitter {
 	}
 
 	connect(uri: string, token: string, readyFields?: string[]) {
-		this.closed = true;
+		const generation = ++this._connectionGeneration;
 		this.disconnect();
 		this.closed = false;
 		this.setState(ConnectionState.Connecting);
@@ -77,6 +78,8 @@ export class EventClient extends EventEmitter {
 		if (this.options.debug) console.debug(`[WS] Connecting to ${url.toString()}`);
 
 		this.connectTimer = setTimeout(() => {
+			// Ignore stale connect timeouts from previous connection attempts.
+			if (generation !== this._connectionGeneration) return;
 			if (this.options.debug) console.debug("[WS] Connection timeout");
 			this.emit("error", new Error("WebSocket connection timed out"));
 			this.disconnect();
@@ -87,19 +90,18 @@ export class EventClient extends EventEmitter {
 		this.socket.on("open", () => {
 			console.info("[WS] socket opened");
 			if (this.options.debug) console.debug("[WS] Socket open");
-			// Heartbeat starts after Ready — not here.
-			// Starting it too early risks pong timeouts while the server
-			// prepares the initial Ready payload for large bots.
+			// Heartbeat starts after Ready (not here).
+			// Starting it too early risks pong timeouts while the server prepares the initial Ready payload for large bots.
 		});
 
 		this.socket.on("error", (error) => {
-			// Only emit if there are listeners — prevents crash when no error handler is attached
 			if (this.listenerCount("error") > 0) {
 				this.emit("error", error);
 			} else {
 				console.error("[WS] WebSocket error (no handler):", (error as any)?.message || error);
-				this.disconnect();
 			}
+			// Always disconnect on error as some errors don't trigger a close event, which would leave the socket in a broken state forever.
+			this.disconnect();
 		});
 
 		this.socket.on("message", (data: WebSocket.Data) => {
@@ -118,6 +120,8 @@ export class EventClient extends EventEmitter {
 
 		this.socket.on("close", (code, reason) => {
 			if (this.options.debug) console.debug(`[WS] Socket closed: ${code} ${reason}`);
+			// Ignore close events from previous connection attempts as only the current generation's socket should trigger state changes.
+			if (generation !== this._connectionGeneration) return;
 			this.cleanup();
 			if (!this.closed) {
 				this.setState(ConnectionState.Disconnected);
