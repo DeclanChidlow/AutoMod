@@ -1,6 +1,4 @@
 import { ulid } from "ulid";
-import Day from "dayjs";
-import RelativeTime from "dayjs/plugin/relativeTime";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
@@ -13,6 +11,7 @@ import {
 	dedupeArray,
 	embed,
 	EmbedColor,
+	formatRelativeTime,
 	generateInfractionDMEmbed,
 	getDmChannel,
 	getMembers,
@@ -25,8 +24,6 @@ import {
 	yesNoMessage,
 } from "../../util";
 import { client } from "../../..";
-
-Day.extend(RelativeTime);
 
 const SYNTAX = "/ban @username [10m|1h|...?] [reason?]";
 
@@ -216,7 +213,7 @@ export default {
 					});
 				} else {
 					const banUntil = Date.now() + banDuration;
-					const banDurationFancy = Day(banUntil).fromNow(true);
+					const banDurationFancy = formatRelativeTime(banUntil, true);
 					const infId = ulid();
 					const infraction: Infraction = {
 						_id: infId,

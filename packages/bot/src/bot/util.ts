@@ -1,7 +1,6 @@
 import { ServerMember, User, Server, Channel, Message } from "../stoat/index.js";
 import { client, dbs } from "..";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
-import FormData from "form-data";
 import axios from "axios";
 import LogConfig from "automod-lib/dist/types/LogConfig";
 import LogMessage from "automod-lib/dist/types/LogMessage";
@@ -128,11 +127,9 @@ async function storeInfraction(infraction: Infraction): Promise<{ userWarnCount:
 
 async function uploadFile(file: any, filename: string): Promise<string> {
 	const data = new FormData();
-	data.append("file", file, { filename });
+	data.append("file", new Blob([file], { type: "application/octet-stream" }), filename);
 
-	const response = await axios.post(client.configuration?.features.autumn.url + "/attachments", data, {
-		headers: data.getHeaders(),
-	});
+	const response = await axios.post(client.configuration?.features.autumn.url + "/attachments", data);
 	return response.data.id;
 }
 
@@ -424,6 +421,57 @@ const memberRanking = (member: ServerMember) => {
 	return { inferior, kickable, bannable };
 };
 
+/**
+ * Converts a 2D array to a CSV string with proper escaping.
+ */
+const arrayToCsv = (data: string[][]): string => {
+	return data
+		.map((row) =>
+			row
+				.map((cell) => {
+					if (cell.includes(",") || cell.includes('"') || cell.includes("\n")) {
+						return `"${cell.replace(/"/g, '""')}"`;
+					}
+					return cell;
+				})
+				.join(","),
+		)
+		.join("\n");
+};
+
+/**
+ * Returns a human-readable relative time string (e.g. "3 hours ago", "in 2 days").
+ * @param date - timestamp in milliseconds
+ * @param withoutSuffix - if true, omits the "ago"/"in" prefix/suffix (dayjs-compatible)
+ */
+const formatRelativeTime = (date: number, withoutSuffix?: boolean): string => {
+	const diff = date - Date.now();
+	const absDiff = Math.abs(diff);
+	const seconds = Math.floor(absDiff / 1000);
+	const minutes = Math.floor(seconds / 60);
+	const hours = Math.floor(minutes / 60);
+	const days = Math.floor(hours / 24);
+	const weeks = Math.floor(days / 7);
+	const months = Math.floor(days / 30);
+	const years = Math.floor(days / 365);
+
+	const isPast = diff < 0;
+
+	const format = (value: number, unit: string): string => {
+		const s = `${value} ${unit}${value !== 1 ? "s" : ""}`;
+		if (withoutSuffix) return s;
+		return isPast ? `${s} ago` : `in ${s}`;
+	};
+
+	if (years > 0) return format(years, "year");
+	if (months > 0) return format(months, "month");
+	if (weeks > 0) return format(weeks, "week");
+	if (days > 0) return format(days, "day");
+	if (hours > 0) return format(hours, "hour");
+	if (minutes > 0) return format(minutes, "minute");
+	return format(Math.max(seconds, 0), "second");
+};
+
 export {
 	getOwnMemberInServer,
 	isModerator,
@@ -450,4 +498,6 @@ export {
 	ULID_REGEX,
 	USER_MENTION_REGEX,
 	CHANNEL_MENTION_REGEX,
+	arrayToCsv,
+	formatRelativeTime,
 };

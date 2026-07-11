@@ -1,8 +1,7 @@
 import { Server, ServerMember } from "../../stoat/index.js";
 import { client, dbs } from "../..";
 import LogMessage from "automod-lib/dist/types/LogMessage";
-import Xlsx from "xlsx";
-import { sanitizeMessageContent, sendLogMessage } from "../util";
+import { arrayToCsv, sanitizeMessageContent, sendLogMessage } from "../util";
 
 // the `packet` event is emitted before the client's cache
 // is updated, which allows us to get the old message content
@@ -96,7 +95,7 @@ client.on("messageDeleteBulk", async (messages) => {
 	try {
 		let config = await dbs.SERVERS.findOne({ id: channel.serverId });
 		if (config?.logs?.messageUpdate) {
-			const data: String[][] = [["Message ID", "Author ID", "Author Name", "Content", "Attachment URLs"], []];
+			const data: string[][] = [["Message ID", "Author ID", "Author Name", "Content", "Attachment URLs"], []];
 
 			for (const message of messages) {
 				data.push([
@@ -108,7 +107,7 @@ client.on("messageDeleteBulk", async (messages) => {
 				]);
 			}
 
-			const csv = Xlsx.utils.sheet_to_csv(data);
+			const csv = arrayToCsv(data);
 
 			let embed: LogMessage = {
 				title: `Bulk delete in ${channel.server?.name}`,

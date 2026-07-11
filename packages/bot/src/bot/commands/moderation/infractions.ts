@@ -1,18 +1,12 @@
-import Day from "dayjs";
-import RelativeTime from "dayjs/plugin/relativeTime";
 import axios from "axios";
-import FormData from "form-data";
-import Xlsx from "xlsx";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { fetchUsername } from "../../modules/mod_logs";
-import { isModerator, NO_MANAGER_MSG, parseUserOrId, getDmChannel, embed, EmbedColor } from "../../util";
+import { arrayToCsv, formatRelativeTime, isModerator, NO_MANAGER_MSG, parseUserOrId, getDmChannel, embed, EmbedColor } from "../../util";
 import { client, dbs } from "../../..";
-
-Day.extend(RelativeTime);
 
 const SYNTAX = '/infractions; /infractions @username ["export-csv"]; /infractions rm [ID]';
 
@@ -22,11 +16,11 @@ const formatInfraction = async (inf: Infraction) => {
 };
 
 const createCSVData = async (userId: string, infs: Infraction[]) => {
-	const csv_data = [[`Warns for ${await fetchUsername(userId)} (${userId}) - ${Day().toString()}`], [], ["Date", "Reason", "Created By", "Type", "Action Type", "ID"]];
+	const csv_data = [[`Warns for ${await fetchUsername(userId)} (${userId}) - ${new Date().toUTCString()}`], [], ["Date", "Reason", "Created By", "Type", "Action Type", "ID"]];
 
 	for (const inf of infs) {
 		csv_data.push([
-			Day(inf.date).toString(),
+			new Date(inf.date).toUTCString(),
 			inf.reason,
 			inf.type === InfractionType.Manual ? `${await fetchUsername(inf.createdBy!)} (${inf.createdBy})` : "SYSTEM",
 			inf.type === InfractionType.Automatic ? "Automatic" : "Manual",
@@ -35,21 +29,16 @@ const createCSVData = async (userId: string, infs: Infraction[]) => {
 		]);
 	}
 
-	return Xlsx.utils.sheet_to_csv(Xlsx.utils.aoa_to_sheet(csv_data));
+	return arrayToCsv(csv_data);
 };
 
 const uploadCsvFile = async (csvData: string, filename: string) => {
 	try {
 		const formData = new FormData();
-		const fileBuffer = Buffer.from(csvData, "utf-8");
-		formData.append("file", fileBuffer, {
-			filename: filename,
-			contentType: "text/csv",
-		});
+		formData.append("file", new Blob([csvData], { type: "text/csv" }), filename);
 
 		const uploadResponse = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, {
 			headers: {
-				...formData.getHeaders(),
 				"x-bot-token": process.env["BOT_TOKEN"]!,
 			},
 			timeout: 10000,
@@ -242,7 +231,7 @@ export default {
 							`ID: \`${inf._id}\`\n` +
 							`Reason: ${getInfEmoji(inf)}\`${inf.reason}\` ` +
 							`(${inf.type === InfractionType.Manual ? await fetchUsername(inf.createdBy ?? "") : "System"})\n` +
-							`Created ${Day(inf.date).fromNow()}`,
+							`Created ${formatRelativeTime(inf.date)}`,
 					);
 					break;
 

@@ -1,5 +1,4 @@
 import axios from "axios";
-import FormData from "form-data";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
@@ -95,15 +94,10 @@ export default {
 					const channel = await getDmChannel(message.authorId!);
 					const formData = new FormData();
 					const filename = `wordlist_${message.channel?.serverId}_${Date.now()}.txt`;
-					const fileBuffer = Buffer.from(formattedWordlist, "utf-8");
-					formData.append("file", fileBuffer, {
-						filename: filename,
-						contentType: "text/plain",
-					});
+					formData.append("file", new Blob([formattedWordlist], { type: "text/plain" }), filename);
 
 					const uploadResponse = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, {
 						headers: {
-							...formData.getHeaders(),
 							"x-bot-token": process.env["BOT_TOKEN"]!,
 						},
 						timeout: 10000,
