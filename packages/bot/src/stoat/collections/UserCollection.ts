@@ -25,7 +25,10 @@ export class UserCollection extends BaseCollection<User> {
 
 	getOrCreate(id: string, data: any): User {
 		const existing = this.get(id);
-		if (existing) return existing;
+		if (existing) {
+			this.updateUnderlyingObject(id, data);
+			return existing;
+		}
 
 		this.underlying.set(id, { ...data });
 

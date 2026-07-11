@@ -26,7 +26,10 @@ export class ChannelCollection extends BaseCollection<Channel> {
 
 	getOrCreate(id: string, data: any, isNew: boolean = false): Channel {
 		const existing = this.get(id);
-		if (existing) return existing;
+		if (existing) {
+			this.updateUnderlyingObject(id, data);
+			return existing;
+		}
 
 		this.underlying.set(id, data);
 

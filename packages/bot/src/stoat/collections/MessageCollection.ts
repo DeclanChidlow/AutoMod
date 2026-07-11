@@ -6,7 +6,10 @@ const MAX_MESSAGES = 50_000;
 export class MessageCollection extends BaseCollection<Message> {
 	getOrCreate(id: string, data: any, _isNew?: boolean): Message {
 		const existing = this.get(id);
-		if (existing) return existing;
+		if (existing) {
+			this.updateUnderlyingObject(id, data);
+			return existing;
+		}
 
 		// Evict oldest entries when over capacity
 		if (this.objects.size >= MAX_MESSAGES) {

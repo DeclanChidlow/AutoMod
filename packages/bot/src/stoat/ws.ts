@@ -59,6 +59,7 @@ export class EventClient extends EventEmitter {
 	}
 
 	connect(uri: string, token: string, readyFields?: string[]) {
+		this.closed = true;
 		this.disconnect();
 		this.closed = false;
 		this.setState(ConnectionState.Connecting);
@@ -192,7 +193,6 @@ export class EventClient extends EventEmitter {
 	}
 
 	disconnect() {
-		this.closed = true;
 		this.cleanup();
 		const sock = this.socket;
 		this.socket = undefined;

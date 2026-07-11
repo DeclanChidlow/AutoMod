@@ -35,7 +35,10 @@ export class ServerMemberCollection extends BaseCollection<ServerMember> {
 	getOrCreate(id: { server: string; user: string }, data: any): ServerMember {
 		const key = id.server + id.user;
 		const existing = this.get(key);
-		if (existing) return existing;
+		if (existing) {
+			this.updateUnderlyingObject(key, data);
+			return existing;
+		}
 
 		this.underlying.set(key, { ...data });
 
