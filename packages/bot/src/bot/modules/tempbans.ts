@@ -1,20 +1,21 @@
 import { client, dbs } from "../..";
 import TempBan from "automod-lib/dist/types/TempBan";
 
-// Array of ban IDs which should not get processed in this session
-let dontProcess: string[] = [];
-let expired: string[] = [];
+// Ban IDs currently scheduled for processing (prevents double-scheduling)
+let dontProcess: Set<string> = new Set();
+let expired: Set<string> = new Set();
+const MAX_TRACKED = 10_000;
 
 async function tick() {
 	let found = await dbs.TEMPBANS.find({ until: { $lt: Date.now() + 60000 } }).toArray();
 
 
 	for (const ban of found) {
-		if (!dontProcess.includes(ban.id)) {
+		if (!dontProcess.has(ban.id)) {
 			const delay = Math.max(0, ban.until - Date.now());
 			setTimeout(() => processUnban(ban), delay);
 
-			dontProcess.push(ban.id);
+			if (dontProcess.size < MAX_TRACKED) dontProcess.add(ban.id);
 		}
 	}
 }
@@ -29,7 +30,7 @@ new Promise((r: (value: void) => void) => {
 
 async function processUnban(ban: TempBan) {
 	try {
-		if (expired.includes(ban.id)) return;
+		if (expired.has(ban.id)) return;
 
 		let server = client.servers.get(ban.server) || (await client.servers.fetch(ban.server));
 		if (!server.havePermission("BanMembers")) return console.debug(`No permission to process unbans in ${server.id}, skipping`);
@@ -42,7 +43,7 @@ async function processUnban(ban: TempBan) {
 
 			await Promise.allSettled(promises);
 		} else dbs.TEMPBANS.deleteOne({ id: ban.id });
-			dontProcess = dontProcess.filter((id) => id != ban.id);
+			dontProcess.delete(ban.id);
 	} catch (e) {
 		console.error(e);
 	}
@@ -50,11 +51,11 @@ async function processUnban(ban: TempBan) {
 
 async function storeTempBan(ban: TempBan): Promise<void> {
 	if (Date.now() >= ban.until - 60000) {
-		dontProcess.push(ban.id);
+		if (dontProcess.size < MAX_TRACKED) dontProcess.add(ban.id);
 		const delay = Math.max(0, ban.until - Date.now());
 		setTimeout(() => {
 			processUnban(ban);
-			dontProcess = dontProcess.filter((id) => id != ban.id);
+			dontProcess.delete(ban.id);
 		}, delay);
 	}
 
@@ -65,7 +66,7 @@ async function removeTempBan(banID: string): Promise<TempBan> {
 	let ban = await dbs.TEMPBANS.findOneAndDelete({ id: banID });
 	if (!ban) throw `Ban ${banID} does not exist; cannot delete`;
 	if (Date.now() >= ban.until - 120000) {
-		expired.push(ban.id);
+		if (expired.size < MAX_TRACKED) expired.add(ban.id);
 	}
 	return ban;
 }

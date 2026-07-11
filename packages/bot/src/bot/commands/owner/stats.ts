@@ -41,8 +41,6 @@ export default {
 			`WebSocket: \`${client.events.ping() ?? "--"}ms\`\n` +
 			`Message: \`${Math.round(Date.now() - now)}ms\`\n` +
 			`### Dependencies\n` +
-			`stoat.js: \`${pjson.dependencies["stoat.js"]}\`\n` +
-			`stoat-api: \`${pjson.dependencies["stoat-api"]}\`\n` +
 			`axios: \`${pjson.dependencies["axios"]}\`\n` +
 			`mongodb: \`${pjson.dependencies?.["mongodb"]}\`\n` +
 			`ulid: \`${pjson.dependencies?.["ulid"]}\`\n` +

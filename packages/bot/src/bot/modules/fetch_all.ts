@@ -3,7 +3,7 @@ import { client } from "../..";
 // Fetch all known users on bot startup.
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const RATE_LIMIT_DELAY = 200;
+const RATE_LIMIT_DELAY = 3000;
 
 (async () => {
 	if (!client.user) await new Promise<void>((r) => client.once("ready", () => r()));
@@ -16,13 +16,9 @@ const RATE_LIMIT_DELAY = 200;
 	for (const [_, server] of client.servers.entries()) {
 		promises.push(
 			(async () => {
-				try {
-					await server.fetchMembers();
-					totalCachedUsers = client.users.size();
-					console.info(`Fetched members from server ${server.id}. Total cached users: ${totalCachedUsers}`);
-				} catch (error) {
-					console.error(`Error fetching members for server ${server.id}:`, error);
-				}
+				await server.fetchMembers().catch((e: any) => console.error(`Error fetching members for server ${server.id}: ${e}`));
+				totalCachedUsers = client.users.size();
+				console.info(`Fetched members from server ${server.id}. Total cached users: ${totalCachedUsers}`);
 			})(),
 		);
 

@@ -10,10 +10,14 @@ import { Collection } from "mongodb";
 
 process.on("unhandledRejection", (reason, _promise) => {
 	console.error("Unhandled promise rejection:", reason);
+	// Let the process exit so Docker restarts it — an unhandled rejection leaves
+	// the process in an undefined state. Node 15+ exits anyway; be explicit.
+	process.exitCode = 1;
 });
 
 process.on("uncaughtException", (error) => {
 	console.error("Uncaught exception:", error);
+	process.exit(1);
 });
 
 console.info("Initialising client");
@@ -55,7 +59,7 @@ console.info(`\
 			REACTION_ROLES: db.collection<ReactionRoles>("reaction_roles"),
 		};
 
-		const clientOptions: Partial<import("stoat.js").ClientOptions> = {
+		const clientOptions: Partial<import("./stoat/index.js").ClientOptions> = {
 			autoReconnect: true,
 		};
 

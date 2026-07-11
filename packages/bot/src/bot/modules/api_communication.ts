@@ -101,7 +101,7 @@ function retryConnection() {
 		return;
 	}
 
-	const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
+	const delay = Math.min(INITIAL_RETRY_DELAY * Math.pow(2, retryCount), 60_000);
 	retryCount++;
 
 	console.warn(`WebSocket disconnected. Attempting to reconnect in ${delay / 1000} seconds (Attempt ${retryCount} of ${MAX_RETRIES})`);

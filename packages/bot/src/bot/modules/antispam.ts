@@ -1,4 +1,4 @@
-import { Message } from "stoat.js";
+import { Message } from "../../stoat/index.js";
 import { ulid } from "ulid";
 import { dbs } from "../..";
 import AntispamRule from "automod-lib/dist/types/antispam/AntispamRule";
@@ -12,8 +12,9 @@ import { WORDLIST_DEFAULT_MESSAGE } from "../commands/configuration/filter";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
 
-// Should use redis for this
-const SENT_FILTER_MESSAGE: string[] = [];
+// Per-user:channel rate limit for word filter notifications (30s cooldown)
+const SENT_FILTER_MESSAGE: Set<string> = new Set();
+const MAX_FILTER_COOLDOWNS = 1000;
 
 /**
  *
@@ -164,9 +165,9 @@ async function wordFilterCheck(message: Message, config: ServerConfig) {
 					const key = `${message.authorId}:${message.channelId}`;
 					await message.delete();
 
-					if (!SENT_FILTER_MESSAGE.includes(key)) {
-						SENT_FILTER_MESSAGE.push(key);
-						setTimeout(() => SENT_FILTER_MESSAGE.splice(SENT_FILTER_MESSAGE.indexOf(key), 1), 30000);
+					if (!SENT_FILTER_MESSAGE.has(key)) {
+						if (SENT_FILTER_MESSAGE.size < MAX_FILTER_COOLDOWNS) SENT_FILTER_MESSAGE.add(key);
+						setTimeout(() => SENT_FILTER_MESSAGE.delete(key), 30_000);
 						await message.channel.sendMessage((config.wordlistAction.message || WORDLIST_DEFAULT_MESSAGE).replaceAll("{{user_id}}", message.authorId));
 					}
 					break;

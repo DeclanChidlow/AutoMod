@@ -1,4 +1,4 @@
-import { Message } from "stoat.js";
+import { Message } from "../../../stoat/index.js";
 import { dbs } from "../../..";
 import messageContentTrigger from "./message_content_trigger";
 

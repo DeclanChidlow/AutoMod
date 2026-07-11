@@ -1,5 +1,5 @@
-import { Message } from "stoat.js";
-import { Server } from "stoat.js";
+import { Message } from "../stoat/index.js";
+import { Server } from "../stoat/index.js";
 
 class MessageCommandContext extends Message {
 	// The server to which the command should be applied.

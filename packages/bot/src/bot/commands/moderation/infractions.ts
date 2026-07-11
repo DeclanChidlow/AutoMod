@@ -70,7 +70,7 @@ const sendCsvFallback = async (authorId: string, csvData: string, username: stri
 		const channel = await getDmChannel(authorId);
 
 		if (csvData.length > 1900) {
-			const chunks = [];
+			const chunks: string[] = [];
 			const lines = csvData.split("\n");
 			let currentChunk = "";
 

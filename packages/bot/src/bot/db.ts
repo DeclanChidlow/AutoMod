@@ -4,20 +4,39 @@ import { dbs } from "..";
 let client: MongoClient;
 let dbInstance: Db;
 
+const MAX_RETRIES = 5;
+const RETRY_BASE_MS = 2000;
+
 export default async (): Promise<Db> => {
 	if (dbInstance) return dbInstance;
 
-	// Suppress MongoDB driver log spam (defaults to OFF but be explicit)
 	process.env["MONGODB_LOG_ALL"] ??= "off";
 
 	const dburl = getDBUrl();
-	client = new MongoClient(dburl);
 
-	await client.connect();
-	const dbName = dburl.split("/").pop()?.split("?")[0] || "automod";
-	dbInstance = client.db(dbName);
+	for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+		try {
+			client = new MongoClient(dburl, {
+				maxPoolSize: 20,
+				minPoolSize: 2,
+				connectTimeoutMS: 10_000,
+				serverSelectionTimeoutMS: 10_000,
+			});
+			await client.connect();
 
-	return dbInstance;
+			const dbName = dburl.split("/").pop()?.split("?")[0] || "automod";
+			dbInstance = client.db(dbName);
+			return dbInstance;
+		} catch (err) {
+			console.error(`DB connection attempt ${attempt}/${MAX_RETRIES} failed: ${err}`);
+			if (attempt < MAX_RETRIES) {
+				const delay = RETRY_BASE_MS * Math.pow(2, attempt - 1);
+				await new Promise((r) => setTimeout(r, delay));
+			}
+		}
+	}
+
+	throw new Error(`Failed to connect to database after ${MAX_RETRIES} attempts`);
 };
 
 function getDBUrl() {
@@ -43,7 +62,6 @@ async function databaseMigrations() {
 	async function setIndexes(collection: Collection<any>, toIndex: string[]) {
 		try {
 			if (!collection) return;
-
 			for (const index of toIndex) {
 				console.info(`Ensuring index ${index} on ${collection.collectionName}`);
 				await collection.createIndex({ [index]: 1 });

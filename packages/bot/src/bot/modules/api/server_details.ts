@@ -1,4 +1,4 @@
-import { ServerMember, User } from "stoat.js";
+import { ServerMember, User } from "../../../stoat/index.js";
 import { client, dbs } from "../../..";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import { getPermissionLevel } from "../../util";

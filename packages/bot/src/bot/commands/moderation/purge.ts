@@ -1,5 +1,5 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
-import { Message } from "stoat.js";
+import { Message } from "../../../stoat/index.js";
 import { decodeTime } from "ulid";
 import { isModerator, parseUserOrId } from "../../util";
 import MessageCommandContext from "../../../struct/MessageCommandContext";

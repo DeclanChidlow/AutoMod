@@ -1,4 +1,4 @@
-import { ServerMember, User, Server, Channel, Message } from "stoat.js";
+import { ServerMember, User, Server, Channel, Message } from "../stoat/index.js";
 import { client, dbs } from "..";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import FormData from "form-data";
@@ -6,7 +6,7 @@ import axios from "axios";
 import LogConfig from "automod-lib/dist/types/LogConfig";
 import LogMessage from "automod-lib/dist/types/LogMessage";
 import { isSudo } from "./commands/owner/override";
-import type { SendableEmbed } from "stoat-api";
+import type { SendableEmbed } from "../stoat/index.js";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 
 const NO_MANAGER_MSG = "Missing permission";
@@ -84,17 +84,20 @@ async function checkSudoPermission(message: Message, announce = true): Promise<b
 }
 
 async function getPermissionLevel(member: ServerMember | User, server: Server): Promise<0 | 1 | 2 | 3> {
+	let serverMember: ServerMember;
 	if (member instanceof User) {
-		member = client.serverMembers.getByKey({ server: server.id, user: member.id }) || (await server.fetchMember(member.id));
+		serverMember = client.serverMembers.getByKey({ server: server.id, user: member.id }) || (await server.fetchMember(member.id));
+	} else {
+		serverMember = member;
 	}
 
-	if (isSudo(member.user!)) return 3;
-	if (member.hasPermission(server, "ManageServer")) return 3;
+	if (isSudo(serverMember.user!)) return 3;
+	if (serverMember.hasPermission(server, "ManageServer")) return 3;
 
 	const config = await dbs.SERVERS.findOne({ id: server.id });
 
-	if (config?.botManagers?.includes(member.id.user)) return 2;
-	if (config?.moderators?.includes(member.id.user) || member.hasPermission(server, "KickMembers")) return 1;
+	if (config?.botManagers?.includes(serverMember.id.user)) return 2;
+	if (config?.moderators?.includes(serverMember.id.user) || serverMember.hasPermission(server, "KickMembers")) return 1;
 
 	return 0;
 }
@@ -145,14 +148,14 @@ async function sendLogMessage(config: LogConfig, content: LogMessage) {
 				case "EMBED":
 					c = { ...c, ...content.overrides?.stoatEmbed };
 					embed = {
-						title: c.title,
-						description: c.description,
-						colour: c.color,
+						title: c.title ?? undefined,
+						description: c.description ?? undefined,
+						colour: c.color ?? undefined,
 					};
 
 					if (c.fields?.length) {
 						for (const field of c.fields) {
-							embed.description += `\n#### ${field.title}\n${field.content}`;
+							embed!.description += `\n#### ${field.title}\n${field.content}`;
 						}
 					}
 					break;
@@ -239,8 +242,8 @@ function sanitizeMessageContent(msg: string): string {
 function embed(content: string, title?: string | null, color?: string | EmbedColor): SendableEmbed {
 	return {
 		description: content,
-		title: title,
-		colour: color,
+		title: title as string | undefined,
+		colour: color ?? undefined,
 	};
 }
 

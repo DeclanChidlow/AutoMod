@@ -1,5 +1,5 @@
-import { User } from "stoat.js";
-import type { SendableEmbed } from "stoat-api";
+import { User } from "../../../stoat/index.js";
+import type { SendableEmbed } from "../../../stoat/index.js";
 import { ulid } from "ulid";
 import { client } from "../../../";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";

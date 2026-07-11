@@ -62,7 +62,7 @@ function validatePrefix(prefix: string): string | true {
 	if (prefix.length > 32) return "Prefix may not be longer than 32 characters";
 
 	// Check for forbidden characters
-	let matched = [];
+	let matched: string[] = [];
 	for (const char of ["`", "\n", "#"]) {
 		if (prefix.indexOf(char) > -1) matched.push(char);
 	}

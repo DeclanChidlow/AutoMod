@@ -125,7 +125,7 @@ export default {
 						const channel = await getDmChannel(message.authorId!);
 
 						if (formattedWordlist.length > 1900) {
-							const chunks = [];
+							const chunks: string[] = [];
 							const lines = formattedWordlist.split("\n");
 							let currentChunk = "";
 

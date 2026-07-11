@@ -1,4 +1,4 @@
-import { User } from "stoat.js";
+import { User } from "../../../stoat/index.js";
 import { client } from "../../..";
 import { getMutualServers, getPermissionLevel } from "../../util";
 import type { WSResponse } from "../api_communication";

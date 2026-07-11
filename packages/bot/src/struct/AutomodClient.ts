@@ -1,6 +1,6 @@
-import * as Stoat from "stoat.js";
+import * as Stoat from "../stoat/index.js";
 import { Db } from "mongodb";
-import type { ClientOptions } from "stoat.js";
+import type { ClientOptions } from "../stoat/index.js";
 
 class AutomodClient extends Stoat.Client {
 	db: Db;
@@ -37,6 +37,9 @@ async function login(client: Stoat.Client): Promise<void> {
 					clearTimeout(timeout);
 					client.removeListener("ready", onReady);
 					client.removeListener("error", onError);
+					client.removeListener("connecting", onConnecting);
+					client.removeListener("disconnected", onDisconnected);
+					client.removeListener("connected", onConnected);
 				};
 
 				const onReady = () => {
@@ -49,10 +52,26 @@ async function login(client: Stoat.Client): Promise<void> {
 					reject(err);
 				};
 
+				const onConnecting = () => {
+					console.info("  WebSocket state: connecting");
+				};
+
+				const onDisconnected = () => {
+					console.info("  WebSocket state: disconnected");
+				};
+
+				const onConnected = () => {
+					console.info("  WebSocket state: connected");
+				};
+
 				client.once("ready", onReady);
 				client.once("error", onError);
+				client.on("connecting", onConnecting);
+				client.on("disconnected", onDisconnected);
+				client.on("connected", onConnected);
 
-				// loginBot fetches config then calls connect() — if the config fetch fails, loginBot rejects and we must catch that directly.
+				// loginBot fetches config then connects to WebSocket.
+				// The WS URL is built directly from the API base URL host.
 				client.loginBot(token).catch((err) => {
 					cleanup();
 					reject(err);
