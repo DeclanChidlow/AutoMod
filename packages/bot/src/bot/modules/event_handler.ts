@@ -110,6 +110,8 @@ client.on("serverMemberJoin", (member) => {
 		.catch((e) => console.debug("Cannot send hello message: " + e));
 });
 
+client.on("error", (err) => console.error("Client error:", err));
+
 client.on("disconnected", () => console.warn("Client disconnected!"));
 
 client.events.on("state", (state) => {

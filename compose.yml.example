@@ -24,6 +24,7 @@ services:
       - BOT_STATUS
       - BOT_STATUS_INTERVAL
       - STOAT_API_URL
+      - MONGODB_LOG_ALL=off
     # Uncomment if you enabled Prometheus metrics
     #ports:
     #  - 127.0.0.1:${BOT_METRICS_PORT}:${BOT_METRICS_PORT}
@@ -58,6 +59,7 @@ services:
 
   mongo:
     image: mongo
+    command: --quiet
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mogus
       - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}

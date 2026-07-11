@@ -55,14 +55,16 @@ console.info(`\
 			REACTION_ROLES: db.collection<ReactionRoles>("reaction_roles"),
 		};
 
-		client = new AutomodClient(
-			{
-				autoReconnect: true,
-				baseURL: process.env["STOAT_API_URL"] || "https://api.stoat.chat/0.8",
-				heartbeatInterval: 45000,
-			},
-			db,
-		);
+		const clientOptions: Partial<import("stoat.js").ClientOptions> = {
+			autoReconnect: true,
+		};
+
+		const apiUrl = process.env["STOAT_API_URL"];
+		if (apiUrl) {
+			clientOptions.baseURL = apiUrl;
+		}
+
+		client = new AutomodClient(clientOptions, db);
 
 		console.info("Running database migrations...");
 		await databaseMigrations();

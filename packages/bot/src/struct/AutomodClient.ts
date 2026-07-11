@@ -11,7 +11,7 @@ class AutomodClient extends Stoat.Client {
 	}
 }
 
-const LOGIN_TIMEOUT = 15_000; // 15 seconds per attempt
+const LOGIN_TIMEOUT = 30_000; // 30 seconds per attempt
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_BACKOFF_BASE = 2000; // 2s base delay, doubles each attempt
 
@@ -21,46 +21,47 @@ async function login(client: Stoat.Client): Promise<void> {
 		throw new Error("Environment variable 'BOT_TOKEN' not provided");
 	}
 
-	const apiUrl = process.env["STOAT_API_URL"] || "https://api.stoat.chat/0.8";
+	const apiUrl = client.options.baseURL || process.env["STOAT_API_URL"] || "https://stoat.chat/api";
+	console.info(`Connecting to Stoat API at ${apiUrl}`);
 
 	for (let attempt = 1; attempt <= LOGIN_MAX_ATTEMPTS; attempt++) {
-		console.info(`Login attempt ${attempt}/${LOGIN_MAX_ATTEMPTS} — connecting to ${apiUrl}`);
-
-		let onReady: () => void;
-		let onError: (err: Error) => void;
-		let timeout: ReturnType<typeof setTimeout>;
+		console.info(`Login attempt ${attempt}/${LOGIN_MAX_ATTEMPTS}`);
 
 		try {
 			await new Promise<void>((resolve, reject) => {
-				timeout = setTimeout(() => {
+				const timeout = setTimeout(() => {
 					reject(new Error(`Login timed out after ${LOGIN_TIMEOUT / 1000}s`));
 				}, LOGIN_TIMEOUT);
 
-				onReady = () => {
+				const cleanup = () => {
 					clearTimeout(timeout);
+					client.removeListener("ready", onReady);
 					client.removeListener("error", onError);
+				};
+
+				const onReady = () => {
+					cleanup();
 					resolve();
 				};
 
-				onError = (err: Error) => {
-					clearTimeout(timeout);
-					client.removeListener("ready", onReady);
+				const onError = (err: Error) => {
+					cleanup();
 					reject(err);
 				};
 
 				client.once("ready", onReady);
 				client.once("error", onError);
 
-				client.loginBot(token);
+				// loginBot fetches config then calls connect() — if the config fetch fails, loginBot rejects and we must catch that directly.
+				client.loginBot(token).catch((err) => {
+					cleanup();
+					reject(err);
+				});
 			});
 
 			console.log(`Bot logged in as ${client.user?.username}!`);
 			return;
 		} catch (err: any) {
-			clearTimeout(timeout!);
-			client.removeListener("ready", onReady!);
-			client.removeListener("error", onError!);
-
 			console.error(`Login attempt ${attempt} failed: ${err.message}`);
 
 			if (attempt < LOGIN_MAX_ATTEMPTS) {

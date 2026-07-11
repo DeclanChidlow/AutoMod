@@ -7,6 +7,9 @@ let dbInstance: Db;
 export default async (): Promise<Db> => {
 	if (dbInstance) return dbInstance;
 
+	// Suppress MongoDB driver log spam (defaults to OFF but be explicit)
+	process.env["MONGODB_LOG_ALL"] ??= "off";
+
 	const dburl = getDBUrl();
 	client = new MongoClient(dburl);
 
