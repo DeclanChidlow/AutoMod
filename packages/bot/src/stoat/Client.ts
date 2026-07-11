@@ -88,7 +88,6 @@ export class Client extends EventEmitter {
 
 	connect(): void {
 		clearTimeout(this._reconnectTimeout);
-		this.events.disconnect();
 		this.ready = false;
 
 		if (!this._session) {

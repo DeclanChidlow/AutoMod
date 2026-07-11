@@ -188,8 +188,6 @@ export class EventClient extends EventEmitter {
 			} catch (_) {
 				/* ignore */
 			}
-		} else {
-			this.setState(ConnectionState.Disconnected);
 		}
 	}
 
