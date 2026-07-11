@@ -473,6 +473,36 @@ const formatRelativeTime = (date: number, withoutSuffix?: boolean): string => {
 	return format(Math.max(seconds, 0), "second");
 };
 
+/**
+ * Parses a duration string like "7d", "24h", "30m" into milliseconds.
+ * Returns 0 if the input doesn't match the expected pattern.
+ */
+const parseDuration = (input: string): number => {
+	if (!input || !/([0-9]{1,3}[smhdwy])+/g.test(input)) return 0;
+
+	const pieces = input.match(/([0-9]{1,3}[smhdwy])/g) ?? [];
+	let total = 0;
+
+	for (const piece of pieces) {
+		const num = Number(piece.slice(0, piece.length - 1));
+		const letter = piece.slice(piece.length - 1);
+		let multiplier = 0;
+
+		switch (letter) {
+			case "s": multiplier = 1000; break;
+			case "m": multiplier = 1000 * 60; break;
+			case "h": multiplier = 1000 * 60 * 60; break;
+			case "d": multiplier = 1000 * 60 * 60 * 24; break;
+			case "w": multiplier = 1000 * 60 * 60 * 24 * 7; break;
+			case "y": multiplier = 1000 * 60 * 60 * 24 * 365; break;
+		}
+
+		total += num * multiplier;
+	}
+
+	return total;
+};
+
 export {
 	getOwnMemberInServer,
 	isModerator,
@@ -501,4 +531,5 @@ export {
 	CHANNEL_MENTION_REGEX,
 	arrayToCsv,
 	formatRelativeTime,
+	parseDuration,
 };

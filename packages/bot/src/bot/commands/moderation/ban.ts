@@ -13,6 +13,7 @@ import {
 	EmbedColor,
 	formatRelativeTime,
 	generateInfractionDMEmbed,
+	parseDuration,
 	getDmChannel,
 	getMembers,
 	isModerator,
@@ -25,7 +26,7 @@ import {
 } from "../../util";
 import { client } from "../../..";
 
-const SYNTAX = "/ban @username [10m|1h|...?] [reason?]";
+const SYNTAX = "/ban @username [duration] [p|purge <purge_duration>] [reason?]";
 
 export default {
 	name: "ban",
@@ -56,40 +57,53 @@ export default {
 			});
 
 		let banDuration = 0;
-		let durationStr = args.shift();
-		if (durationStr && /([0-9]{1,3}[smhdwy])+/g.test(durationStr)) {
-			let pieces = durationStr.match(/([0-9]{1,3}[smhdwy])/g) ?? [];
+		let purgeSeconds = 0;
+		let durationStr: string | undefined;
 
-			// Being able to specify the same letter multiple times
-			// (e.g. 1s1s) and having their values stack is a feature
-			for (const piece of pieces) {
-				let [num, letter] = [Number(piece.slice(0, piece.length - 1)), piece.slice(piece.length - 1)];
-				let multiplier = 0;
+		// Check for purge duration (prefixed with "p" or "purge") and/or ban duration.
+		// The purge prefix can be part of the duration token ("p7d", "purge7d") or a separate token followed by the duration ("p 7d", "purge 7d").
+		for (let i = 0; i < 3; i++) {
+			let arg = args.shift();
+			if (!arg) break;
 
-				switch (letter) {
-					case "s":
-						multiplier = 1000;
-						break;
-					case "m":
-						multiplier = 1000 * 60;
-						break;
-					case "h":
-						multiplier = 1000 * 60 * 60;
-						break;
-					case "d":
-						multiplier = 1000 * 60 * 60 * 24;
-						break;
-					case "w":
-						multiplier = 1000 * 60 * 60 * 24 * 7;
-						break;
-					case "y":
-						multiplier = 1000 * 60 * 60 * 24 * 365;
-						break;
+			// Handle separate prefix token ("p" or "purge" followed by a duration)
+			const isPrefixToken = arg.toLowerCase() === "p" || arg.toLowerCase() === "purge";
+			if (isPrefixToken) {
+				const next = args.shift();
+				if (next) {
+					const parsed = parseDuration(next);
+					if (parsed > 0) {
+						purgeSeconds = Math.floor(parsed / 1000);
+						continue;
+					}
+					args.unshift(next);
 				}
-
-				banDuration += num * multiplier;
+				args.unshift(arg);
+				break;
 			}
-		} else if (durationStr) args.unshift(durationStr);
+
+			// Handle inline prefix ("p7d", "purge7d")
+			const lower = arg.toLowerCase();
+			const purgeMatch = lower.match(/^(p|purge)([0-9])/);
+			if (purgeMatch) {
+				const parsed = parseDuration(arg.slice(purgeMatch[1].length));
+				if (parsed > 0) {
+					purgeSeconds = Math.floor(parsed / 1000);
+					continue;
+				}
+			}
+
+			// Regular ban duration
+			const parsed = parseDuration(arg);
+			if (parsed > 0) {
+				banDuration = parsed;
+				durationStr = arg;
+				continue;
+			}
+
+			args.unshift(arg);
+			break;
+		}
 
 		let reason = args.join(" ")?.replace(new RegExp("`", "g"), "'")?.replace(new RegExp("\n", "g"), " ");
 
@@ -138,11 +152,12 @@ export default {
 		}
 
 		if (message.replyIds?.length && targetUsers.length) {
+			let purgeInfo = purgeSeconds > 0 ? `\nMessages from the last **${formatRelativeTime(Date.now() - purgeSeconds * 1000, true)}** will be purged.` : "";
 			let res = await yesNoMessage(
 				message.channel!,
 				message.authorId!,
 				`This will ban the author${targetUsers.length > 1 ? "s" : ""} of the message${message.replyIds.length > 1 ? "s" : ""} you replied to.\n` +
-					`The following user${targetUsers.length > 1 ? "s" : ""} will be affected: ${targetUsers.map((u) => `<@${u.id}>`).join(", ")}.\n` +
+					`The following user${targetUsers.length > 1 ? "s" : ""} will be affected: ${targetUsers.map((u) => `<@${u.id}>`).join(", ")}.${purgeInfo}\n` +
 					`Are you sure?`,
 				"Confirm action",
 			);
@@ -195,11 +210,22 @@ export default {
 						}
 					}
 
-					await message.serverContext.banUser(user.id, {
+					const banOptions: Record<string, any> = {
 						reason: reason + ` (by ${await fetchUsername(message.authorId!)} ${message.authorId})`,
-					});
+					};
+					if (purgeSeconds > 0) banOptions["delete_message_seconds"] = purgeSeconds;
 
-					await logModAction("ban", message.serverContext, message.member!, user.id, reason, infraction._id, `Ban duration: **Permanent**`);
+					await message.serverContext.banUser(user.id, banOptions);
+
+					await logModAction(
+						"ban",
+						message.serverContext,
+						message.member!,
+						user.id,
+						reason,
+						infraction._id,
+						`Ban duration: **Permanent**${purgeSeconds > 0 ? ` | Purged messages from the last **${formatRelativeTime(Date.now() - purgeSeconds * 1000, true)}**` : ""}`,
+					);
 
 					embeds.push({
 						title: `User banned`,
@@ -209,6 +235,7 @@ export default {
 							`This is ${userWarnCount == 1 ? "**the first infraction**" : `infraction number **${userWarnCount}**`} for ${await fetchUsername(user.id)}.\n` +
 							`**User ID:** \`${user.id}\`\n` +
 							`**Infraction ID:** \`${infraction._id}\`\n` +
+							(purgeSeconds > 0 ? `**Messages purged:** last ${formatRelativeTime(Date.now() - purgeSeconds * 1000, true)}\n` : "") +
 							`**Reason:** \`${infraction.reason}\``,
 					});
 				} else {
@@ -243,9 +270,12 @@ export default {
 						}
 					}
 
-					await message.serverContext.banUser(user.id, {
+					const banOptions: Record<string, any> = {
 						reason: reason + ` (by ${await fetchUsername(message.authorId!)} ${message.authorId}) (${durationStr})`,
-					});
+					};
+					if (purgeSeconds > 0) banOptions["delete_message_seconds"] = purgeSeconds;
+
+					await message.serverContext.banUser(user.id, banOptions);
 
 					await Promise.all([
 						storeTempBan({
@@ -254,7 +284,15 @@ export default {
 							server: message.serverContext.id,
 							until: banUntil,
 						}),
-						logModAction("ban", message.serverContext, message.member!, user.id, reason, infraction._id, `Ban duration: **${banDurationFancy}**`),
+						logModAction(
+							"ban",
+							message.serverContext,
+							message.member!,
+							user.id,
+							reason,
+							infraction._id,
+							`Ban duration: **${banDurationFancy}**${purgeSeconds > 0 ? ` | Purged messages from the last **${formatRelativeTime(Date.now() - purgeSeconds * 1000, true)}**` : ""}`,
+						),
 					]);
 
 					embeds.push({
@@ -264,6 +302,7 @@ export default {
 						description:
 							`This is ${userWarnCount == 1 ? "**the first infraction**" : `infraction number **${userWarnCount}**`} for ${await fetchUsername(user.id)}.\n` +
 							`**Ban duration:** ${banDurationFancy}\n` +
+							(purgeSeconds > 0 ? `**Messages purged:** last ${formatRelativeTime(Date.now() - purgeSeconds * 1000, true)}\n` : "") +
 							`**User ID:** \`${user.id}\`\n` +
 							`**Infraction ID:** \`${infraction._id}\`\n` +
 							`**Reason:** \`${infraction.reason}\``,
