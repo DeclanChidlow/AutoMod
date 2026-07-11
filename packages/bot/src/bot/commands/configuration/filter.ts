@@ -1,4 +1,3 @@
-import axios from "axios";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
@@ -96,17 +95,22 @@ export default {
 					const filename = `wordlist_${message.channel?.serverId}_${Date.now()}.txt`;
 					formData.append("file", new Blob([formattedWordlist], { type: "text/plain" }), filename);
 
-					const uploadResponse = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, {
-						headers: {
-							"x-bot-token": process.env["BOT_TOKEN"]!,
-						},
-						timeout: 10000,
+					const controller = new AbortController();
+					setTimeout(() => controller.abort(), 10000);
+
+					const uploadResponse = await fetch(`${client.configuration?.features.autumn.url}/attachments`, {
+						method: "POST",
+						body: formData,
+						headers: { "x-bot-token": process.env["BOT_TOKEN"]! },
+						signal: controller.signal,
 					});
 
-					if (uploadResponse.data && uploadResponse.data.id) {
+					if (!uploadResponse.ok) throw new Error(`Upload failed: ${uploadResponse.status}`);
+					const uploadJson = (await uploadResponse.json()) as { id: string };
+					if (uploadJson && uploadJson.id) {
 						await channel.sendMessage({
 							content: `Here's the current filter list for **${message.channel?.server?.name}**.`,
-							attachments: [uploadResponse.data.id],
+							attachments: [uploadJson.id],
 						});
 
 						await message.reply(`The current filter list has been sent to your direct messages as a file.`);

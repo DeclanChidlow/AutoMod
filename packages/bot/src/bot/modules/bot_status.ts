@@ -1,4 +1,3 @@
-import axios from "axios";
 import { client, dbs } from "../..";
 
 (async () => {
@@ -33,17 +32,15 @@ import { client, dbs } from "../..";
 })();
 
 async function setStatus(text: string, presence: "Online" | "Idle" | "Busy" | "Invisible") {
-	await axios.patch(
-		`${client.options.baseURL}/users/@me`,
-		{
-			status: { text, presence },
+	const response = await fetch(`${client.options.baseURL}/users/@me`, {
+		method: "PATCH",
+		body: JSON.stringify({ status: { text, presence } }),
+		headers: {
+			"Content-Type": "application/json",
+			"x-bot-token": process.env["BOT_TOKEN"]!,
 		},
-		{
-			headers: {
-				"x-bot-token": process.env["BOT_TOKEN"]!,
-			},
-		},
-	);
+	});
+	if (!response.ok) throw new Error(`Status update failed: ${response.status}`);
 }
 
 export { setStatus };

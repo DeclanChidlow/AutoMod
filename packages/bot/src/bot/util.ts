@@ -1,7 +1,6 @@
 import { ServerMember, User, Server, Channel, Message } from "../stoat/index.js";
 import { client, dbs } from "..";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
-import axios from "axios";
 import LogConfig from "automod-lib/dist/types/LogConfig";
 import LogMessage from "automod-lib/dist/types/LogMessage";
 import { isSudo } from "./commands/owner/override";
@@ -129,8 +128,10 @@ async function uploadFile(file: any, filename: string): Promise<string> {
 	const data = new FormData();
 	data.append("file", new Blob([file], { type: "application/octet-stream" }), filename);
 
-	const response = await axios.post(client.configuration?.features.autumn.url + "/attachments", data);
-	return response.data.id;
+	const response = await fetch(client.configuration?.features.autumn.url + "/attachments", { method: "POST", body: data });
+	if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
+	const json = (await response.json()) as { id: string };
+	return json.id;
 }
 
 async function sendLogMessage(config: LogConfig, content: LogMessage) {

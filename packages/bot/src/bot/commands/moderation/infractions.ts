@@ -1,4 +1,3 @@
-import axios from "axios";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
@@ -37,15 +36,20 @@ const uploadCsvFile = async (csvData: string, filename: string) => {
 		const formData = new FormData();
 		formData.append("file", new Blob([csvData], { type: "text/csv" }), filename);
 
-		const uploadResponse = await axios.post(`${client.configuration?.features.autumn.url}/attachments`, formData, {
-			headers: {
-				"x-bot-token": process.env["BOT_TOKEN"]!,
-			},
-			timeout: 10000,
+		const controller = new AbortController();
+		setTimeout(() => controller.abort(), 10000);
+
+		const uploadResponse = await fetch(`${client.configuration?.features.autumn.url}/attachments`, {
+			method: "POST",
+			body: formData,
+			headers: { "x-bot-token": process.env["BOT_TOKEN"]! },
+			signal: controller.signal,
 		});
 
-		if (uploadResponse.data && uploadResponse.data.id) {
-			return uploadResponse.data.id;
+		if (!uploadResponse.ok) throw new Error(`Upload failed: ${uploadResponse.status}`);
+		const json = (await uploadResponse.json()) as { id: string };
+		if (json && json.id) {
+			return json.id;
 		} else {
 			throw new Error("Invalid response from attachment service");
 		}
