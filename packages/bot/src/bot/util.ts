@@ -88,7 +88,8 @@ async function getPermissionLevel(member: ServerMember | User, server: Server): 
 	}
 
 	if (isSudo(serverMember.user!)) return 3;
-	if (serverMember.hasPermission(server, "ManageServer")) return 3;
+	if (server.ownerId === serverMember.id.user) return 3;
+	if (serverMember.hasPermission(server, "ManageServer")) return 2;
 
 	const config = await dbs.SERVERS.findOne({ id: server.id });
 
@@ -99,7 +100,8 @@ async function getPermissionLevel(member: ServerMember | User, server: Server): 
 }
 
 function getPermissionBasedOnRole(member: ServerMember): 0 | 1 | 2 | 3 {
-	if (member.hasPermission(member.server!, "ManageServer")) return 3;
+	if (member.server && member.server.ownerId === member.id.user) return 3;
+	if (member.hasPermission(member.server!, "ManageServer")) return 2;
 	if (member.hasPermission(member.server!, "KickMembers")) return 1;
 	return 0;
 }

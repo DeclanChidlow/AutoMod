@@ -20,12 +20,10 @@ wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) =
 			name: string;
 			iconURL?: string;
 			bannerURL?: string;
-			memberCount: number | null;
 			channelCount: number;
 			ownerName?: string;
 			createdAt: number;
 			roleCount: number;
-			botCount: number | null;
 		};
 
 		const promises: Promise<ServerResponse>[] = [];
@@ -42,12 +40,10 @@ wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) =
 							name: server.name,
 							bannerURL: server.bannerURL,
 							iconURL: server.iconURL,
-							memberCount: null, // too expensive to fetch per-server in list; detail page has accurate count
 							channelCount: server.channels.filter((c) => c != null).length,
-							ownerName: server.owner?.username ?? undefined,
+							ownerName: (() => { const o = server.owner; return o ? o.username : server.ownerId; })(),
 							createdAt: server.createdAt.getTime(),
 							roleCount: server.roles?.size ?? 0,
-							botCount: null,
 						});
 					} catch (e) {
 						console.error(e);

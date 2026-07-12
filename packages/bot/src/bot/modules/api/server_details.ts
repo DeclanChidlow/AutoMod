@@ -20,12 +20,10 @@ type ServerDetails = {
 	serverConfig?: ServerConfig;
 	users: APIUser[];
 	channels: APIChannel[];
-	memberCount: number | null;
 	channelCount: number;
 	ownerName?: string;
 	createdAt: number;
 	roleCount: number;
-	botCount: number | null;
 	dmOnKick?: boolean;
 	dmOnBan?: boolean;
 	dmOnWarn?: boolean;
@@ -65,13 +63,8 @@ wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSRespo
 			}
 		}
 
-		const [users, membersData] = await Promise.all([
-			Promise.allSettled([...(serverConfig?.botManagers?.map((u) => fetchUser(u)) ?? []), ...(serverConfig?.moderators?.map((u) => fetchUser(u)) ?? []), fetchUser(user.id)]),
-			server.fetchMembers().catch(() => null),
-		]);
+		const users = await Promise.allSettled([...(serverConfig?.botManagers?.map((u) => fetchUser(u)) ?? []), ...(serverConfig?.moderators?.map((u) => fetchUser(u)) ?? []), fetchUser(user.id)]);
 
-		const members = membersData?.members ?? null;
-		const memberUsers = membersData?.users ?? null;
 		const channels = server.channels.filter((c) => c != undefined);
 
 		const response: ServerDetails = {
@@ -90,12 +83,10 @@ wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSRespo
 				type: "TEXT",
 				icon: c!.iconURL,
 			})),
-			memberCount: members ? members.length : null,
 			channelCount: channels.length,
-			ownerName: server.owner?.username ?? undefined,
+			ownerName: (() => { const o = server.owner; return o ? o.username : server.ownerId; })(),
 			createdAt: server.createdAt.getTime(),
 			roleCount: server.roles?.size ?? 0,
-			botCount: members && memberUsers ? members.filter((m: any) => memberUsers.find((u: any) => u._id === (m._id?.user ?? m._id))?.bot).length : null,
 			dmOnKick: serverConfig?.dmOnKick,
 			dmOnBan: serverConfig?.dmOnBan,
 			dmOnWarn: serverConfig?.dmOnWarn,

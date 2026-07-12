@@ -140,8 +140,24 @@ export class Server {
 
 	async fetchMembers() {
 		const data: any = await this.client.api.get(`/servers/${this.id}/members`);
-		for (const user of data.users) this.client.users.getOrCreate(user._id, user);
-		for (const member of data.members) this.client.serverMembers.getOrCreate(member._id, member);
+
+		// Process in chunks to avoid blocking the event loop.
+		// Synchronous processing would prevent the bot from responding to WebSocket messages for big servers.
+		const CHUNK = 500;
+		const users = data.users;
+		for (let i = 0; i < users.length; i += CHUNK) {
+			const slice = users.slice(i, i + CHUNK);
+			for (const user of slice) this.client.users.getOrCreate(user._id, user);
+			await new Promise((r) => setTimeout(r, 0));
+		}
+
+		const members = data.members;
+		for (let i = 0; i < members.length; i += CHUNK) {
+			const slice = members.slice(i, i + CHUNK);
+			for (const member of slice) this.client.serverMembers.getOrCreate(member._id, member);
+			await new Promise((r) => setTimeout(r, 0));
+		}
+
 		return data;
 	}
 }

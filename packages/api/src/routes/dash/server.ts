@@ -16,12 +16,10 @@ type ServerDetails = {
 	serverConfig: any;
 	users: User[];
 	channels: Channel[];
-	memberCount: number | null;
 	channelCount: number;
 	ownerName?: string;
 	createdAt: number;
 	roleCount: number;
-	botCount: number | null;
 	dmOnKick?: boolean;
 	dmOnWarn?: boolean;
 };

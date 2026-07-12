@@ -74,16 +74,14 @@ const ACTIONS = { 0: "Delete", 1: "Message", 2: "Warn", 3: "Kick", 4: "Ban" };
 
 function fmtServerStats(s) {
 	const parts = [];
-	if (s.memberCount != null) parts.push(`${s.memberCount} members`);
 	if (s.channelCount != null) parts.push(`${s.channelCount} channels`);
 	if (s.roleCount != null) parts.push(`${s.roleCount} roles`);
-	if (s.botCount != null) parts.push(`${s.botCount} bots`);
 	return parts.join(" · ");
 }
 
 function fmtServerSub(s) {
 	const parts = [];
-	if (s.ownerName) parts.push(`Owned by @${escHtml(s.ownerName)}`);
+	if (s.ownerName) parts.push(`Owned by ${escHtml(s.ownerName)}`);
 	if (s.createdAt) {
 		const d = new Date(s.createdAt);
 		parts.push(`Created ${d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`);

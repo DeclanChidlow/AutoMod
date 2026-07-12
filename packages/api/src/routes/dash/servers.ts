@@ -9,12 +9,10 @@ type Server = {
 	name: string;
 	iconURL?: string;
 	bannerURL?: string;
-	memberCount: number | null;
 	channelCount: number;
 	ownerName?: string;
 	createdAt: number;
 	roleCount: number;
-	botCount: number | null;
 };
 
 app.get("/dash/servers", requireAuth({ requireLogin: true }), async (req: Request, res: Response) => {
