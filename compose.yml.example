@@ -57,6 +57,19 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  web:
+    build:
+      context: ./packages/web
+      dockerfile: Dockerfile
+    environment:
+      - WEB_PORT=8080
+      - PUBLIC_API_URL=${PUBLIC_API_URL:-http://api:9000}
+    ports:
+      - "${PUBLIC_WEB_PORT:-8080}:8080"
+    depends_on:
+      - api
+    restart: unless-stopped
+
   mongo:
     image: mongo
     command: --quiet
