@@ -64,12 +64,19 @@ function sendBotWS(msg: { [key: string]: any }) {
 }
 
 type botReqRes = { success: false; error: string; statusCode?: number } | { success: true; [key: string]: any };
-function botReq(type: string, data?: { [key: string]: any }): Promise<botReqRes> {
+function botReq(type: string, data?: { [key: string]: any }, timeoutMs = 30000): Promise<botReqRes> {
 	return new Promise((resolve, reject) => {
 		const nonce = `${Date.now()}.${Math.round(Math.random() * 10000000)}`;
 		if (sockets.length == 0) return resolve({ success: false, error: "Unable to communicate with bot" });
+
+		const timeout = setTimeout(() => {
+			botWS.removeAllListeners(`response:${nonce}`);
+			resolve({ success: false, error: "Bot did not respond in time", statusCode: 504 });
+		}, timeoutMs);
+
 		sendBotWS({ nonce, type, data });
 		botWS.once(`response:${nonce}`, (data: string | Object) => {
+			clearTimeout(timeout);
 			try {
 				const d = typeof data == "string" ? JSON.parse(data || "{}") : data;
 				if (d.success == undefined) d.success = true;
@@ -81,7 +88,5 @@ function botReq(type: string, data?: { [key: string]: any }): Promise<botReqRes>
 		});
 	});
 }
-
-//setInterval(() => botReq('test', { "sus": true }), 1000);
 
 export { botWS, sendBotWS, botReq };

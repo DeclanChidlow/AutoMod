@@ -3,7 +3,19 @@ import type { Request, Response } from "express";
 import { isAuthenticated, requireAuth } from "../../utils";
 import { botReq } from "../internal/ws";
 
-type Server = { id: string; perms: 0 | 1 | 2 | 3; name: string; iconURL?: string; bannerURL?: string };
+type Server = {
+	id: string;
+	perms: 0 | 1 | 2 | 3;
+	name: string;
+	iconURL?: string;
+	bannerURL?: string;
+	memberCount: number | null;
+	channelCount: number;
+	ownerName?: string;
+	createdAt: number;
+	roleCount: number;
+	botCount: number | null;
+};
 
 app.get("/dash/servers", requireAuth({ requireLogin: true }), async (req: Request, res: Response) => {
 	const user = await isAuthenticated(req, res, true);

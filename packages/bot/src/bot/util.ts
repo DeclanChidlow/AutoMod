@@ -11,8 +11,6 @@ const NO_MANAGER_MSG = "Missing permission";
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
 const USER_MENTION_REGEX = /^<@[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const CHANNEL_MENTION_REGEX = /^<#[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
-const RE_HTTP_URI = /^https?:\/\//;
-const RE_MAILTO_URI = /^mailto:/;
 
 enum EmbedColor {
 	Error = "var(--error)",
@@ -53,7 +51,7 @@ async function isModerator(message: Message, announceSudo = false): Promise<bool
 	const member = message.member!;
 	const server = message.channel!.server!;
 
-	if (member.hasPermission(server, "KickMembers")) return true;
+	if (member.hasPermission(server, "ManageMessages")) return true;
 
 	const [isManager, mods, isSudo] = await Promise.all([isBotManager(message), dbs.SERVERS.findOne({ id: server.id }), checkSudoPermission(message, announceSudo)]);
 
@@ -95,7 +93,7 @@ async function getPermissionLevel(member: ServerMember | User, server: Server): 
 	const config = await dbs.SERVERS.findOne({ id: server.id });
 
 	if (config?.botManagers?.includes(serverMember.id.user)) return 2;
-	if (config?.moderators?.includes(serverMember.id.user) || serverMember.hasPermission(server, "KickMembers")) return 1;
+	if (config?.moderators?.includes(serverMember.id.user) || serverMember.hasPermission(server, "BanMembers")) return 1;
 
 	return 0;
 }
@@ -257,10 +255,16 @@ function dedupeArray<T>(...arrays: T[][]): T[] {
 	return found;
 }
 
-function getMutualServers(user: User) {
+async function getMutualServers(user: User) {
 	const servers: Server[] = [];
-	for (const member of client.serverMembers.entries()) {
-		if (member[1].id.user == user.id && member[1].server) servers.push(member[1].server);
+	// Iterate the bot's actual servers, not the member cache (which is event-driven and incomplete).
+		for (const server of client.servers.values()) {
+			try {
+				const cached = client.serverMembers.getByKey({ server: server.id, user: user.id });
+				if (cached) { servers.push(server); continue; }
+				const fetched = await server.fetchMember(user.id);
+				if (fetched) servers.push(server);
+			} catch (_e) { /* skip unreachable servers */ }
 	}
 	return servers;
 }
@@ -283,7 +287,7 @@ const getDmChannel = async (user: string | { id: string } | User) => {
 	return Array.from(client.channels.values()).find((c: Channel) => c.type == "DirectMessage" && c.recipient?.id == (user as User).id) || (await (user as User).openDM());
 };
 
-const generateInfractionDMEmbed = (server: Server, serverConfig: ServerConfig, infraction: Infraction, message: Message) => {
+const generateInfractionDMEmbed = (server: Server, _serverConfig: ServerConfig, infraction: Infraction, message: Message) => {
 	const embed: SendableEmbed = {
 		title: server.name,
 		icon_url: server.icon?.createFileURL({ max_side: 128 } as any),
@@ -306,16 +310,6 @@ const generateInfractionDMEmbed = (server: Server, serverConfig: ServerConfig, i
 				: ""),
 	};
 
-	if (serverConfig.contact) {
-		if (RE_MAILTO_URI.test(serverConfig.contact)) {
-			embed.description +=
-				`\n\nIf you wish to appeal this decision, you may contact the server's moderation team at ` + `[${serverConfig.contact.replace(RE_MAILTO_URI, "")}](${serverConfig.contact}).`;
-		} else if (RE_HTTP_URI.test(serverConfig.contact)) {
-			embed.description += `\n\nIf you wish to appeal this decision, you may do so [here](${serverConfig.contact}).`;
-		} else {
-			embed.description += `\n\n${serverConfig.contact}`;
-		}
-	}
 
 	return embed;
 };

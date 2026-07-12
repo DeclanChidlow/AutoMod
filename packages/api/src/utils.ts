@@ -1,11 +1,13 @@
 import type { Request, Response } from "express";
-import type { Collection, Db } from "mongodb";
+import type { Collection } from "mongodb";
+import { db } from ".";
 import { botReq } from "./routes/internal/ws";
 
-let sessionsCollection: Collection;
+let _sessionsCollection: Collection | null = null;
 
-export function initializeSessionAuthentication(db: Db) {
-	sessionsCollection = db.collection("sessions");
+async function sessionsCollection() {
+	if (!_sessionsCollection) _sessionsCollection = (await db).collection("sessions");
+	return _sessionsCollection;
 }
 
 class Session {
@@ -17,7 +19,6 @@ class Session {
 }
 
 /**
- *
  * @param req
  * @returns false if not authenticated, otherwise the (Stoat) user ID
  */
@@ -35,7 +36,7 @@ async function isAuthenticated(req: Request, res?: Response, send401?: boolean):
 type SessionInfo = { exists: boolean; valid: boolean; nonce?: string };
 
 async function getSessionInfo(user: string, token: string): Promise<SessionInfo> {
-	const session = await sessionsCollection.findOne<Session>({ user, token });
+	const session = await (await sessionsCollection()).findOne<Session>({ user, token });
 
 	return {
 		exists: !!session,
@@ -77,8 +78,7 @@ function requireAuth(config: RequireAuthConfig): (req: Request, res: Response, n
 }
 
 /**
- * Strips the input object of unwanted fields and
- * throws if a value has the wrong type
+ * Strips the input object of unwanted fields and throws if a value has the wrong type
  * @param obj
  * @param structure
  */

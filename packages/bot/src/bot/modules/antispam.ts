@@ -24,7 +24,7 @@ const MAX_FILTER_COOLDOWNS = 1000;
 async function antispam(message: Message): Promise<boolean> {
 	try {
 		let serverRules = await dbs.SERVERS.findOne({ id: message.channel!.serverId! });
-		if (!serverRules?.automodSettings) return true;
+		if (serverRules?.antispamEnabled === false || !serverRules?.automodSettings) return true;
 
 		let ruleTriggered = false;
 
@@ -33,17 +33,17 @@ async function antispam(message: Message): Promise<boolean> {
 				msgCountStore.set(rule.id, { users: {} });
 			}
 
-			if (message.author?.bot != null) break;
+			if (message.author?.bot) break;
 			if (!message.authorId) break;
 			if (serverRules.whitelist?.users?.includes(message.authorId)) break;
 			if (message.member?.roles?.filter((r) => serverRules!.whitelist?.roles?.includes(r)).length) break;
 			if (serverRules.whitelist?.managers !== false && (await isModerator(message, false))) break;
-			if (rule.channels?.length && (!message.channelId || rule.channels.indexOf(message.channelId) == -1)) break;
+			if (rule.channels?.length && (!message.channelId || rule.channels.indexOf(message.channelId) == -1)) continue;
 
 			let store = msgCountStore.get(rule.id)!;
-			if (!message.channelId) break;
-			if (!store.users[message.channelId]) store.users[message.channelId] = {};
-			let userStore = store.users[message.channelId];
+			if (!message.authorId) break;
+			if (!store.users[message.authorId]) store.users[message.authorId] = {};
+			let userStore = store.users[message.authorId];
 
 			if (!userStore.count) userStore.count = 1;
 			else userStore.count++;
@@ -51,7 +51,7 @@ async function antispam(message: Message): Promise<boolean> {
 			setTimeout(() => {
 				userStore.count--;
 				if (userStore.count <= 0) {
-					delete store.users[message.channelId!];
+					delete store.users[message.authorId!];
 					if (Object.keys(store.users).length === 0) {
 						msgCountStore.delete(rule.id);
 					}

@@ -99,13 +99,6 @@ let commands: SimpleCommand[];
 
 		let serverCtx = msg.channel?.server;
 
-		if (config?.linkedServer) {
-			try {
-				serverCtx = client.servers.get(config.linkedServer) || (await client.servers.fetch(config.linkedServer));
-			} catch (e) {
-				msg.reply(`# Error\n Failed to fetch linked server. This command will be executed in the context of this server.\n\n` + `Error: \`\`\`js\n${e}\n\`\`\``);
-			}
-		}
 
 		let message: MessageCommandContext = msg as MessageCommandContext;
 		message.serverContext = serverCtx;

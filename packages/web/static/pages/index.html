@@ -1,0 +1,103 @@
+<div class="loading">Loading servers…</div>
+<script>
+	const main = document.getElementById("content");
+
+	if (isLoggedIn()) {
+		(async () => {
+			main.innerHTML += `<h1>AutoMod Dashboard</h1><div class="loading">Loading servers…</div>`;
+			try {
+				const data = await request("GET", "/dash/servers");
+				const servers = (data.servers || []).sort((a, b) => b.perms - a.perms || a.name.localeCompare(b.name));
+				main.querySelector(".loading")?.remove();
+
+				if (!servers.length) {
+					main.innerHTML += `<p class="empty">You don't have access to any servers with AutoMod.<br>Invite the bot to a server you manage to get started.</p>`;
+					return;
+				}
+
+				main.innerHTML +=
+					`<div class="server-grid">` +
+					servers
+						.map(
+							(s) => `<a href="/dashboard/${s.id}" class="server-card">
+					${s.bannerURL ? `<img src="${escHtml(s.bannerURL)}" alt="" class="server-card-banner">` : `<div class="server-card-banner server-card-banner-empty"></div>`}
+					<div class="server-card-body">
+						${s.iconURL ? `<img src="${escHtml(s.iconURL)}" alt="" class="server-card-icon">` : `<div class="server-card-icon server-card-icon-empty"></div>`}
+						<div>
+							<h3>${escHtml(s.name)}</h3>
+							<span class="perm-badge perm-${s.perms}">${PERMS[s.perms]}</span>
+							<span class="server-card-stats">${fmtServerStats(s)}</span>
+							<span class="server-card-sub">${fmtServerSub(s)}</span>
+						</div>
+					</div>
+				</a>`,
+						)
+						.join("") +
+					`</div>`;
+			} catch (e) {
+				main.innerHTML += `<p style="color:#c33;">Failed to load: ${escHtml(e.message)}</p><a href="/" class="btn btn-primary">Retry</a>`;
+			}
+		})();
+	} else {
+		main.innerHTML += `
+	        <h1>AutoMod Dashboard</h1>
+	        <form id="login-form">
+	            <div class="form-field"><label for="user-field">Stoat User ID</label>
+	                <input type="text" id="user-field" placeholder="Your user ID" required></div>
+	            <p class="error" id="login-error" style="display:none;"></p>
+	            <button type="submit" class="btn btn-primary">Log In</button>
+	        </form>
+	        <p style="margin-top:1rem;color:#888;">Enter your Stoat user ID to begin. You'll get a code to confirm with the bot using <code>?web login &lt;code&gt;</code>.</p>`;
+
+		let loginNonce, loginUser, loginCode;
+
+		document.getElementById("login-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			document.getElementById("login-error").style.display = "none";
+			const user = document.getElementById("user-field").value.trim();
+			if (!user) return;
+			const btn = e.target.querySelector("button");
+			btn.disabled = true;
+			btn.textContent = "Requesting code…";
+			try {
+				const result = await request("POST", "/login/begin", { user });
+				loginNonce = result.nonce;
+				loginUser = user;
+				loginCode = result.code;
+				main.innerHTML = `<p id="page-error" class="error" style="display:none;"></p>
+	                <h1>Confirm Login</h1>
+	                <p>Your login code:</p><div class="code-box">${escHtml(result.code)}</div>
+	                <p>Run this command in a DM or channel with the bot:</p>
+	                <pre style="background:#1a1a1a;padding:1rem;border-radius:4px;">?web login ${escHtml(result.code)}</pre>
+	                <p style="color:#888;">After running the command, click below to finish.</p>
+	                <button id="complete-btn" class="btn btn-primary">Complete Login</button>
+	                <button id="cancel-btn" class="btn btn-secondary" style="margin-left:0.5rem;">Cancel</button>
+	                <p class="error" id="complete-error" style="display:none;"></p>`;
+				document.getElementById("complete-btn").addEventListener("click", async () => {
+					const b = document.getElementById("complete-btn");
+					document.getElementById("complete-error").style.display = "none";
+					b.disabled = true;
+					b.textContent = "Completing…";
+					try {
+						const r = await request("POST", "/login/complete", { user: loginUser, nonce: loginNonce, code: loginCode });
+						saveSession(r.user, r.token);
+						window.location.href = "/";
+					} catch (err) {
+						document.getElementById("complete-error").textContent = err.message;
+						document.getElementById("complete-error").style.display = "block";
+						b.disabled = false;
+						b.textContent = "Complete Login";
+					}
+				});
+				document.getElementById("cancel-btn").addEventListener("click", () => {
+					window.location.reload();
+				});
+			} catch (err) {
+				document.getElementById("login-error").textContent = err.message;
+				document.getElementById("login-error").style.display = "block";
+				btn.disabled = false;
+				btn.textContent = "Log In";
+			}
+		});
+	}
+</script>

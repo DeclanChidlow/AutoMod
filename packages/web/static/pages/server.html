@@ -1,0 +1,281 @@
+<div class="loading">Loading server…</div>
+<script>
+	// Parse server ID from URL
+	const parts = window.location.pathname.split("/");
+	const serverId = parts[2];
+	if (!serverId) {
+		document.getElementById("content").innerHTML += "<h1>Invalid server</h1>";
+		throw new Error("No server ID");
+	}
+
+	(async () => {
+		const main = document.getElementById("content");
+		main.querySelector(".loading")?.remove();
+		try {
+			const data = await request("GET", `/dash/server/${serverId}`);
+			const s = data.server;
+			const perms = s.perms || 0;
+			const cfg = s.serverConfig || {};
+			const managers = cfg.botManagers || [];
+			const mods = cfg.moderators || [];
+
+			main.innerHTML += `
+            ${s.bannerURL ? `<div class="server-page-banner"><img src="${escHtml(s.bannerURL)}" alt=""></div>` : ""}
+            <div class="server-header">
+                ${s.iconURL ? `<img src="${escHtml(s.iconURL)}" alt="">` : ""}
+                <div>
+                    <h1>${escHtml(s.name || s.id)}</h1>
+                    <span class="perm-badge perm-${perms}">${PERMS[perms]}</span>
+                    <span class="server-stats">${fmtServerStats(s)}</span>
+                    <span class="server-sub">${fmtServerSub(s)}</span>
+                    ${s.description ? `<p style="color:#888;">${escHtml(s.description)}</p>` : ""}
+                </div>
+            </div>
+            <div class="tabs">
+                <a href="/dashboard/${serverId}" class="tab active">Settings</a>
+                <a href="/dashboard/${serverId}/antispam" class="tab">Antispam</a>
+            </div>
+            ${perms >= 2 ? renderConfigSection(cfg, s.defaultPrefix) : `<p style="color:#888;">You need Manager permissions to edit server configuration.</p>`}
+            ${perms >= 3 ? renderUserSection("managers", "Bot Managers", managers, true) : ""}
+            ${perms >= 2 ? renderUserSection("mods", "Moderators", mods, true) : ""}
+        `;
+
+			if (perms >= 2) bindConfigForm();
+			if (perms >= 3) bindUserActions("managers");
+			if (perms >= 2) bindUserActions("mods");
+		} catch (e) {
+			main.innerHTML += `<h1>Server Settings</h1><p style="color:#c33;">${escHtml(e.message)}</p><a href="/" class="btn btn-primary">Back to Servers</a>`;
+		}
+	})();
+
+	function renderConfigSection(cfg, defaultPrefix) {
+		const vk = cfg.votekick || {};
+		return `<section><h2>General</h2><form id="config-form">
+        <div class="form-field"><label>Command Prefix</label><p class="field-desc">Global default is <code>${escHtml(defaultPrefix || "/")}</code>. Leave empty to use the default. You can also @mention the bot directly instead of using a prefix.</p><input type="text" id="prefix" value="${escHtml(cfg.prefix || "")}"></div>
+        <div class="form-field"><label><input type="checkbox" id="spaceAfterPrefix" ${cfg.spaceAfterPrefix ? "checked" : ""}> Space after prefix</label><p class="field-desc">Whether a space is required between the prefix and command (e.g. <code>?kick</code> vs <code>? kick</code>).</p></div>
+        <div class="form-field"><label><input type="checkbox" id="dmOnKick" ${cfg.dmOnKick ? "checked" : ""}> DM on kick</label><p class="field-desc">Sends a DM when a user is kicked, with reason and moderator info.</p></div>
+        <div class="form-field"><label><input type="checkbox" id="dmOnBan" ${cfg.dmOnBan ? "checked" : ""}> DM on ban</label>${desc("Sends a DM to the user when they are banned, including the reason, moderator info, and ban duration.")}</div>
+        <div class="form-field"><label><input type="checkbox" id="antispamEnabled" ${cfg.antispamEnabled ? "checked" : ""}> Antispam enabled</label><p class="field-desc">Toggles the automatic spam detection module.</p></div>
+        <div class="form-field"><label><input type="checkbox" id="dmOnWarn" ${cfg.dmOnWarn ? "checked" : ""}> DM on warn</label><p class="field-desc">Sends a DM when a user is warned, with reason and moderator info.</p></div>
+        <button type="submit" class="btn btn-primary">Save Configuration</button>
+    </form></section>
+
+    <section><h2>Votekick</h2><form id="votekick-form">
+        <div class="form-field"><label><input type="checkbox" id="enabled" ${vk.enabled ? "checked" : ""}> Enable votekick</label><p class="field-desc">Allows members to vote to kick or ban a user.</p></div>
+        <div class="form-field"><label>Votes required</label><p class="field-desc">How many votes are needed for the votekick to pass.</p><input type="number" id="votesRequired" value="${vk.votesRequired || 3}" min="1"></div>
+        <div class="form-field"><label>On votekick pass</label><p class="field-desc">What happens when enough members vote.</p>
+            <select id="action">
+                <option value="-1" ${(vk.banDuration ?? -1) === -1 ? "selected" : ""}>Kick the user</option>
+                <option value="0" ${(vk.banDuration ?? -1) === 0 ? "selected" : ""}>Ban permanently</option>
+                <option value="custom" ${(vk.banDuration ?? -1) > 0 ? "selected" : ""}>Ban for a duration</option>
+            </select>
+        </div>
+        <div class="form-field" id="duration-field" style="display:${(vk.banDuration ?? -1) > 0 ? "" : "none"};">
+            <label>Ban duration (minutes)</label><p class="field-desc">How many minutes the temporary ban lasts.</p>
+            <input type="number" id="banDuration" value="${(vk.banDuration ?? -1) > 0 ? vk.banDuration : 60}" min="1">
+        </div>
+        <button type="submit" class="btn btn-primary">Save Votekick</button>
+    </form></section>
+
+    <section id="wordlist-section"><div class="loading">Loading wordlist…</div></section>`;
+	}
+
+	function renderUserSection(key, title, items, editable) {
+		const list = items.length
+			? items.map((u) => `<li><span>${escHtml(u)}</span>${editable ? `<button class="btn btn-danger btn-sm remove-${key}" data-user="${escHtml(u)}">Remove</button>` : ""}</li>`).join("")
+			: `<li class="empty-hint">None configured</li>`;
+		return `<section><h2>${title}</h2><ul id="${key}-list">${list}</ul>
+        ${
+					editable
+						? `<form class="inline-form" id="add-${key}-form">
+            <input type="text" id="${key}-input" placeholder="User ID" required>
+            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </form>`
+						: ""
+				}
+    </section>`;
+	}
+
+	async function loadWordlist() {
+		const section = document.getElementById("wordlist-section");
+		try {
+			const data = await request("GET", `/dash/server/${serverId}/wordlist`);
+			const words = data.words || [];
+			const action = data.action || {};
+			const enabled = !!data.enabled;
+
+			section.innerHTML = `
+            <h2>Wordlist</h2>
+            <form id="wl-config-form" style="margin-bottom:1rem;">
+                <div class="form-field"><label><input type="checkbox" id="wl-enabled" ${enabled ? "checked" : ""}> Enable wordlist filter</label></div>
+                <div class="form-row">
+                    <div class="form-field"><label>Action</label><select id="wl-action">
+                        <option value="LOG" ${action.action === "LOG" ? "selected" : ""}>Log only</option>
+                        <option value="DELETE" ${action.action === "DELETE" ? "selected" : ""}>Delete</option>
+                        <option value="WARN" ${action.action === "WARN" ? "selected" : ""}>Warn</option>
+                    </select></div>
+                    <div class="form-field"><label>Action message</label><input type="text" id="wl-message" value="${escHtml(action.message || "")}" placeholder="Optional message"></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Save Config</button>
+            </form>
+            <table>
+                <thead><tr><th>Word</th><th>Strictness</th><th style="width:5rem;">Actions</th></tr></thead>
+                <tbody>${
+									words.length
+										? words
+												.map(
+													(w) => `<tr>
+                    <td>${escHtml(w.word)}</td>
+                    <td><span class="strict-badge strict-${w.strictness}">${w.strictness}</span></td>
+                    <td><button class="btn btn-danger btn-sm wl-delete" data-word="${escHtml(w.word)}">Del</button></td>
+                </tr>`,
+												)
+												.join("")
+										: `<tr><td colspan="3" class="empty-hint">No words configured</td></tr>`
+								}</tbody>
+            </table>
+            <form id="wl-add-form" class="inline-form" style="margin-top:1rem;">
+                <input type="text" id="wl-new-word" placeholder="Word or phrase" required>
+                <select id="wl-new-strictness">
+                    <option value="SOFT">SOFT</option><option value="HARD">HARD</option><option value="STRICT">STRICT</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">Add</button>
+            </form>
+        `;
+
+			bindWordlist();
+		} catch (e) {
+			section.innerHTML = `<h2>Wordlist</h2><p style="color:#c33;">Failed to load: ${escHtml(e.message)}</p>`;
+		}
+	}
+
+	function bindWordlist() {
+		document.getElementById("wl-config-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const btn = e.target.querySelector("button");
+			btn.disabled = true;
+			try {
+				await request("PUT", `/dash/server/${serverId}/wordlist/config`, {
+					enabled: document.getElementById("wl-enabled").checked,
+					action: document.getElementById("wl-action").value,
+					message: document.getElementById("wl-message").value,
+				});
+				clearError();
+			} catch (err) {
+				showError(err.message);
+			}
+			btn.disabled = false;
+		});
+
+		document.getElementById("wl-add-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const word = document.getElementById("wl-new-word").value.trim();
+			const strictness = document.getElementById("wl-new-strictness").value;
+			if (!word) return;
+			try {
+				clearError();
+				await request("POST", `/dash/server/${serverId}/wordlist`, { word, strictness });
+				loadWordlist();
+			} catch (err) {
+				showError(err.message);
+			}
+		});
+
+		document.querySelectorAll(".wl-delete").forEach((btn) => {
+			btn.addEventListener("click", async () => {
+				const word = btn.dataset.word;
+				if (!confirm(`Remove "${word}" from the wordlist?`)) return;
+				try {
+					clearError();
+					await request("DELETE", `/dash/server/${serverId}/wordlist/${encodeURIComponent(word)}`);
+					loadWordlist();
+				} catch (err) {
+					showError(err.message);
+				}
+			});
+		});
+	}
+
+	function bindConfigForm() {
+		document.getElementById("config-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const btn = e.target.querySelector("button");
+			btn.disabled = true;
+			btn.textContent = "Saving…";
+			try {
+				clearError();
+				await request("PUT", `/dash/server/${serverId}/config`, {
+					prefix: document.getElementById("prefix").value || null,
+					spaceAfterPrefix: document.getElementById("spaceAfterPrefix").checked,
+					dmOnKick: document.getElementById("dmOnKick").checked,
+					dmOnWarn: document.getElementById("dmOnWarn").checked,
+					antispamEnabled: document.getElementById("antispamEnabled").checked,
+					dmOnBan: document.getElementById("dmOnBan").checked,
+				});
+			} catch (err) {
+				showError(err.message);
+			}
+			btn.disabled = false;
+			btn.textContent = "Save Configuration";
+		});
+
+		document.getElementById("votekick-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const btn = e.target.querySelector("button");
+			btn.disabled = true;
+			btn.textContent = "Saving…";
+			try {
+				const action = document.getElementById("action").value;
+				const banDuration = action === "custom" ? Number(document.getElementById("banDuration").value) : Number(action);
+				clearError();
+				await request("PUT", `/dash/server/${serverId}/config`, {
+					votekickEnabled: document.getElementById("enabled").checked,
+					votekickVotesRequired: Number(document.getElementById("votesRequired").value),
+					votekickBanDuration: banDuration,
+				});
+			} catch (err) {
+				showError(err.message);
+			}
+			btn.disabled = false;
+			btn.textContent = "Save Votekick";
+		});
+
+		// Show/hide ban duration field based on dropdown
+		const vkAction = document.getElementById("action");
+		const vkDuration = document.getElementById("duration-field");
+		if (vkAction && vkDuration) {
+			vkAction.addEventListener("change", () => {
+				vkDuration.style.display = vkAction.value === "custom" ? "" : "none";
+			});
+		}
+
+		loadWordlist();
+	}
+
+	function bindUserActions(key) {
+		document.getElementById(`${key}-list`).addEventListener("click", async (e) => {
+			const btn = e.target.closest(`.remove-${key}`);
+			if (!btn) return;
+			try {
+				clearError();
+				await request("DELETE", `/dash/server/${serverId}/${key}/${btn.dataset.user}`);
+				window.location.reload();
+			} catch (err) {
+				showError(err.message);
+			}
+		});
+		document.getElementById(`add-${key}-form`).addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const input = document.getElementById(`${key}-input`);
+			const userId = input.value.trim();
+			if (!userId) return;
+			try {
+				clearError();
+				await request("PUT", `/dash/server/${serverId}/${key}`, { item: userId });
+				window.location.reload();
+			} catch (err) {
+				showError(err.message);
+			}
+		});
+	}
+</script>

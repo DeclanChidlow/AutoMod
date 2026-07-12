@@ -1,8 +1,6 @@
-import { app, db } from "..";
+import { app } from "..";
 import type { Response } from "express";
 import { botReq } from "./internal/ws";
-import type { WithId, Document } from "mongodb";
-import { ObjectId } from "mongodb";
 
 let SERVER_COUNT = 0;
 
@@ -24,32 +22,3 @@ app.get("/stats", async (res: Response) => {
 		servers: SERVER_COUNT,
 	});
 });
-
-app.get("/stats/global_blacklist", async (res: Response) => {
-	try {
-		const dbConnection = await db;
-
-		const users = await dbConnection.collection("users").find({ globalBlacklist: true }).toArray();
-
-		res.send({
-			total: users.length,
-			blacklist: users.map((u: WithId<Document>) => ({
-				id: getId(u._id),
-				reason: (u as any).blacklistReason || null,
-			})),
-		});
-	} catch (e) {
-		console.error("Error fetching global blacklist:", e);
-		res.status(500).send({ error: "Internal server error" });
-	}
-});
-
-function getId(id: string | ObjectId | undefined): string | null {
-	if (typeof id === "string") {
-		return id.toUpperCase();
-	} else if (id instanceof ObjectId) {
-		return id.toHexString().toUpperCase();
-	} else {
-		return null;
-	}
-}

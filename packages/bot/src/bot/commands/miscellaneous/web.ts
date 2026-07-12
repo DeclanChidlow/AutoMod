@@ -11,9 +11,7 @@ async function handleLogin(message: MessageCommandContext, args: string[]) {
 		const code = args.shift();
 		if (!code) {
 			return message.reply(
-				`If you're trying to log in, you can access the dashboard ` +
-					`[here](${process.env["WEB_UI_URL"] || "https://automod.vale.rocks"}).\n\n` +
-					`If you already have a code, you can use \`${DEFAULT_PREFIX}web login [Code]\`.`,
+				`If you're trying to log in, you can access the dashboard at <(${process.env["WEB_UI_URL"]}>.\n\n` + `If you already have a code, you can use \`${DEFAULT_PREFIX}web login [Code]\`.`,
 			);
 		}
 
@@ -34,12 +32,11 @@ async function handleLogin(message: MessageCommandContext, args: string[]) {
 			console.info(`Showing phishing warning to ${message.authorId}`);
 			await Promise.all([
 				message.reply(
-					`# If someone told you to run this, stop!\n` +
-						`This could give an attacker access to all servers you're using AutoMod in.\n` +
-						`If someone else told you to run this command, **block them and ignore this.**\n\n` +
-						`Otherwise, if this was you trying to log in from <${process.env["WEB_UI_URL"] || "https://automod.vale.rocks"}>, \n` +
-						`you can run this command again to continue.\n` +
-						`##### You're seeing this because this is the first time you're trying to log in. Stay safe!`,
+					`## ⚠ If someone told you to run this, stop! ⚠\n` +
+						`This gives an attacker access to all servers you're using AutoMod in.\n` +
+						`If someone untrusted told you to run this command, **block them and ignore this.**\n\n` +
+						`Otherwise, if this was you trying to log in from <${process.env["WEB_UI_URL"]}>, you can run this command again to continue.\n` +
+						`*You're seeing this because this is the first time you're trying to log in. Stay safe!*`,
 				),
 				dbs.PENDING_LOGINS.updateOne({ _id: login._id }, { $set: { requirePhishingConfirmation: false } }),
 			]);
@@ -61,7 +58,7 @@ async function handleLogout(message: MessageCommandContext, args: string[]) {
 		const code = args.shift();
 		if (!code) {
 			return message.reply(
-				`### No code provided.\n` + `You can invalidate a session by using \`${DEFAULT_PREFIX}web logout [Code]\`, ` + `or log out everywhere with \`${DEFAULT_PREFIX}web logout ALL\``,
+				`### No code provided.\n` + `You can invalidate a session by using \`${DEFAULT_PREFIX}web logout [Code]\`, or log out everywhere with \`${DEFAULT_PREFIX}web logout ALL\``,
 			);
 		}
 

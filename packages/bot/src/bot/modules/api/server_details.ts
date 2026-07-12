@@ -2,6 +2,7 @@ import { ServerMember, User } from "../../../stoat/index.js";
 import { client, dbs } from "../../..";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import { getPermissionLevel } from "../../util";
+import { DEFAULT_PREFIX } from "../command_handler";
 import type { WSResponse } from "../api_communication";
 import { wsEvents } from "../api_communication";
 
@@ -19,9 +20,16 @@ type ServerDetails = {
 	serverConfig?: ServerConfig;
 	users: APIUser[];
 	channels: APIChannel[];
+	memberCount: number | null;
+	channelCount: number;
+	ownerName?: string;
+	createdAt: number;
+	roleCount: number;
+	botCount: number | null;
 	dmOnKick?: boolean;
+	dmOnBan?: boolean;
 	dmOnWarn?: boolean;
-	contact?: string;
+	defaultPrefix: string;
 };
 
 wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSResponse) => void) => {
@@ -57,7 +65,14 @@ wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSRespo
 			}
 		}
 
-		const users = await Promise.allSettled([...(serverConfig?.botManagers?.map((u) => fetchUser(u)) ?? []), ...(serverConfig?.moderators?.map((u) => fetchUser(u)) ?? []), fetchUser(user.id)]);
+		const [users, membersData] = await Promise.all([
+			Promise.allSettled([...(serverConfig?.botManagers?.map((u) => fetchUser(u)) ?? []), ...(serverConfig?.moderators?.map((u) => fetchUser(u)) ?? []), fetchUser(user.id)]),
+			server.fetchMembers().catch(() => null),
+		]);
+
+		const members = membersData?.members ?? null;
+		const memberUsers = membersData?.users ?? null;
+		const channels = server.channels.filter((c) => c != undefined);
 
 		const response: ServerDetails = {
 			id: server.id,
@@ -68,18 +83,23 @@ wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSRespo
 			iconURL: server.iconURL,
 			serverConfig: serverConfig as ServerConfig | undefined,
 			users: users.map((u) => (u.status == "fulfilled" ? { id: u.value.id, avatarURL: u.value.avatarURL, username: u.value.username } : { id: u.reason })),
-			channels: server.channels
-				.filter((c) => c != undefined)
-				.map((c) => ({
-					id: c!.id,
-					name: c!.name ?? "",
-					nsfw: false, // todo?
-					type: "TEXT",
-					icon: c!.iconURL,
-				})),
+			channels: channels.map((c) => ({
+				id: c!.id,
+				name: c!.name ?? "",
+				nsfw: false, // todo?
+				type: "TEXT",
+				icon: c!.iconURL,
+			})),
+			memberCount: members ? members.length : null,
+			channelCount: channels.length,
+			ownerName: server.owner?.username ?? undefined,
+			createdAt: server.createdAt.getTime(),
+			roleCount: server.roles?.size ?? 0,
+			botCount: members && memberUsers ? members.filter((m: any) => memberUsers.find((u: any) => u._id === (m._id?.user ?? m._id))?.bot).length : null,
 			dmOnKick: serverConfig?.dmOnKick,
+			dmOnBan: serverConfig?.dmOnBan,
 			dmOnWarn: serverConfig?.dmOnWarn,
-			contact: serverConfig?.contact,
+			defaultPrefix: DEFAULT_PREFIX,
 		};
 
 		cb({ success: true, server: response });

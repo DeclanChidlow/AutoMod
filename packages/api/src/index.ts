@@ -27,7 +27,8 @@ export { app, db, PORT, SESSION_LIFETIME };
 		import("./routes/login"),
 		import("./routes/dash/servers"),
 		import("./routes/dash/server"),
-		import("./routes/dash/server-automod"),
+		import("./routes/dash/server-antispam"),
+		import("./routes/dash/server-wordlist"),
 	];
 
 	for (const p of promises) await p;

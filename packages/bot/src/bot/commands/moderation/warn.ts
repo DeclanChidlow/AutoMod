@@ -102,7 +102,7 @@ export default {
 							const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
 							const dmChannel = await getDmChannel(user);
 
-							if (dmChannel.havePermission("SendMessage") || dmChannel.havePermission("SendEmbeds")) {
+							if (true) {
 								await dmChannel.sendMessage({ embeds: [embed] });
 							} else console.warn("Missing permission to DM user.");
 						} catch (e) {

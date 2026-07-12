@@ -1,17 +1,22 @@
 import crypto from "crypto";
-import { app, SESSION_LIFETIME } from "..";
+import { app, db, SESSION_LIFETIME } from "..";
 import type { Request, Response } from "express";
 import { botReq } from "./internal/ws";
-import type { Collection, Db } from "mongodb";
+import type { Collection } from "mongodb";
 import { badRequest, isAuthenticated, requireAuth } from "../utils";
 import { RateLimiter } from "../middlewares/ratelimit";
 
-let pendingLoginsCollection: Collection;
-let sessionsCollection: Collection;
+let _pendingLogins: Collection | null = null;
+let _sessions: Collection | null = null;
 
-export function initializeAuthAPI(database: Db) {
-	pendingLoginsCollection = database.collection("pending_logins");
-	sessionsCollection = database.collection("sessions");
+async function pendingLogins() {
+	if (!_pendingLogins) _pendingLogins = (await db).collection("pending_logins");
+	return _pendingLogins;
+}
+
+async function sessions() {
+	if (!_sessions) _sessions = (await db).collection("sessions");
+	return _sessions;
 }
 
 class BeginReqBody {
@@ -49,12 +54,13 @@ app.post(
 		const body = req.body as CompleteReqBody;
 		if (!body.user || typeof body.user != "string" || !body.nonce || typeof body.nonce != "string" || !body.code || typeof body.code != "string") return badRequest(res);
 
-		const loginAttempt = await pendingLoginsCollection.findOne({
+		const loginAttempt = await (await pendingLogins()).findOne({
 			code: body.code,
 			user: body.user,
 			nonce: body.nonce,
 			exchanged: false,
 			invalid: false,
+			expires: { $gt: Date.now() },
 		});
 
 		if (!loginAttempt) return res.status(404).send({ error: "The provided login info could not be found." });
@@ -65,14 +71,14 @@ app.post(
 		const sessionToken = crypto.randomBytes(48).toString("base64").replace(/=/g, "");
 
 		await Promise.all([
-			sessionsCollection.insertOne({
+			(await sessions()).insertOne({
 				user: body.user.toUpperCase(),
 				token: sessionToken,
 				nonce: body.nonce,
 				invalid: false,
 				expires: Date.now() + SESSION_LIFETIME,
 			}),
-			pendingLoginsCollection.updateOne({ _id: loginAttempt._id }, { $set: { exchanged: true } }),
+			(await pendingLogins()).updateOne({ _id: loginAttempt._id }, { $set: { exchanged: true } }),
 		]);
 
 		res.status(200).send({ success: true, user: body.user.toUpperCase(), token: sessionToken });

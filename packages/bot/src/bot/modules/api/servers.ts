@@ -1,6 +1,4 @@
-import { User } from "../../../stoat/index.js";
-import { client } from "../../..";
-import { getMutualServers, getPermissionLevel } from "../../util";
+import { getMutualServers, getPermissionLevel, parseUser } from "../../util";
 import type { WSResponse } from "../api_communication";
 import { wsEvents } from "../api_communication";
 
@@ -8,17 +6,27 @@ type ReqData = { user: string };
 
 wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) => void) => {
 	try {
-		let user: User;
-		try {
-			user = client.users.get(data.user) || (await client.users.fetch(data.user));
-		} catch (e) {
+		const user = await parseUser(data.user);
+		if (!user) {
 			cb({ success: false, error: "The requested user could not be found", statusCode: 404 });
 			return;
 		}
 
-		const mutuals = getMutualServers(user);
+		const mutuals = await getMutualServers(user);
 
-		type ServerResponse = { id: string; perms: 0 | 1 | 2 | 3; name: string; iconURL?: string; bannerURL?: string };
+		type ServerResponse = {
+			id: string;
+			perms: 0 | 1 | 2 | 3;
+			name: string;
+			iconURL?: string;
+			bannerURL?: string;
+			memberCount: number | null;
+			channelCount: number;
+			ownerName?: string;
+			createdAt: number;
+			roleCount: number;
+			botCount: number | null;
+		};
 
 		const promises: Promise<ServerResponse>[] = [];
 
@@ -34,6 +42,12 @@ wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) =
 							name: server.name,
 							bannerURL: server.bannerURL,
 							iconURL: server.iconURL,
+							memberCount: null, // too expensive to fetch per-server in list; detail page has accurate count
+							channelCount: server.channels.filter((c) => c != null).length,
+							ownerName: server.owner?.username ?? undefined,
+							createdAt: server.createdAt.getTime(),
+							roleCount: server.roles?.size ?? 0,
+							botCount: null,
 						});
 					} catch (e) {
 						console.error(e);

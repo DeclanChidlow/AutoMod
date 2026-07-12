@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{{title}} | AutoMod</title>
+
+		<script data-goatcounter="https://automod.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+		<link rel="stylesheet" href="/css/reset.css" />
+		<link rel="stylesheet" href="https://automod.vale.rocks/assets/styles/base/body.css" />
+		<link rel="stylesheet" href="https://automod.vale.rocks/assets/styles/type/links.css" />
+		<link rel="stylesheet" href="/css/type.css" />
+
+		<link rel="preload" href="/typefaces/Outfit.woff2" as="font" type="font/woff2" />
+		<link rel="preload" href="/typefaces/FiraCode.woff2" as="font" type="font/woff2" />
+		<link rel="preload" href="/typefaces/Material_Symbols_Rounded/MaterialSymbolsRounded-Regular.woff2" as="font" type="font/woff2" />
+
+		<link rel="icon" type="image/svg+xml" href="https://automod.vale.rocks/assets/favicons/favicon.svg" />
+
+		<link rel="apple-touch-icon" sizes="512x512" href="https://automod.vale.rocks/assets/favicons/apple-touch-icon.png" />
+
+		<meta property="og:image" content="https://automod.vale.rocks/assets/og_image.webp" />
+		<meta property="og:image:type" content="image/webp" />
+		<meta property="og:image:width" content="1000" />
+		<meta property="og:image:height" content="495" />
+		<meta property="og:image:alt" content="The AutoMod logo, featuring a shield with a strike in it and the text 'AutoMod' on a background of repeating icons in a rainbow gradient." />
+
+		<meta property="og:site_name" content="AutoMod" />
+		<meta property="og:locale" content="en_AU" />
+
+		<meta name="creator" content="vale.rocks" />
+		<meta name="contact" content="https://vale.rocks/contact" />
+		<meta property="og:site" content="AutoMod" />
+		<meta property="og:type" content="website" />
+
+		<meta name="color-scheme" content="light dark" />
+		<meta name="theme-color" content="oklch(100% 0 360)" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="oklch(13.3% 0.0392 254.4)" media="(prefers-color-scheme: dark)" />
+
+		<link rel="alternate" type="application/rss+xml" title="RSS feed of AutoMod blog posts." href="https://automod.vale.rocks/blog/feed.xml" />
+		<link rel="alternate" type="application/json" title="JSON feed of AutoMod blog posts." href="https://automod.vale.rocks/blog/feed.json" />
+		<link rel="search" type="application/opensearchdescription+xml" title="AutoMod Search" href="https://automod.vale.rocks/opensearch.xml" />
+	</head>
+	<body>
+		<nav>
+			<a href="/">AutoMod</a>
+			<span id="nav-right"></span>
+		</nav>
+		<main id="content"><p id="page-error" class="error" style="display: none"></p></main>
+		<script src="/config.js"></script>
+		<script src="/js/helpers.js"></script>
+		{{content}}
+	</body>
+</html>

@@ -1,29 +1,31 @@
 import type { Request, Response, NextFunction } from "express";
-import type { Collection, Db } from "mongodb";
-import { app, SESSION_LIFETIME } from "..";
+import type { Collection } from "mongodb";
+import { app, db, SESSION_LIFETIME } from "..";
 
-let sessionsCollection: Collection;
+let _sessionsCollection: Collection | null = null;
 
-export function initializeSessionsMiddleware(db: Db) {
-	sessionsCollection = db.collection("sessions");
+async function sessionsCollection() {
+	if (!_sessionsCollection) _sessionsCollection = (await db).collection("sessions");
+	return _sessionsCollection;
 }
 
 app.use("*", async (req: Request, _res: Response, next: NextFunction) => {
-	next();
+	await next();
 
 	const user = req.header("x-auth-user");
 	const token = req.header("x-auth-token");
 	if (!user || !token) return;
 
 	try {
-		const session = await sessionsCollection.findOne({
+		const col = await sessionsCollection();
+		const session = await col.findOne({
 			user,
 			token,
 			expires: { $gt: new Date() },
 		});
 
 		if (session) {
-			await sessionsCollection.updateOne({ _id: session._id }, { $set: { expires: new Date(Date.now() + SESSION_LIFETIME) } });
+			await col.updateOne({ _id: session._id }, { $set: { expires: new Date(Date.now() + SESSION_LIFETIME) } });
 		}
 	} catch (e) {
 		console.error(e);

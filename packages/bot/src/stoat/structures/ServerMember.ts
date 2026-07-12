@@ -60,7 +60,59 @@ export class ServerMember {
 	}
 
 	hasPermission(target: any, ...permission: string[]) {
-		const perms = this.id.user === this.server?.ownerId ? (1n << 64n) - 1n : (target?.permission ?? 0n);
+		// Server owner always has all permissions
+		const server = target.serverId ? target.server : target;
+		if (server && this.id.user === server.ownerId) {
+			return bitwiseAndEq((1n << 64n) - 1n, ...permission.map((x) => (Permission as any)[x]));
+		}
+
+		let perms = 0n;
+
+		if (target.serverId) {
+			// target is a Channel: compute server-level perms for THIS member, then apply channel overrides
+			if (server) {
+				perms = BigInt(server.defaultPermissions ?? 0);
+				const serverRoles = server.roles;
+				if (serverRoles) {
+					for (const roleId of this.roles ?? []) {
+						const role = serverRoles.get(roleId);
+						if (role?.permissions) {
+							perms |= BigInt(role.permissions.a ?? 0n);
+							perms &= ~BigInt(role.permissions.d ?? 0n);
+						}
+					}
+				}
+			}
+			// Apply channel-level overrides
+			const dp = target.data?.defaultPermissions;
+			if (dp) {
+				perms |= BigInt(typeof dp === "number" ? 0n : (dp.a ?? 0n));
+				perms &= ~BigInt(typeof dp === "number" ? BigInt(dp) : (dp.d ?? 0n));
+			}
+			if (server && target.data?.rolePermissions) {
+				for (const roleId of this.roles ?? []) {
+					const rp = target.data.rolePermissions[roleId];
+					if (rp) {
+						perms |= BigInt(rp.a ?? 0n);
+						perms &= ~BigInt(rp.d ?? 0n);
+					}
+				}
+			}
+		} else {
+			// target is a Server: compute server-level perms for THIS member
+			perms = BigInt(target.defaultPermissions ?? 0);
+			const roles = target.roles;
+			if (roles) {
+				for (const roleId of this.roles ?? []) {
+					const role = roles.get(roleId);
+					if (role?.permissions) {
+						perms |= BigInt(role.permissions.a ?? 0n);
+						perms &= ~BigInt(role.permissions.d ?? 0n);
+					}
+				}
+			}
+		}
+
 		return bitwiseAndEq(perms, ...permission.map((x) => (Permission as any)[x]));
 	}
 

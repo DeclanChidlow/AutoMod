@@ -16,9 +16,14 @@ type ServerDetails = {
 	serverConfig: any;
 	users: User[];
 	channels: Channel[];
+	memberCount: number | null;
+	channelCount: number;
+	ownerName?: string;
+	createdAt: number;
+	roleCount: number;
+	botCount: number | null;
 	dmOnKick?: boolean;
 	dmOnWarn?: boolean;
-	contact?: string;
 };
 
 app.get("/dash/server/:server", requireAuth({ permission: 0 }), async (req: Request, res: Response) => {
@@ -104,56 +109,52 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 			}
 
 			case "config": {
-				function validateField(field: string, type: string[], level: 0 | 1 | 2 | 3): boolean {
+				function validateField(field: string, types: string[], level: 0 | 1 | 2 | 3): boolean {
 					if (permissionLevel < level) {
 						res.status(403).send({ error: `You are not authorized to change '${field}'` });
 						return false;
 					}
-
-					if (req.body?.[field] != undefined && !type.includes(typeof req.body?.[field])) {
-						res.status(400).send({ error: `Field '${field}' needs to be of type ${type} or null` });
+					if (req.body?.[field] != undefined && !types.includes(typeof req.body?.[field])) {
+						res.status(400).send({ error: `Field '${field}' needs to be of type ${types.join(" or ")}` });
 						return false;
 					}
-
 					return true;
 				}
 
-				type RequestBody = {
-					prefix?: string;
-					spaceAfterPrefix?: boolean;
-					dmOnKick?: boolean;
-					dmOnWarn?: boolean;
-					contact?: boolean;
-				};
+				// Validate all fields
+				const fields = [
+					["prefix", ["string"], 2],
+					["spaceAfterPrefix", ["boolean"], 2],
+					["dmOnKick", ["boolean"], 2],
+					["dmOnBan", ["boolean"], 2],
+					["dmOnWarn", ["boolean"], 2],
+					["antispamEnabled", ["boolean"], 2],
+					["votekickEnabled", ["boolean"], 2],
+					["votekickVotesRequired", ["number"], 2],
+					["votekickBanDuration", ["number"], 2],
+					["wordlistEnabled", ["boolean"], 2],
+				] as const;
+				for (const [field, types, level] of fields) {
+					if (!validateField(field as string, types as string[], level as 0 | 1 | 2 | 3)) return;
+				}
 
-				if (
-					!validateField("prefix", ["string"], 2) ||
-					!validateField("spaceAfterPrefix", ["boolean"], 2) ||
-					!validateField("dmOnKick", ["boolean"], 2) ||
-					!validateField("dmOnWarn", ["boolean"], 2) ||
-					!validateField("contact", ["string"], 2)
-				)
-					return;
+				const body = req.body;
+				const setFields: Record<string, any> = {};
 
-				const body: RequestBody = req.body;
+				if (body.prefix !== undefined) setFields["prefix"] = body.prefix === "" ? null : body.prefix;
+				if (body.spaceAfterPrefix !== undefined) setFields["spaceAfterPrefix"] = body.spaceAfterPrefix;
+				if (body.dmOnKick !== undefined) setFields["dmOnKick"] = body.dmOnKick;
+				if (body.dmOnBan !== undefined) setFields["dmOnBan"] = body.dmOnBan;
+				if (body.dmOnWarn !== undefined) setFields["dmOnWarn"] = body.dmOnWarn;
+				if (body.antispamEnabled !== undefined) setFields["antispamEnabled"] = body.antispamEnabled;
+				if (body.wordlistEnabled !== undefined) setFields["wordlistEnabled"] = body.wordlistEnabled;
 
-				const dbInstance2 = await db;
-				await dbInstance2.collection("servers").updateOne(
-					{ id: server },
-					{
-						$set: JSON.parse(
-							JSON.stringify({
-								// Get rid of undefined fields
-								prefix: body.prefix == "" ? null : body.prefix,
-								spaceAfterPrefix: body.spaceAfterPrefix,
-								dmOnKick: body.dmOnKick,
-								dmOnWarn: body.dmOnWarn,
-								contact: body.contact,
-							}),
-						),
-					},
-				);
+				// Votekick nested fields
+				if (body.votekickEnabled !== undefined) setFields["votekick.enabled"] = body.votekickEnabled;
+				if (body.votekickVotesRequired !== undefined) setFields["votekick.votesRequired"] = body.votekickVotesRequired;
+				if (body.votekickBanDuration !== undefined) setFields["votekick.banDuration"] = body.votekickBanDuration;
 
+				await servers.updateOne({ id: server }, { $set: setFields });
 				return res.send({ success: true });
 			}
 
