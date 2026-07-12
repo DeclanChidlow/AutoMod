@@ -139,7 +139,7 @@ export default {
 					}
 				}
 
-				let [{ userWarnCount }] = await Promise.all([storeInfraction(infraction), logModAction("kick", message.serverContext, message.member!, user.id, reason, infraction._id), member.kick()]);
+				let [{ userWarnCount }] = await Promise.all([storeInfraction(infraction), logModAction("kick", message.serverContext, message.member!, user.id, reason, infraction._id), message.serverContext.kickUser(member)]);
 
 				embeds.push({
 					title: `User kicked`,
