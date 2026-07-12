@@ -26,7 +26,7 @@ import {
 } from "../../util";
 import { client } from "../../..";
 
-const SYNTAX = "/ban @username [duration] [p|purge <purge_duration>] [reason?]";
+const SYNTAX = "{prefix}ban @username [duration] [p|purge <purge_duration>] [reason?]";
 
 export default {
 	name: "ban",

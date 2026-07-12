@@ -22,7 +22,7 @@ import {
 } from "../../util";
 import { client } from "../../..";
 
-const SYNTAX = "/kick @username [reason?]";
+const SYNTAX = "{prefix}kick @username [reason?]";
 
 export default {
 	name: "kick",
@@ -139,7 +139,11 @@ export default {
 					}
 				}
 
-				let [{ userWarnCount }] = await Promise.all([storeInfraction(infraction), logModAction("kick", message.serverContext, message.member!, user.id, reason, infraction._id), message.serverContext.kickUser(member)]);
+				let [{ userWarnCount }] = await Promise.all([
+					storeInfraction(infraction),
+					logModAction("kick", message.serverContext, message.member!, user.id, reason, infraction._id),
+					message.serverContext.kickUser(member),
+				]);
 
 				embeds.push({
 					title: `User kicked`,

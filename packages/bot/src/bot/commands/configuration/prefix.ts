@@ -5,8 +5,8 @@ import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
-const SYNTAX = "/prefix set [new prefix]; /prefix get; prefix clear";
-const MENTION_TEXT = "You can also @mention me instead of using the prefix.";
+const SYNTAX = "{prefix}prefix set [new prefix]; {prefix}prefix get; {prefix}prefix clear";
+const MENTION_TEXT = "You can also @mention AutoMod instead of using the prefix.";
 
 export default {
 	name: "prefix",
@@ -52,11 +52,10 @@ export default {
 				message.reply(`✅ Prefix has been reset to the default: \`${DEFAULT_PREFIX}\`.`);
 				break;
 			default:
-				message.reply(`Unknown action. Correct syntax: \`${SYNTAX}\``);
+				message.reply(`Unknown action. Correct syntax: \`${SYNTAX.replace(/{prefix}/g, message.prefix)}\``);
 		}
 	},
 } as SimpleCommand;
-
 
 function validatePrefix(prefix: string): string | true {
 	// Check length

@@ -3,7 +3,6 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { checkMessageForFilteredWords } from "../../modules/antispam";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { client, dbs } from "../../..";
 import { embed, EmbedColor, getDmChannel, isBotManager, NO_MANAGER_MSG, sanitizeMessageContent } from "../../util";
 
@@ -210,7 +209,7 @@ export default {
 					},
 					{ upsert: true },
 				);
-				await message.reply(`Filter action set to **${action}**. ` + `Please make sure you configured a logging channel using \`${DEFAULT_PREFIX}logs\`.`);
+				await message.reply(`Filter action set to **${action}**. ` + `Please make sure you configured a logging channel using \`${message.prefix}logs\`.`);
 				break;
 			}
 			case "test": {
@@ -227,14 +226,14 @@ export default {
 			default: {
 				await message.reply(
 					`### This command allows you to configure a manual word filter.\n` +
-						`- **${DEFAULT_PREFIX}filter enable** - Enable the word filter.\n` +
-						`- **${DEFAULT_PREFIX}filter disable** - Disable the word filter.\n` +
-						`- **${DEFAULT_PREFIX}filter add [soft|hard|strict] [word]** - Add a word to the list. If omitted, defaults to 'hard'.\n` +
-						`- **${DEFAULT_PREFIX}filter remove** - Remove a word from the list.\n` +
-						`- **${DEFAULT_PREFIX}filter list** - Send the current filter list.\n` +
-						`- **${DEFAULT_PREFIX}filter message [message]** - Set the message sent when a message is matched.\n` +
-						`- **${DEFAULT_PREFIX}filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n` +
-						`- **${DEFAULT_PREFIX}filter test [phrase]** - Test whether a phrase matches your word list.\n`,
+						`- **${message.prefix}filter enable** - Enable the word filter.\n` +
+						`- **${message.prefix}filter disable** - Disable the word filter.\n` +
+						`- **${message.prefix}filter add [soft|hard|strict] [word]** - Add a word to the list. If omitted, defaults to 'hard'.\n` +
+						`- **${message.prefix}filter remove** - Remove a word from the list.\n` +
+						`- **${message.prefix}filter list** - Send the current filter list.\n` +
+						`- **${message.prefix}filter message [message]** - Set the message sent when a message is matched.\n` +
+						`- **${message.prefix}filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n` +
+						`- **${message.prefix}filter test [phrase]** - Test whether a phrase matches your word list.\n`,
 				);
 				break;
 			}

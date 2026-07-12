@@ -1,11 +1,10 @@
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { client, dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
-const SYNTAX = "/logs [category] [#channel]";
+const SYNTAX = "{prefix}logs [category] [#channel]";
 
 export default {
 	name: "logs",
@@ -18,7 +17,7 @@ export default {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
 
 		if (!args[0]) {
-			return await message.reply(`No category specified. Syntax: \`${DEFAULT_PREFIX}logs [category] [#channel]\`\n` + `Categories: \`messageupdate\`, \`modaction\``);
+			return await message.reply(`No category specified. Syntax: \`${SYNTAX.replace(/{prefix}/g, message.prefix)}\`\n` + `Categories: \`messageupdate\`, \`modaction\``);
 		}
 
 		if (!args[1]) {
@@ -83,4 +82,3 @@ export default {
 		}
 	},
 } as SimpleCommand;
-

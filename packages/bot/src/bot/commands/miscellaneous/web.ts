@@ -3,7 +3,6 @@ import PendingLogin from "automod-lib/dist/types/PendingLogin";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { dbs } from "../../..";
 
 async function handleLogin(message: MessageCommandContext, args: string[]) {
@@ -11,7 +10,7 @@ async function handleLogin(message: MessageCommandContext, args: string[]) {
 		const code = args.shift();
 		if (!code) {
 			return message.reply(
-				`If you're trying to log in, you can access the dashboard at <(${process.env["WEB_UI_URL"]}>.\n\n` + `If you already have a code, you can use \`${DEFAULT_PREFIX}web login [Code]\`.`,
+				`If you're trying to log in, you can access the dashboard at <(${process.env["WEB_UI_URL"]}>.\n\n` + `If you already have a code, you can use \`${message.prefix}web login [Code]\`.`,
 			);
 		}
 
@@ -44,7 +43,7 @@ async function handleLogin(message: MessageCommandContext, args: string[]) {
 		}
 
 		await Promise.all([
-			message.reply(`Successfully logged in.\n\n` + `If this wasn't you, run \`${DEFAULT_PREFIX}web logout ${code}\` immediately.`),
+			message.reply(`Successfully logged in.\n\n` + `If this wasn't you, run \`${message.prefix}web logout ${code}\` immediately.`),
 			dbs.PENDING_LOGINS.updateOne({ _id: login._id }, { $set: { confirmed: true } }),
 		]);
 	} catch (e) {
@@ -57,9 +56,7 @@ async function handleLogout(message: MessageCommandContext, args: string[]) {
 	try {
 		const code = args.shift();
 		if (!code) {
-			return message.reply(
-				`### No code provided.\n` + `You can invalidate a session by using \`${DEFAULT_PREFIX}web logout [Code]\`, or log out everywhere with \`${DEFAULT_PREFIX}web logout ALL\``,
-			);
+			return message.reply(`### No code provided.\n` + `You can invalidate a session by using \`${message.prefix}web logout [Code]\`, or log out everywhere with \`${message.prefix}web logout ALL\``);
 		}
 
 		if (code.toLowerCase() === "all") {
@@ -108,7 +105,7 @@ export default {
 		const subcommand = args.shift()?.toLowerCase();
 
 		if (!subcommand || (subcommand !== "login" && subcommand !== "logout")) {
-			return message.reply(`Usage: \`${DEFAULT_PREFIX}web login [Code]\` or \`${DEFAULT_PREFIX}web logout [Code/ALL]\``);
+			return message.reply(`Usage: \`${message.prefix}web login [Code]\` or \`${message.prefix}web logout [Code/ALL]\``);
 		}
 
 		if (subcommand === "login") {

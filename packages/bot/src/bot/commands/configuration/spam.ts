@@ -1,11 +1,10 @@
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
 import { dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
-const SYNTAX = "/spam enable; /spam disable";
+const SYNTAX = "{prefix}spam enable; {prefix}spam disable";
 
 export default {
 	name: "spam",
@@ -38,7 +37,7 @@ export default {
 			}
 			default: {
 				const status = antispamEnabled ? "enabled" : "disabled";
-				await message.reply(`Spam detection is currently **${status}**. ` + `Use \`${DEFAULT_PREFIX}spam ${antispamEnabled ? "disable" : "enable"}\` to toggle this setting.`);
+				await message.reply(`Spam detection is currently **${status}**. ` + `Use \`${message.prefix}spam ${antispamEnabled ? "disable" : "enable"}\` to toggle this setting.`);
 				break;
 			}
 		}

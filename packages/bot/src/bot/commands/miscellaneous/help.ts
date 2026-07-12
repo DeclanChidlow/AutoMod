@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { commands, DEFAULT_PREFIX, ownerIDs } from "../../modules/command_handler";
+import { commands, ownerIDs } from "../../modules/command_handler";
 
 const categories: {
 	[key in CommandCategory]: {
@@ -46,7 +46,7 @@ export default {
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const isBotOwner = ownerIDs.includes(message.authorId!);
-		const prefix = DEFAULT_PREFIX; // TODO: fetch prefix from server config
+		const prefix = message.prefix;
 
 		let searchInput = args.shift()?.toLowerCase();
 		if (!searchInput) {
@@ -94,7 +94,7 @@ export default {
 				} else {
 					let msg = `## AutoMod Help - ${cmd.name}\n` + `${cmd.description}\n\n` + `Documentation: <https://automod.vale.rocks/docs/automod/commands${cmd.documentation}>\n\n`;
 
-					if (cmd.syntax) msg += `Syntax: \`${cmd.syntax}\`\n`;
+					if (cmd.syntax) msg += `Syntax: \`${cmd.syntax.replace(/\{prefix\}/g, prefix)}\`\n`;
 					msg += "Aliases: " + (Array.isArray(cmd.aliases) && cmd.aliases.length > 0 ? `\`${cmd.aliases.join(`\`, \``)}\`` : "None");
 
 					message.reply(msg);

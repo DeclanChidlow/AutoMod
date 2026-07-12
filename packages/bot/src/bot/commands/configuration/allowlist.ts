@@ -5,7 +5,7 @@ import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import { dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG, parseUser } from "../../util";
 
-const SYNTAX = "/allowlist add <user|role>; /allowlist remove <user|role>; /allowlist list";
+const SYNTAX = "{prefix}allowlist add <user|role>; {prefix}allowlist remove <user|role>; {prefix}allowlist list";
 
 export default {
 	name: "allowlist",
@@ -98,6 +98,6 @@ export default {
 			return message.reply(`✅ Successfully ${isAdd ? "added user to" : "removed user from"} the allowlist!`);
 		}
 
-		return message.reply(`Command syntax: \`${SYNTAX}\``);
+		return message.reply(`Command syntax: \`${SYNTAX.replace(/{prefix}/g, message.prefix)}\``);
 	},
 } as SimpleCommand;

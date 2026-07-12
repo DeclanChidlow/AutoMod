@@ -5,7 +5,7 @@ import { User } from "../../../stoat/index.js";
 import { client, dbs } from "../../..";
 import { parseUser } from "../../util";
 
-const SYNTAX = "/admin add @user; /admin remove @user; /admin list";
+const SYNTAX = "{prefix}admin add @user; {prefix}admin remove @user; {prefix}admin list";
 
 export default {
 	name: "admin",
@@ -63,8 +63,7 @@ export default {
 					?.catch((e) => message.reply(e));
 				break;
 			default:
-				message.reply(`Available subcommands: ${SYNTAX}`);
+				message.reply(`Available subcommands: ${SYNTAX.replace(/{prefix}/g, message.prefix)}`);
 		}
 	},
 } as SimpleCommand;
-

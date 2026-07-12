@@ -6,18 +6,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import type { SendableEmbed } from "../../../stoat/index.js";
 import { User } from "../../../stoat/index.js";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
-import {
-	dedupeArray,
-	embed,
-	EmbedColor,
-	generateInfractionDMEmbed,
-	getDmChannel,
-	isModerator,
-	NO_MANAGER_MSG,
-	parseUserOrId,
-	sanitizeMessageContent,
-	storeInfraction,
-} from "../../util";
+import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
 
 export default {
 	name: "warn",

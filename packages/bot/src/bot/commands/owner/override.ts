@@ -2,7 +2,6 @@ import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { User } from "../../../stoat/index.js";
-import { DEFAULT_PREFIX } from "../../modules/command_handler";
 
 const sudoOverrides: { [key: string]: number | null } = {};
 
@@ -36,7 +35,7 @@ export default {
 					`## %emoji% Override enabled\n` +
 					`You will now be able to run any command regardless of your server permissions.\n` +
 					`This will automatically disable **5 minutes** after your last bot interaction. ` +
-					`To disable now, run \`${DEFAULT_PREFIX}override disable\`.`;
+					`To disable now, run \`${message.prefix}override disable\`.`;
 
 				const sentMsg = await message.reply(msg.replace("%emoji%", ":lock:"), false);
 				setTimeout(() => sentMsg?.edit({ content: msg.replace("%emoji%", ":unlock:") }).catch(() => {}), 200);
@@ -63,7 +62,7 @@ export default {
 					`## Override mode\n` +
 					`Override mode allows you to bypass all permission checks for a limited time. ` +
 					`After activating, you will be able to run any command regardless of your server permissions.\n\n` +
-					`To enable, run \`${DEFAULT_PREFIX}override enable\`.\n` +
+					`To enable, run \`${message.prefix}override enable\`.\n` +
 					`It will automatically be deactivated **5 minutes** after your last bot interaction.`;
 
 				await message.reply(msg, false);

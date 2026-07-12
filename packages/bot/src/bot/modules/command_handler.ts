@@ -102,6 +102,7 @@ let commands: SimpleCommand[];
 
 		let message: MessageCommandContext = msg as MessageCommandContext;
 		message.serverContext = serverCtx;
+		message.prefix = guildPrefix;
 
 		console.info(`Command: ${message.author?.username} (${message.author?.id}) in ${message.channel?.server?.name} (${message.channel?.serverId}): ${message.content}`);
 

@@ -7,7 +7,7 @@ import { fetchUsername } from "../../modules/mod_logs";
 import { arrayToCsv, formatRelativeTime, isModerator, NO_MANAGER_MSG, parseUserOrId, getDmChannel, embed, EmbedColor } from "../../util";
 import { client, dbs } from "../../..";
 
-const SYNTAX = '/infractions; /infractions @username ["export-csv"]; /infractions rm [ID]';
+const SYNTAX = '{prefix}infractions; {prefix}infractions @username ["export-csv"]; {prefix}infractions rm [ID]';
 
 const formatInfraction = async (inf: Infraction) => {
 	const timestamp = Math.floor(inf.date / 1000);

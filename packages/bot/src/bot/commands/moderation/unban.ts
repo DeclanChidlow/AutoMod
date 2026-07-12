@@ -5,7 +5,7 @@ import { removeTempBan } from "../../modules/tempbans";
 import { dbs } from "../../..";
 import { isModerator, NO_MANAGER_MSG, parseUser, ULID_REGEX, USER_MENTION_REGEX } from "../../util";
 
-const SYNTAX = "/unban [@user or ID]";
+const SYNTAX = "{prefix}unban [@user or ID]";
 
 export default {
 	name: "unban",

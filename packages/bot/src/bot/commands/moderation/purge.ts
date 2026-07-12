@@ -5,7 +5,7 @@ import { Message } from "../../../stoat/index.js";
 import { decodeTime } from "ulid";
 import { isModerator, parseUserOrId } from "../../util";
 
-const SYNTAX = "/purge [number] [user[,user...]]";
+const SYNTAX = "{prefix}purge [number] [user[,user...]]";
 const MAX_PURGE_AMOUNT = 100;
 const MAX_FETCH_LIMIT = 1000;
 const REPLY_DELETE_DELAY = 5000;
@@ -37,7 +37,7 @@ class PurgeHandler {
 
 		const options = this.parseArguments(args);
 		if (!options) {
-			await this.message.reply(`That message range cannot be parsed.\nSyntax: \`${SYNTAX}\``);
+			await this.message.reply(`That message range cannot be parsed.\nSyntax: \`${SYNTAX.replace(/{prefix}/g, this.message.prefix)}\``);
 			return;
 		}
 
