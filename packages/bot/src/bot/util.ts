@@ -257,18 +257,34 @@ function dedupeArray<T>(...arrays: T[][]): T[] {
 	return found;
 }
 
-async function getMutualServers(user: User) {
-	const servers: Server[] = [];
-	// Iterate the bot's actual servers, not the member cache (which is event-driven and incomplete).
-		for (const server of client.servers.values()) {
-			try {
-				const cached = client.serverMembers.getByKey({ server: server.id, user: user.id });
-				if (cached) { servers.push(server); continue; }
-				const fetched = await server.fetchMember(user.id);
-				if (fetched) servers.push(server);
-			} catch (_e) { /* skip unreachable servers */ }
+async function batchAsync<T, U>(items: T[], fn: (item: T) => Promise<U>, batchSize: number): Promise<U[]> {
+	const results: U[] = [];
+	for (let i = 0; i < items.length; i += batchSize) {
+		const batch = items.slice(i, i + batchSize);
+		const settled = await Promise.allSettled(batch.map(fn));
+		for (const r of settled) {
+			if (r.status === "fulfilled") results.push(r.value);
+		}
 	}
-	return servers;
+	return results;
+}
+
+async function getMutualServers(user: User) {
+	const servers = Array.from(client.servers.values());
+
+	return (
+		await batchAsync(
+			servers,
+			async (server) => {
+				const cached = client.serverMembers.getByKey({ server: server.id, user: user.id });
+				if (cached) return server;
+				const fetched = await server.fetchMember(user.id);
+				if (fetched) return server;
+				return null;
+			},
+			100,
+		)
+	).filter((s): s is Server => s !== null);
 }
 
 const awaitClient = () =>
@@ -311,7 +327,6 @@ const generateInfractionDMEmbed = (server: Server, _serverConfig: ServerConfig, 
 				? "\n\n**Reminder:** Circumventing this ban by using another account is a violation of [Stoat Policies](<https://stoat.chat/legal>) and may result in your accounts getting suspended from the platform."
 				: ""),
 	};
-
 
 	return embed;
 };
@@ -485,12 +500,24 @@ const parseDuration = (input: string): number => {
 		let multiplier = 0;
 
 		switch (letter) {
-			case "s": multiplier = 1000; break;
-			case "m": multiplier = 1000 * 60; break;
-			case "h": multiplier = 1000 * 60 * 60; break;
-			case "d": multiplier = 1000 * 60 * 60 * 24; break;
-			case "w": multiplier = 1000 * 60 * 60 * 24 * 7; break;
-			case "y": multiplier = 1000 * 60 * 60 * 24 * 365; break;
+			case "s":
+				multiplier = 1000;
+				break;
+			case "m":
+				multiplier = 1000 * 60;
+				break;
+			case "h":
+				multiplier = 1000 * 60 * 60;
+				break;
+			case "d":
+				multiplier = 1000 * 60 * 60 * 24;
+				break;
+			case "w":
+				multiplier = 1000 * 60 * 60 * 24 * 7;
+				break;
+			case "y":
+				multiplier = 1000 * 60 * 60 * 24 * 365;
+				break;
 		}
 
 		total += num * multiplier;
