@@ -22,6 +22,8 @@ type ServerDetails = {
 	roleCount: number;
 	dmOnKick?: boolean;
 	dmOnWarn?: boolean;
+	botName?: string;
+	botId?: string;
 };
 
 app.get("/dash/server/:server", requireAuth({ permission: 0 }), async (req: Request, res: Response) => {

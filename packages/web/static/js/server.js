@@ -68,7 +68,7 @@ window.addEventListener("popstate", (e) => {
 
 					<div id="tab-settings" class="tab-content"${activeTab !== "settings" ? " hidden" : ""}>
 						<div class="settings">
-							${perms >= 2 ? renderConfig(cfg, s.defaultPrefix) : `<p>You need Manager permissions to edit server configuration.</p>`}
+							${perms >= 2 ? renderConfig(cfg, s.defaultPrefix, s.botId) : `<p>You need Manager permissions to edit server configuration.</p>`}
 							${perms >= 3 ? renderUserSection("managers", "Bot Managers", managers, true) : ""}
 							${perms >= 2 ? renderUserSection("mods", "Moderators", mods, true) : ""}
 						</div>
@@ -95,10 +95,11 @@ window.addEventListener("popstate", (e) => {
 	}
 })();
 
-function renderConfig(cfg, defaultPrefix) {
+function renderConfig(cfg, defaultPrefix, botId) {
 	const vk = cfg.votekick || {};
+	const mention = botId ? `<@${botId}>` : "@AutoMod";
 	return `<section><h2>General</h2><form id="config-form">
-    <div class="form-field"><label>Command Prefix</label><p class="field-desc">Global default is <code>${escHtml(defaultPrefix || "/")}</code>. Leave empty to use the default. You can also @mention the bot directly instead of using a prefix.</p><input type="text" id="prefix" value="${escHtml(cfg.prefix || "")}"></div>
+    <div class="form-field"><label>Command Prefix</label><p class="field-desc">You can always use <code>${mention}</code> instead of a prefix. Global default is <code>${escHtml(defaultPrefix || "/")}</code>. Leave empty to use the default.</p><input type="text" id="prefix" value="${escHtml(cfg.prefix || "")}"></div>
     <div class="form-field"><label><input type="checkbox" id="spaceAfterPrefix" ${cfg.spaceAfterPrefix ? "checked" : ""}>Space after prefix</label><p class="field-desc">Whether a space is required between the prefix and command (eg <code>?kick</code> vs <code>? kick</code>).</p></div>
     <div class="form-field"><label><input type="checkbox" id="dmOnKick" ${cfg.dmOnKick ? "checked" : ""}>DM on kick</label><p class="field-desc">Sends a direct message to the user when they're kicked, with reason and moderator info.</p></div>
     <div class="form-field"><label><input type="checkbox" id="dmOnBan" ${cfg.dmOnBan ? "checked" : ""}>DM on ban</label>${desc("Sends a direct message to the user when they're banned, including the reason, moderator info, and ban duration.")}</div>

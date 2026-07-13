@@ -154,9 +154,9 @@ wsEvents.on("req:requestLogin", async (data: any, cb: (data: WSResponse) => void
 	}
 });
 
-wsEvents.on("req:stats", async (_data: any, cb: (data: { servers: number }) => void) => {
+wsEvents.on("req:stats", async (_data: any, cb: (data: { servers: number; botName: string; botId: string }) => void) => {
 	const servers = bot.servers.size();
-	cb({ servers });
+	cb({ servers, botName: bot.user?.username || "AutoMod", botId: bot.user?.id || "" });
 });
 
 export { wsEvents, wsSend };

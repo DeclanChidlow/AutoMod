@@ -28,6 +28,8 @@ type ServerDetails = {
 	dmOnBan?: boolean;
 	dmOnWarn?: boolean;
 	defaultPrefix: string;
+	botName: string;
+	botId: string;
 };
 
 wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSResponse) => void) => {
@@ -91,6 +93,8 @@ wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSRespo
 			dmOnBan: serverConfig?.dmOnBan,
 			dmOnWarn: serverConfig?.dmOnWarn,
 			defaultPrefix: DEFAULT_PREFIX,
+			botName: client.user?.username || "AutoMod",
+			botId: client.user?.id || "",
 		};
 
 		cb({ success: true, server: response });
