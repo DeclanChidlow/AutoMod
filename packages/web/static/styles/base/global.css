@@ -67,6 +67,10 @@ main {
 	&.perm-1 {
 		background-color: var(--red);
 	}
+
+	&.perm-0 {
+		background-color: var(--green);
+	}
 }
 
 table {

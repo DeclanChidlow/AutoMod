@@ -1,5 +1,5 @@
 const parts = window.location.pathname.split("/");
-const serverId = parts[2];
+const serverId = BASE_PATH ? parts[2] : parts[1];
 if (!serverId) {
 	document.getElementById("content").innerHTML += "<h1>Invalid server</h1>";
 	throw new Error("No server ID");

@@ -2,10 +2,13 @@ const main = document.getElementById("content");
 
 if (isLoggedIn()) {
 	(async () => {
-		main.innerHTML += `<hgroup>
-				<h1>AutoMod Dashboard</h1>
-				<p>Manage AutoMod in your servers.</p>
-			</hgroup>`;
+		const loadingEl = document.querySelector(".loading");
+		if (loadingEl) {
+			loadingEl.insertAdjacentHTML("beforebegin", `<hgroup>
+					<h1>AutoMod Dashboard</h1>
+					<p>Manage AutoMod in your servers.</p>
+				</hgroup>`);
+		}
 		try {
 			const data = await request("GET", "/dash/servers");
 			const servers = (data.servers || []).sort((a, b) => b.perms - a.perms || a.name.localeCompare(b.name));

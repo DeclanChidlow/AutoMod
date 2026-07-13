@@ -43,9 +43,7 @@ Bun.serve({
 			);
 		}
 
-		const serverRoutePattern = BASE_PATH
-			? /^\/[^/.]+(\/anti-spam)?\/?$/
-			: /^\/dashboard\/[^/]+(\/anti-spam)?\/?$/;
+		const serverRoutePattern = /^\/[^/.]+(\/anti-spam)?\/?$/;
 		if (serverRoutePattern.test(path)) {
 			path = "/server.html";
 		}
