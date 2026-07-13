@@ -1,0 +1,81 @@
+#navbar {
+	position: absolute;
+}
+
+.server-header {
+	max-inline-size: 70ch;
+	margin-inline: auto;
+	margin-block-end: 3rem;
+
+	img {
+		border-radius: 50%;
+		inline-size: 3.5rem;
+		aspect-ratio: 1;
+		z-index: 1000;
+		position: relative;
+	}
+
+	.title {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		margin-block-end: 1rem;
+	}
+
+	ul {
+		margin: 0;
+
+		li {
+			margin: 0;
+			list-style: none;
+		}
+	}
+}
+
+.tabs {
+	display: flex;
+	gap: 1.5rem;
+	border-block-end: 3px solid var(--grey);
+	margin-block-end: 1rem;
+
+	a {
+		font-size: 1.3rem;
+		font-weight: bold;
+		text-decoration: none;
+
+		&.active {
+			border-block-end: 4px solid currentColor;
+		}
+	}
+}
+
+.settings {
+	display: flex;
+	flex-direction: column;
+	gap: 4rem;
+}
+
+.rule-modal {
+	padding-block: 1.5rem;
+	padding-inline: 2rem;
+	margin: auto;
+	border: 2px solid var(--grey);
+	border-radius: 1rem;
+	max-inline-size: 40rem;
+	background: light-dark(var(--white), var(--black));
+
+	&::backdrop {
+		background: rgb(0, 0, 0, 0.7);
+	}
+
+	h3 {
+		margin-block-end: 1rem;
+	}
+
+	.modal-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.5rem;
+		margin-block-start: 1.5rem;
+	}
+}

@@ -1,0 +1,60 @@
+#navbar {
+	position: fixed;
+	inset: 0 0 auto 0;
+	padding-block-start: 1.5rem;
+	padding-block-end: 1rem;
+	padding-inline: 3rem;
+	background: light-dark(var(--white), var(--black));
+	z-index: 1000;
+	transition: 0.5s;
+
+	a {
+		text-decoration: none;
+	}
+
+	nav {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		block-size: 100%;
+		font-size: 1rem;
+		gap: 1rem;
+
+		#navlanding {
+			font-size: 1.5rem;
+			font-weight: 800;
+		}
+
+		ul {
+			display: flex;
+			gap: 1rem;
+			font-weight: 500;
+		}
+
+		ul,
+		li {
+			margin: 0;
+			list-style: none;
+		}
+	}
+
+	.skip-link {
+		position: absolute;
+		top: 0;
+		left: 0;
+		padding: 0.5rem;
+		margin: 1rem;
+		background: light-dark(var(--white), var(--grey));
+		transform: translateY(calc(-100% - 1.5rem));
+		transition: transform 0.1s;
+		border-radius: 0.5rem;
+
+		&:focus-within {
+			transform: translateY(0%);
+		}
+	}
+
+	@media (max-width: 45rem) {
+		padding-inline: 1rem;
+	}
+}

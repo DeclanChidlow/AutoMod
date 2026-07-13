@@ -7,14 +7,16 @@
 
 		<script data-goatcounter="https://automod.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
-		<link rel="stylesheet" href="/css/reset.css" />
-		<link rel="stylesheet" href="https://automod.vale.rocks/assets/styles/base/body.css" />
-		<link rel="stylesheet" href="https://automod.vale.rocks/assets/styles/type/links.css" />
-		<link rel="stylesheet" href="/css/type.css" />
+		<link rel="stylesheet" href="{{base_path}}/styles/base/reset.css" />
+		<link rel="stylesheet" href="{{base_path}}/styles/base/global.css" />
+		<link rel="stylesheet" href="{{base_path}}/styles/base/type.css" />
+		<link rel="stylesheet" href="{{base_path}}/styles/components/navbar.css" />
+		<link rel="stylesheet" href="{{base_path}}/styles/components/input.css" />
+		<link rel="stylesheet" href="{{base_path}}/styles/pages/index.css" />
+		<link rel="stylesheet" href="{{base_path}}/styles/pages/server.css" />
 
-		<link rel="preload" href="/typefaces/Outfit.woff2" as="font" type="font/woff2" />
-		<link rel="preload" href="/typefaces/FiraCode.woff2" as="font" type="font/woff2" />
-		<link rel="preload" href="/typefaces/Material_Symbols_Rounded/MaterialSymbolsRounded-Regular.woff2" as="font" type="font/woff2" />
+		<link rel="preload" href="{{base_path}}/typefaces/Outfit.woff2" as="font" type="font/woff2" />
+		<link rel="preload" href="{{base_path}}/typefaces/FiraCode.woff2" as="font" type="font/woff2" />
 
 		<link rel="icon" type="image/svg+xml" href="https://automod.vale.rocks/assets/favicons/favicon.svg" />
 
@@ -43,13 +45,15 @@
 		<link rel="search" type="application/opensearchdescription+xml" title="AutoMod Search" href="https://automod.vale.rocks/opensearch.xml" />
 	</head>
 	<body>
-		<nav>
-			<a href="/">AutoMod</a>
-			<span id="nav-right"></span>
-		</nav>
-		<main id="content"><p id="page-error" class="error" style="display: none"></p></main>
-		<script src="/config.js"></script>
-		<script src="/js/helpers.js"></script>
-		{{content}}
+		<header id="navbar">
+			<div class="skip-link">Skip to <a href="#main">content</a>, <a href="#footer">footer</a></div>
+			<nav>
+				<a href="/" id="navlanding">AutoMod</a>
+				<span id="nav-right"></span>
+			</nav>
+		</header>
+		<script src="{{base_path}}/config.js"></script>
+		<script src="{{base_path}}/js/helpers.js"></script>
+		<main id="content">{{content}}</main>
 	</body>
 </html>

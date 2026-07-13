@@ -31,7 +31,7 @@ async function request(method, path, body) {
 	const res = await fetch(API_BASE + path, opts);
 	if (res.status === 401) {
 		clearSession();
-		window.location.href = "/";
+		window.location.href = BASE_PATH + "/";
 		throw new Error("Session expired. Please log in again.");
 	}
 	const text = await res.text();
@@ -49,14 +49,14 @@ function clearError() {
 	const e = document.getElementById("page-error");
 	if (e) {
 		e.textContent = "";
-		e.style.display = "none";
+		e.hidden = true;
 	}
 }
 function showError(msg) {
 	const e = document.getElementById("page-error");
 	if (e) {
 		e.textContent = msg;
-		e.style.display = "";
+		e.hidden = false;
 	}
 }
 
@@ -76,7 +76,7 @@ function fmtServerStats(s) {
 	const parts = [];
 	if (s.channelCount != null) parts.push(`${s.channelCount} channels`);
 	if (s.roleCount != null) parts.push(`${s.roleCount} roles`);
-	return parts.join(" · ");
+	return parts.join(" | ");
 }
 
 function fmtServerSub(s) {
@@ -86,12 +86,30 @@ function fmtServerSub(s) {
 		const d = new Date(s.createdAt);
 		parts.push(`Created ${d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`);
 	}
-	return parts.join(" · ");
+	return parts.join(" | ");
+}
+
+function ensureErrorBanner() {
+	const main = document.getElementById("content");
+	if (main && !document.getElementById("page-error")) {
+		const p = document.createElement("p");
+		p.id = "page-error";
+		p.className = "error";
+		p.hidden = true;
+		main.prepend(p);
+	}
+}
+if (document.readyState === "loading") {
+	document.addEventListener("DOMContentLoaded", ensureErrorBanner);
+} else {
+	ensureErrorBanner();
 }
 
 (function initNavbar() {
-	if (!isLoggedIn() && window.location.pathname !== "/") {
-		window.location.href = "/";
+	const homePath = BASE_PATH + "/";
+	const atHome = window.location.pathname === BASE_PATH || window.location.pathname === homePath;
+	if (!isLoggedIn() && !atHome) {
+		window.location.href = homePath;
 		return;
 	}
 	document.getElementById("nav-right").innerHTML = isLoggedIn() ? `<a href="#" id="logout-link">Logout</a>` : ``;
@@ -100,6 +118,6 @@ function fmtServerSub(s) {
 		logoutLink.addEventListener("click", (e) => {
 			e.preventDefault();
 			clearSession();
-			window.location.href = "/";
+			window.location.href = BASE_PATH + "/";
 		});
 })();

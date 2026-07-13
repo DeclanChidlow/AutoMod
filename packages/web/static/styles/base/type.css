@@ -1,0 +1,125 @@
+/* Fonts preloaded in head */
+/* https://clagnut.com/blog/2433 */
+
+@font-face {
+	font-family: "Outfit";
+	src: url("../../typefaces/Outfit.woff2");
+	font-weight: 100 900;
+	font-stretch: 75% 100%;
+	font-display: fallback;
+}
+
+@font-face {
+	font-family: "Fira Code";
+	src: url("../../typefaces/FiraCode.woff2");
+	font-weight: 300 700;
+	font-display: fallback;
+	size-adjust: 90%;
+}
+
+body {
+	font-family: "Outfit", "Roboto", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	text-wrap: balance;
+	font-weight: 700;
+}
+
+h1 {
+	font-size: 2.3rem;
+	line-height: 2.2rem;
+}
+
+h2 {
+	font-size: 1.8rem;
+	line-height: 2rem;
+}
+
+h3 {
+	font-size: 1.2rem;
+	line-height: 1.4rem;
+}
+
+h5 {
+	font-size: 0.8rem;
+	line-height: 1rem;
+}
+
+h6 {
+	font-size: 0.6rem;
+	line-height: 0.8rem;
+}
+
+.readable,
+blockquote {
+	max-inline-size: 70ch;
+	text-wrap: pretty;
+
+	* + h2,
+	* + h3,
+	* + h4,
+	* + h5,
+	* + h6 {
+		margin-block-start: 2rem;
+	}
+
+	* + hr {
+		margin-block: 2rem;
+	}
+
+	> * + * {
+		margin-block-start: 1rem;
+	}
+}
+
+code {
+	font-family: "Fira Code", monospace;
+	border: 1px solid light-dark(var(--grey), var(--blue));
+	border-radius: 0.2rem;
+	background: light-dark(oklch(from var(--grey) l c h / 0.1), oklch(from var(--blue) l c h / 0.2));
+	padding-inline: 0.2rem;
+	font-size: 0.9rem;
+}
+
+a {
+	color: inherit;
+	text-underline-offset: 2px;
+	text-decoration-thickness: 1px;
+	word-break: break-word;
+}
+
+ul,
+ol {
+	line-height: 1.4rem;
+	margin-inline-start: 2rem;
+}
+
+li {
+	margin-block: 0.5rem;
+}
+
+hr {
+	all: unset;
+	display: block;
+	block-size: 2px;
+	background: var(--grey);
+	margin-block-end: 1rem;
+}
+
+mark {
+	background: var(--yellow);
+}
+
+hgroup {
+	margin-block: 3rem;
+
+	p {
+		font-size: 1.2rem;
+	}
+}
