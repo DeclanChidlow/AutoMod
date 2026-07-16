@@ -32,7 +32,7 @@
 	}
 
 	> * {
-		filter: drop-shadow(0 0 1rem (--black));
+		filter: drop-shadow(0 0 1rem var(--black));
 	}
 
 	.title,

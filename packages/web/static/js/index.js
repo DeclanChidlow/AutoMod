@@ -46,6 +46,7 @@ if (isLoggedIn()) {
 	})();
 } else {
 	(async () => {
+		document.querySelector(".loading")?.remove();
 		let botMention = "@AutoMod";
 		try {
 			const stats = await request("GET", "/stats");
@@ -65,9 +66,9 @@ if (isLoggedIn()) {
 	            <button type="submit" class="btn btn-primary">Log In</button>
 	        </form>
 
-			<p>Don't know how to get your User ID? Run <code>${botMention} info</code> in a server with AutoMod and it'll respond with your User ID.</p>`;
+			<p>Don't know how to get your User ID? Run <code>${escHtml(botMention)} info</code> in a server with AutoMod and it'll respond with your User ID.</p>`;
 
-		let loginNonce, loginUser, loginCode;
+		let loginNonce, loginUser, loginCode, pollInterval;
 
 		document.getElementById("login-form").addEventListener("submit", async (e) => {
 			e.preventDefault();
@@ -95,32 +96,52 @@ if (isLoggedIn()) {
 			main.innerHTML = `<h1>Confirm Login</h1>
 	            <p>Your login code is <code>${escHtml(code)}</code>.</p>
 	            <p>Run this command in a direct message or server channel with AutoMod present:</p>
-	            <pre>${botMention} web login ${escHtml(code)}</pre>
-	            <p>After running the command, click below to finish.</p>
+	            <pre>${escHtml(botMention)} web login ${escHtml(code)}</pre>
+	            <p id="login-status">Waiting for confirmation…</p>
 	            <button id="complete-btn" class="btn btn-primary">Complete Login</button>
 	            <button id="cancel-btn" class="btn btn-secondary">Cancel</button>
 	            <p class="error" id="complete-error" hidden></p>`;
 			ensureErrorBanner();
 
-			document.getElementById("complete-btn").addEventListener("click", completeLogin);
-			document.getElementById("cancel-btn").addEventListener("click", () => window.location.reload());
-		}
+			const statusEl = document.getElementById("login-status");
+			const errorEl = document.getElementById("complete-error");
+			const completeBtn = document.getElementById("complete-btn");
 
-		async function completeLogin() {
-			const b = document.getElementById("complete-btn");
-			document.getElementById("complete-error").hidden = true;
-			b.disabled = true;
-			b.textContent = "Completing…";
-			try {
-				const r = await request("POST", "/login/complete", { user: loginUser, nonce: loginNonce, code: loginCode });
-				saveSession(r.user, r.token);
-				window.location.href = BASE_PATH + "/";
-			} catch (err) {
-				document.getElementById("complete-error").textContent = err.message;
-				document.getElementById("complete-error").hidden = false;
-				b.disabled = false;
-				b.textContent = "Complete Login";
+			document.getElementById("cancel-btn").addEventListener("click", () => {
+				clearInterval(pollInterval);
+				window.location.reload();
+			});
+
+			async function tryCompleteLogin() {
+				clearInterval(pollInterval);
+				try {
+					const r = await request("POST", "/login/complete", {
+						user: loginUser,
+						nonce: loginNonce,
+						code: loginCode,
+					});
+					statusEl.textContent = "Confirmed! Logging you in…";
+					saveSession(r.user, r.token);
+					window.location.href = BASE_PATH + "/";
+				} catch (err) {
+					if (err.message && (err.message.includes("not yet valid") || err.message.includes("rate limit"))) {
+						pollInterval = setInterval(tryCompleteLogin, 5000);
+						return;
+					}
+					statusEl.hidden = true;
+					errorEl.textContent = err.message || "Something went wrong. Please try again.";
+					errorEl.hidden = false;
+				}
 			}
+
+			completeBtn.addEventListener("click", () => {
+				errorEl.hidden = true;
+				completeBtn.disabled = true;
+				completeBtn.textContent = "Completing…";
+				tryCompleteLogin();
+			});
+
+			pollInterval = setInterval(tryCompleteLogin, 5000);
 		}
 	})();
 }

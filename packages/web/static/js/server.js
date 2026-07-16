@@ -1,8 +1,8 @@
 const parts = window.location.pathname.split("/");
 const serverId = BASE_PATH ? parts[2] : parts[1];
 if (!serverId) {
+	document.querySelector(".loading")?.remove();
 	document.getElementById("content").innerHTML += "<h1>Invalid server</h1>";
-	throw new Error("No server ID");
 }
 
 const isAntiSpamURL = /\/anti-spam\/?$/.test(window.location.pathname);
@@ -10,6 +10,7 @@ let activeTab = isAntiSpamURL ? "anti-spam" : "settings";
 let antispamLoaded = false;
 let antispamLoading = false;
 let rules = [];
+let perms = 0;
 
 function switchTab(tab, pushState = true) {
 	if (activeTab === tab) return;
@@ -35,12 +36,13 @@ window.addEventListener("popstate", (e) => {
 });
 
 (async function init() {
+	if (!serverId) return;
 	const main = document.getElementById("content");
 	document.querySelector(".loading")?.remove();
 	try {
 		const data = await request("GET", `/dash/server/${serverId}`);
 		const s = data.server;
-		const perms = s.perms || 0;
+		perms = s.perms || 0;
 		const cfg = s.serverConfig || {};
 		const managers = cfg.botManagers || [];
 		const mods = cfg.moderators || [];
@@ -68,7 +70,7 @@ window.addEventListener("popstate", (e) => {
 
 					<div id="tab-settings" class="tab-content"${activeTab !== "settings" ? " hidden" : ""}>
 						<div class="settings">
-							${perms >= 2 ? renderConfig(cfg, s.defaultPrefix, s.botId) : `<p>You need Manager permissions to edit server configuration.</p>`}
+							${perms >= 2 ? renderConfig(cfg, s.defaultPrefix, s.botId) : `<p>You need Manager permissions to edit the server configuration.</p>`}
 							${perms >= 3 ? renderUserSection("managers", "Bot Managers", managers, true) : ""}
 							${perms >= 2 ? renderUserSection("mods", "Moderators", mods, true) : ""}
 						</div>
@@ -281,7 +283,7 @@ async function loadWordlist() {
 function bindWordlistEvents() {
 	document.getElementById("wl-config-form").addEventListener("submit", async (e) => {
 		e.preventDefault();
-		const btn = e.submitter;
+		const btn = e.submitter || e.target.querySelector('button[type="submit"], button:not([type]), button[form]');
 		btn.disabled = true;
 		try {
 			await request("PUT", `/dash/server/${serverId}/wordlist/config`, {
@@ -406,11 +408,19 @@ async function loadAntiSpam() {
 	if (antispamLoaded || antispamLoading) return;
 	antispamLoading = true;
 	const container = document.getElementById("tab-anti-spam");
+
+	if (perms < 2) {
+		container.innerHTML = `<p>You need Manager permissions to manage anti-spam rules.</p>`;
+		antispamLoaded = true;
+		antispamLoading = false;
+		return;
+	}
+
 	try {
 		const data = await request("GET", `/dash/server/${serverId}/antispam`);
 		rules = data.antispam || [];
-		antispamLoaded = true;
 		renderAntiSpam(container);
+		antispamLoaded = true;
 	} catch (e) {
 		container.innerHTML = `<p>Failed to load anti-spam rules: ${escHtml(e.message)}</p>`;
 	} finally {
@@ -451,7 +461,7 @@ function bindAntiSpamEvents() {
 }
 
 function openEdit(id) {
-	const r = rules.find((r) => r.id === id);
+	const r = rules.find((r) => r.id == id);
 	if (!r) return;
 	const m = getEditModal();
 	document.getElementById("edit-id").value = r.id;
@@ -510,6 +520,8 @@ async function createRule(e) {
 		loadAntiSpam();
 		getCreateModal().close();
 		e.target.reset();
+		btn.disabled = false;
+		btn.textContent = "Create Rule";
 	} catch (err) {
 		showError(err.message);
 		btn.disabled = false;

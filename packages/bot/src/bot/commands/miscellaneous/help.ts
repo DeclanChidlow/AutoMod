@@ -66,7 +66,7 @@ export default {
 				}
 			}
 
-			msg += `\n[Open Server Settings](<${process.env["WEB_UI_URL"] || "https://automod.vale.rocks"}/dashboard/${message.channel?.serverId}>)`;
+			msg += `\n[Open Server Settings](<${process.env["WEB_UI_URL"]}/${message.channel?.serverId}>)`;
 
 			await message.reply(msg);
 		} else {

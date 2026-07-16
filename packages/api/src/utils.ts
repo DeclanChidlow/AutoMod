@@ -53,6 +53,10 @@ function unauthorized(res: Response, infoText?: string) {
 	res.status(401).send(JSON.stringify({ error: "Unauthorized", info: infoText || undefined }, null, 4));
 }
 
+function forbidden(res: Response, infoText?: string) {
+	res.status(403).send(JSON.stringify({ error: infoText || "Forbidden" }, null, 4));
+}
+
 async function getPermissionLevel(user: string, server: string) {
 	return await botReq("getPermissionLevel", { user, server });
 }
@@ -70,7 +74,7 @@ function requireAuth(config: RequireAuthConfig): (req: Request, res: Response, n
 			const server_id = req.params["serverid"] || req.params["server"];
 			const levelRes = await getPermissionLevel(auth, server_id);
 			if (!levelRes.success) return res.status(500).send({ error: "Unknown server or other error" });
-			if (levelRes["level"] < config.permission) return unauthorized(res, "Your permission level is too low");
+			if (levelRes["level"] < config.permission) return forbidden(res, "Your permission level is too low");
 		}
 
 		next();
@@ -120,4 +124,4 @@ function ensureObjectStructure(obj: any, structure: { [key: string]: "string" | 
 	return returnObj;
 }
 
-export { isAuthenticated, getSessionInfo, badRequest, unauthorized, getPermissionLevel, requireAuth, ensureObjectStructure };
+export { isAuthenticated, getSessionInfo, badRequest, unauthorized, forbidden, getPermissionLevel, requireAuth, ensureObjectStructure };
