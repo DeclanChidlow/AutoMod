@@ -2,6 +2,7 @@ import { app, db } from "../..";
 import type { Request, Response } from "express";
 import { badRequest, getPermissionLevel, isAuthenticated, requireAuth, unauthorized } from "../../utils";
 import { botReq } from "../internal/ws";
+import { redis } from "../../db";
 
 type User = { id: string; username?: string; avatarURL?: string };
 type Channel = { id: string; name: string; icon?: string; type: "VOICE" | "TEXT"; nsfw: boolean };
@@ -33,6 +34,13 @@ app.get("/dash/server/:server", requireAuth({ permission: 0 }), async (req: Requ
 	const { server } = req.params;
 	if (!server || typeof server != "string") return badRequest(res);
 
+	const cacheKey = `dash:server:${server}:${user}`;
+
+	const cached = await redis.get(cacheKey);
+	if (cached) {
+		return res.send(JSON.parse(cached));
+	}
+
 	const response = await botReq("getUserServerDetails", { user, server });
 	if (!response.success) {
 		return res.status(response.statusCode ?? 500).send({ error: response.error });
@@ -41,7 +49,11 @@ app.get("/dash/server/:server", requireAuth({ permission: 0 }), async (req: Requ
 	if (!response["server"]) return res.status(404).send({ error: "Not found" });
 
 	const s: ServerDetails = response["server"];
-	res.send({ server: s });
+	const body = { server: s };
+
+	redis.set(cacheKey, JSON.stringify(body), { EX: 15 }).catch(() => {});
+
+	res.send(body);
 });
 
 app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {

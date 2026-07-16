@@ -1,7 +1,6 @@
 import { app, db } from "../..";
 import type { Request, Response } from "express";
-import { badRequest, ensureObjectStructure, isAuthenticated, requireAuth, unauthorized } from "../../utils";
-import { botReq } from "../internal/ws";
+import { badRequest, ensureObjectStructure, isAuthenticated, requireAuth } from "../../utils";
 import type { Collection } from "mongodb";
 import { ulid } from "ulid";
 
@@ -28,21 +27,12 @@ app.get("/dash/server/:server/antispam", requireAuth({ permission: 2 }), async (
 	const { server } = req.params;
 	if (!server || typeof server != "string") return badRequest(res);
 
-	const response = await botReq("getUserServerDetails", { user, server });
-	if (!response.success) {
-		return res.status(response.statusCode ?? 500).send({ error: response.error });
-	}
-
-	if (!response["server"]) return res.status(404).send({ error: "Server not found" });
-
-	const permissionLevel: 0 | 1 | 2 | 3 = response["perms"];
-	if (permissionLevel < 1) return unauthorized(res, `Only moderators and bot managers may view this.`);
-
 	const serverConfig = await (await serversCollection()).findOne({ id: server });
+	if (!serverConfig) return res.status(404).send({ error: "Server not found" });
 
 	const result = {
 		antispam:
-			(serverConfig?.["automodSettings"]?.spam as AntispamRule[] | undefined)?.map(
+			(serverConfig["automodSettings"]?.spam as AntispamRule[] | undefined)?.map(
 				(r) =>
 					({
 						action: r.action,
@@ -100,13 +90,6 @@ app.post("/dash/server/:server/antispam", requireAuth({ permission: 2 }), async 
 	const { server } = req.params;
 	if (!server || typeof server != "string") return badRequest(res);
 
-	const response = await botReq("getUserServerDetails", { user, server });
-	if (!response.success) {
-		return res.status(response.statusCode ?? 500).send({ error: response.error });
-	}
-
-	if (!response["server"]) return res.status(404).send({ error: "Server not found" });
-
 	let rule: any;
 	try {
 		rule = ensureObjectStructure(
@@ -150,13 +133,6 @@ app.delete("/dash/server/:server/antispam/:ruleid", requireAuth({ permission: 2 
 
 	const { server, ruleid } = req.params;
 	if (!server || typeof server != "string" || !ruleid || typeof ruleid != "string") return badRequest(res);
-
-	const response = await botReq("getUserServerDetails", { user, server });
-	if (!response.success) {
-		return res.status(response.statusCode ?? 500).send({ error: response.error });
-	}
-
-	if (!response["server"]) return res.status(404).send({ error: "Server not found" });
 
 	let result;
 	try {

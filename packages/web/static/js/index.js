@@ -4,10 +4,13 @@ if (isLoggedIn()) {
 	(async () => {
 		const loadingEl = document.querySelector(".loading");
 		if (loadingEl) {
-			loadingEl.insertAdjacentHTML("beforebegin", `<hgroup>
+			loadingEl.insertAdjacentHTML(
+				"beforebegin",
+				`<hgroup>
 					<h1>AutoMod Dashboard</h1>
 					<p>Manage AutoMod in your servers.</p>
-				</hgroup>`);
+				</hgroup>`,
+			);
 		}
 		try {
 			const data = await request("GET", "/dash/servers");
@@ -47,17 +50,22 @@ if (isLoggedIn()) {
 		try {
 			const stats = await request("GET", "/stats");
 			if (stats.botId) botMention = "<@" + stats.botId + ">";
-		} catch (_) { /* use default */ }
+		} catch (_) {
+			/* use default */
+		}
 
-		main.innerHTML += `
-	        <h1>AutoMod Dashboard</h1>
+		main.innerHTML += `<hgroup>
+				<h1>AutoMod Dashboard</h1>
+				<p>The AutoMod dashboard allows you to manage AutoMod in your servers.</p>
+			</hgroup>
 	        <form id="login-form">
-	            <div class="form-field"><label for="user-field">Stoat User ID:</label>
-	                <input type="text" id="user-field" placeholder="Your user ID" required></div>
+	            <div class="form-field"><label for="user-field">Your Stoat User ID:</label>
+	                <input type="text" id="user-field" placeholder="01XXXXXXXXXXXXXXXXXXXXXXXX" required></div>
 	            <p class="error" id="login-error" hidden></p>
 	            <button type="submit" class="btn btn-primary">Log In</button>
 	        </form>
-	        <p>Enter your Stoat user ID to begin. You'll get a code to confirm with the bot using <code>${botMention} web login &lt;code&gt;</code>.</p>`;
+
+			<p>Don't know how to get your User ID? Run <code>${botMention} info</code> in a server with AutoMod and it'll respond with your User ID.</p>`;
 
 		let loginNonce, loginUser, loginCode;
 
@@ -85,7 +93,7 @@ if (isLoggedIn()) {
 
 		function renderConfirmStep(code) {
 			main.innerHTML = `<h1>Confirm Login</h1>
-	            <p>Your login code:</p><div class="code-box">${escHtml(code)}</div>
+	            <p>Your login code is <code>${escHtml(code)}</code>.</p>
 	            <p>Run this command in a direct message or server channel with AutoMod present:</p>
 	            <pre>${botMention} web login ${escHtml(code)}</pre>
 	            <p>After running the command, click below to finish.</p>

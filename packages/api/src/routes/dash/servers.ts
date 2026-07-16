@@ -2,6 +2,7 @@ import { app } from "../..";
 import type { Request, Response } from "express";
 import { isAuthenticated, requireAuth } from "../../utils";
 import { botReq } from "../internal/ws";
+import { redis } from "../../db";
 
 type Server = {
 	id: string;
@@ -15,9 +16,18 @@ type Server = {
 	roleCount: number;
 };
 
+const CACHE_TTL_SECONDS = 15;
+
 app.get("/dash/servers", requireAuth({ requireLogin: true }), async (req: Request, res: Response) => {
 	const user = await isAuthenticated(req, res, true);
 	if (!user) return;
+
+	const cacheKey = `dash:servers:${user}`;
+
+	const cached = await redis.get(cacheKey);
+	if (cached) {
+		return res.send(JSON.parse(cached));
+	}
 
 	const response = await botReq("getUserServers", { user });
 	if (!response.success) {
@@ -27,5 +37,9 @@ app.get("/dash/servers", requireAuth({ requireLogin: true }), async (req: Reques
 	if (!response["servers"]) return res.status(404).send({ error: "Not found" });
 
 	const servers: Server[] = response["servers"];
-	res.send({ servers });
+	const body = { servers };
+
+	redis.set(cacheKey, JSON.stringify(body), { EX: CACHE_TTL_SECONDS }).catch(() => {});
+
+	res.send(body);
 });

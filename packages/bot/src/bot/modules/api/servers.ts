@@ -1,4 +1,6 @@
-import { getMutualServers, getPermissionLevel, parseUser } from "../../util";
+import { getMutualServers, getPermissionLevelFromMember, parseUser } from "../../util";
+import { client, dbs } from "../../..";
+import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import type { WSResponse } from "../api_communication";
 import { wsEvents } from "../api_communication";
 
@@ -26,6 +28,10 @@ wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) =
 			roleCount: number;
 		};
 
+		const serverIds = mutuals.map((s) => s.id);
+		const configs = await dbs.SERVERS.find({ id: { $in: serverIds } }).toArray();
+		const configMap = new Map<string, ServerConfig | null>(configs.map((c) => [c.id, c]));
+
 		const promises: Promise<ServerResponse>[] = [];
 
 		for (const server of mutuals) {
@@ -33,7 +39,11 @@ wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) =
 				new Promise(async (resolve, reject) => {
 					try {
 						if (!server) return reject("Server not found");
-						const perms = await getPermissionLevel(user, server);
+						const member = client.serverMembers.getByKey({ server: server.id, user: user.id });
+						const config = configMap.get(server.id);
+						const perms = member
+							? getPermissionLevelFromMember(member, server, config)
+							: 0;
 						resolve({
 							id: server.id,
 							perms,

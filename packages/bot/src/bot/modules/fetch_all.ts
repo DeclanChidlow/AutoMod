@@ -3,7 +3,9 @@ import { client } from "../..";
 // Fetch all known users on bot startup.
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const RATE_LIMIT_DELAY = 3000;
+// Stoat API catch-all bucket allows 20 requests per 10 seconds (2 req/s).
+// A 500ms delay keeps us at 2 req/s which is well within the limit while warming the cache ~6x faster.
+const RATE_LIMIT_DELAY = 500;
 
 (async () => {
 	if (!client.user) await new Promise<void>((r) => client.once("ready", () => r()));

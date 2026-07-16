@@ -87,16 +87,28 @@ async function getPermissionLevel(member: ServerMember | User, server: Server): 
 		serverMember = member;
 	}
 
+	const config = await dbs.SERVERS.findOne({ id: server.id });
+	return getPermissionLevelFromMember(serverMember, server, config);
+}
+
+function getPermissionLevelFromMember(serverMember: ServerMember, server: Server, config?: ServerConfig | null): 0 | 1 | 2 | 3 {
 	if (isSudo(serverMember.user!)) return 3;
 	if (server.ownerId === serverMember.id.user) return 3;
 	if (serverMember.hasPermission(server, "ManageServer")) return 2;
-
-	const config = await dbs.SERVERS.findOne({ id: server.id });
 
 	if (config?.botManagers?.includes(serverMember.id.user)) return 2;
 	if (config?.moderators?.includes(serverMember.id.user) || serverMember.hasPermission(server, "BanMembers")) return 1;
 
 	return 0;
+}
+
+async function resolvePermissionLevelConfig(server: Server): Promise<ServerConfig | null> {
+	return await dbs.SERVERS.findOne({ id: server.id });
+}
+
+async function getPermissionLevelWithConfig(serverMember: ServerMember, server: Server, config?: ServerConfig | null): Promise<0 | 1 | 2 | 3> {
+	if (!config) config = await resolvePermissionLevelConfig(server);
+	return getPermissionLevelFromMember(serverMember, server, config);
 }
 
 function getPermissionBasedOnRole(member: ServerMember): 0 | 1 | 2 | 3 {
@@ -282,7 +294,7 @@ async function getMutualServers(user: User) {
 				if (fetched) return server;
 				return null;
 			},
-			100,
+			20,
 		)
 	).filter((s): s is Server => s !== null);
 }
@@ -531,6 +543,8 @@ export {
 	isModerator,
 	isBotManager,
 	getPermissionLevel,
+	getPermissionLevelFromMember,
+	getPermissionLevelWithConfig,
 	getPermissionBasedOnRole,
 	parseUser,
 	parseUserOrId,
