@@ -154,9 +154,19 @@ wsEvents.on("req:requestLogin", async (data: any, cb: (data: WSResponse) => void
 	}
 });
 
-wsEvents.on("req:stats", async (_data: any, cb: (data: { servers: number; botName: string; botId: string }) => void) => {
+wsEvents.on("req:stats", async (_data: any, cb: (data: { servers: number; botName: string; botId: string; users: number; infractions: number; uptime: number; ping: number | null }) => void) => {
 	const servers = bot.servers.size();
-	cb({ servers, botName: bot.user?.username || "AutoMod", botId: bot.user?.id || "" });
+	const users = bot.users.size();
+	const infractions = await dbs.INFRACTIONS.estimatedDocumentCount().catch(() => dbs.INFRACTIONS.countDocuments({}).catch(() => 0));
+	cb({
+		servers,
+		botName: bot.user?.username || "AutoMod",
+		botId: bot.user?.id || "",
+		users,
+		infractions,
+		uptime: process.uptime(),
+		ping: bot.events.ping() ?? null,
+	});
 });
 
 export { wsEvents, wsSend };

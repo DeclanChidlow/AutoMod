@@ -11,6 +11,7 @@ AutoMod is [Stoat's](https://stoat.chat) premier moderation bot, featuring loggi
 ## Features
 
 - Basic moderation commands, including kicking, warning, banning, and timing out users.
+- A web dashboard for easy configuration.
 - Full message filtering.
 - Customisable event logging (including logging of message edits/deletions and moderator actions).
 - Full infraction system to keep track of problematic users.
@@ -18,7 +19,6 @@ AutoMod is [Stoat's](https://stoat.chat) premier moderation bot, featuring loggi
 - Intuitive command syntax.
 - Anti-spam measures.
 - Handy extra commands for changing user nicknames and avatars, getting information from a UUID, etc.
-- WIP web interface for easy configuration.
 
 ## Documentation and Support
 
