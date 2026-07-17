@@ -24,7 +24,14 @@ AutoMod is [Stoat's](https://stoat.chat) premier moderation bot, featuring loggi
 
 All of AutoMod's commands and features are [extensively documented](https://automod.vale.rocks/docs). If you still have questions or need help, you can join the [support server on Stoat](https://stt.gg/automod). The Stoat server is also a good way to stay in the loop on updates, changes, and development.
 
-[![Stoat Server](https://img.shields.io/revolt/invite/01HSJPNS9H2MPPMZTJNW8T5MRD?style=flat-square&label=stoat%20server)](https://rvlt.gg/AutoMod)
+[![Stoat Server](https://img.shields.io/revolt/invite/01HSJPNS9H2MPPMZTJNW8T5MRD?style=flat-square&label=stoat%20server)](https://stt.gg/AutoMod)
+
+AutoMod is split into multiple packages for ease of deployment and development:
+
+- `bot` is the core bot itself, which handles commands and takes action in servers.
+- `lib` is a shared library that defines types used across the bot.
+- `web` houses the web dashboard.
+- `api` is a layer which facilitates communication between the bot, databases, and the web dashboard.
 
 ## Invite to Your Server
 
