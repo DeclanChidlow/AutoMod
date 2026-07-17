@@ -33,6 +33,10 @@ export class ServerMember {
 	get roles(): string[] {
 		return this.data.roles ?? [];
 	}
+	get joinedAt() {
+		const raw = this.data.joinedAt ?? this.data.joined_at;
+		return raw ? new Date(raw) : undefined;
+	}
 	get displayName() {
 		return this.nickname ?? this.user?.displayName;
 	}

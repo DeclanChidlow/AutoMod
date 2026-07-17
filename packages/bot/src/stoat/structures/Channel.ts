@@ -22,7 +22,7 @@ export class Channel {
 		return new Date(decodeTime(this.id));
 	}
 	get type() {
-		return this.data.channelType ?? this.data.type;
+		return this.data.channelType ?? this.data.type ?? this.data.channel_type;
 	}
 	get name() {
 		return this.data.name;
