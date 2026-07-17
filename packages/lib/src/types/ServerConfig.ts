@@ -10,9 +10,18 @@ class ServerConfig {
 	botManagers?: string[];
 	moderators?: string[];
 	votekick?: {
-		enabled: boolean;
-		votesRequired: number;
-		banDuration: number; // -1: Only kick, 0: Permanent, >0: Ban duration in minutes
+		enabled?: boolean;
+		kickEnabled?: boolean;
+		kickVotesRequired: number;
+		kickVoteDuration: number;
+		banEnabled?: boolean;
+		banVotesRequired: number;
+		banVoteDuration: number;
+		banDuration: number; // 0 = permanent, >0 = temp ban in minutes
+		timeoutEnabled?: boolean;
+		timeoutVotesRequired: number;
+		timeoutVoteDuration: number;
+		timeoutDuration: number; // timeout duration in minutes
 		trustedRoles: string[];
 	};
 	whitelist?: {

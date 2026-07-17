@@ -6,6 +6,7 @@ import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
+import { handleVoteCommand } from "../../modules/votekick";
 import {
 	dedupeArray,
 	embed,
@@ -22,7 +23,7 @@ import {
 } from "../../util";
 import { client } from "../../..";
 
-const SYNTAX = "{prefix}kick @username [reason?]";
+const SYNTAX = "{prefix}kick @username [reason?]\n{prefix}kick vote @username";
 
 export default {
 	name: "kick",
@@ -33,6 +34,37 @@ export default {
 	removeEmptyArgs: true,
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {
+		if (args[0]?.toLowerCase() === "vote") {
+			args.shift();
+			const isMod = await isModerator(message);
+			return await handleVoteCommand(message, args, serverConfig, {
+				type: "kick",
+				isModerator: isMod,
+				onPass: async (target) => {
+					const originator = await fetchUsername(message.authorId!);
+					const infId = ulid();
+					const infraction: Infraction = {
+						_id: infId,
+						createdBy: client.user!.id,
+						date: Date.now(),
+						reason: `Vote kick passed. Started by ${originator}`,
+						server: message.serverContext.id,
+						type: InfractionType.Manual,
+						user: target.id,
+						actionType: "kick",
+					};
+					await Promise.all([
+						storeInfraction(infraction),
+						message.serverContext.kickUser(target.id),
+						logModAction("kick", message.serverContext, message.member!, target.id, "Vote kick passed", infraction._id),
+					]);
+				},
+				logActionType: "kick",
+				logActionReason: "Vote kick passed",
+				passMessage: (target, votesCount, votesRequired) => `**${votesCount}/${votesRequired}** votes reached. **@${target.username}** has been kicked.`,
+			});
+		}
+
 		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
 		if (!message.serverContext.havePermission("KickMembers")) {
 			return await message.reply(`Sorry, I do not have \`KickMembers\` permission.`);
@@ -43,7 +75,7 @@ export default {
 			return message.reply({
 				embeds: [
 					embed(
-						`Please specify one or more users by replying to their message while running this command or ` + `by specifying a comma-separated list of usernames.`,
+						`Please specify one or more users by replying to their message while running this command or by specifying a comma-separated list of usernames.`,
 						"No target user specified",
 						EmbedColor.SoftError,
 					),

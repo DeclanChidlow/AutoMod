@@ -125,7 +125,7 @@ client.on("messageDeleteBulk", async (messages) => {
 });
 
 async function logModAction(
-	type: "warn" | "kick" | "ban" | "votekick",
+	type: "warn" | "kick" | "ban" | "timeout" | "votekick",
 	server: Server,
 	mod: ServerMember,
 	target: string,

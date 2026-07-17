@@ -110,22 +110,47 @@ function renderConfig(cfg, defaultPrefix, botId) {
     <button type="submit" class="btn btn-primary">Save Configuration</button>
 </form></section>
 
-<section><h2>Votekick</h2><form id="votekick-form">
-    <div class="form-field"><label><input type="checkbox" id="enabled" ${vk.enabled ? "checked" : ""}>Enable votekicking</label><p class="field-desc">Allows members to vote to kick or ban a user.</p></div>
-    <div class="form-field"><label>Votes required</label><p class="field-desc">How many votes are needed for the votekick to pass.</p><input type="number" id="votesRequired" value="${vk.votesRequired || 3}" min="1"></div>
-    <div class="form-field"><label>On votekick pass</label><p class="field-desc">What happens when enough members vote.</p>
-        <select id="action">
-            <option value="-1" ${(vk.banDuration ?? -1) === -1 ? "selected" : ""}>Kick the user</option>
-            <option value="0" ${(vk.banDuration ?? -1) === 0 ? "selected" : ""}>Ban permanently</option>
-            <option value="custom" ${(vk.banDuration ?? -1) > 0 ? "selected" : ""}>Ban for a duration</option>
-        </select>
-    </div>
-    <div class="form-field" id="duration-field"${(vk.banDuration ?? -1) > 0 ? "" : " hidden"}>
-        <label>Ban duration (minutes)</label><p class="field-desc">How many minutes the temporary ban lasts.</p>
-        <input type="number" id="banDuration" value="${(vk.banDuration ?? -1) > 0 ? vk.banDuration : 60}" min="1">
-    </div>
-    <button type="submit" class="btn btn-primary">Save Votekick</button>
-</form></section>
+<section><h2>Vote Moderation</h2><p class="field-desc">Allows members to vote to kick, ban, or timeout a user. Use <code>${escHtml(cfg.prefix || defaultPrefix || "/")}kick vote</code>, <code>${escHtml(cfg.prefix || defaultPrefix || "/")}ban vote</code> and <code>${escHtml(cfg.prefix || defaultPrefix || "/")}timeout vote</code>.</p>
+
+    <form id="votekick-kick-form" class="vote-form">
+        <h3>Vote Kick</h3>
+        <div class="form-field"><label><input type="checkbox" id="kickEnabled" ${vk.kickEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to kick a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}kick vote</code>.</p></div>
+        <div class="vk-kick-options"${vk.kickEnabled === false ? ' style="display:none"' : ''}>
+            <div class="form-field"><label>Votes required</label><input type="number" id="kickVotesRequired" value="${vk.kickVotesRequired || 3}" min="1"></div>
+            <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="kickVoteDuration" value="${vk.kickVoteDuration || 1}" min="1"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Vote Kick</button>
+    </form>
+
+    <form id="votekick-ban-form" class="vote-form">
+        <h3>Vote Ban</h3>
+        <div class="form-field"><label><input type="checkbox" id="banEnabled" ${vk.banEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to ban a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}ban vote</code>.</p></div>
+        <div class="vk-ban-options"${vk.banEnabled === false ? ' style="display:none"' : ''}>
+            <div class="form-field"><label>Votes required</label><input type="number" id="banVotesRequired" value="${vk.banVotesRequired || 3}" min="1"></div>
+            <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="banVoteDuration" value="${vk.banVoteDuration || 1}" min="1"></div>
+            <div class="form-field"><label>Action on pass</label><p class="field-desc">What happens when enough members vote to ban.</p>
+                <select id="banAction">
+                    <option value="0" ${(vk.banDuration ?? 0) === 0 ? "selected" : ""}>Ban permanently</option>
+                    <option value="custom" ${(vk.banDuration ?? 0) > 0 ? "selected" : ""}>Temporary ban</option>
+                </select>
+            </div>
+            <div class="form-field" id="ban-duration-field" style="${(vk.banDuration ?? 0) > 0 ? '' : 'display: none'}">
+                <label>Ban duration (minutes)</label><input type="number" id="banDuration" value="${(vk.banDuration ?? 0) > 0 ? vk.banDuration : 60}" min="1">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Vote Ban</button>
+    </form>
+
+    <form id="votekick-timeout-form" class="vote-form">
+        <h3>Vote Timeout</h3>
+        <div class="form-field"><label><input type="checkbox" id="timeoutEnabled" ${vk.timeoutEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to timeout a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}timeout vote</code>.</p></div>
+        <div class="vk-timeout-options"${vk.timeoutEnabled === false ? ' style="display:none"' : ''}>
+            <div class="form-field"><label>Votes required</label><input type="number" id="timeoutVotesRequired" value="${vk.timeoutVotesRequired || 3}" min="1"></div>
+            <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="timeoutVoteDuration" value="${vk.timeoutVoteDuration || 1}" min="1"></div>
+            <div class="form-field"><label>Timeout duration (minutes)</label><p class="field-desc">How long the timeout lasts when the vote passes.</p><input type="number" id="timeoutDuration" value="${vk.timeoutDuration || 60}" min="1"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Vote Timeout</button>
+    </form></section>
 
 <section id="wordlist-section"><div class="loading">Loading wordlist…</div></section>`;
 }
@@ -153,32 +178,82 @@ function bindConfigForms() {
 		btn.textContent = "Save Configuration";
 	});
 
-	document.getElementById("votekick-form").addEventListener("submit", async (e) => {
+	document.getElementById("votekick-kick-form").addEventListener("submit", async (e) => {
 		e.preventDefault();
 		const btn = e.target.querySelector("button");
 		btn.disabled = true;
 		btn.textContent = "Saving…";
 		try {
-			const action = document.getElementById("action").value;
-			const banDuration = action === "custom" ? Number(document.getElementById("banDuration").value) : Number(action);
 			clearError();
 			await request("PUT", `/dash/server/${serverId}/config`, {
-				votekickEnabled: document.getElementById("enabled").checked,
-				votekickVotesRequired: Number(document.getElementById("votesRequired").value),
+				votekickKickEnabled: document.getElementById("kickEnabled").checked,
+				votekickKickVotesRequired: Number(document.getElementById("kickVotesRequired").value),
+				votekickKickVoteDuration: Number(document.getElementById("kickVoteDuration").value),
+			});
+		} catch (err) {
+			showError(err.message);
+		}
+		btn.disabled = false;
+		btn.textContent = "Save Vote Kick";
+	});
+
+	document.getElementById("votekick-ban-form").addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const btn = e.target.querySelector("button");
+		btn.disabled = true;
+		btn.textContent = "Saving…";
+		try {
+			const banAction = document.getElementById("banAction").value;
+			const banDuration = banAction === "custom" ? Number(document.getElementById("banDuration").value) : 0;
+			clearError();
+			await request("PUT", `/dash/server/${serverId}/config`, {
+				votekickBanEnabled: document.getElementById("banEnabled").checked,
+				votekickBanVotesRequired: Number(document.getElementById("banVotesRequired").value),
+				votekickBanVoteDuration: Number(document.getElementById("banVoteDuration").value),
 				votekickBanDuration: banDuration,
 			});
 		} catch (err) {
 			showError(err.message);
 		}
 		btn.disabled = false;
-		btn.textContent = "Save Votekick";
+		btn.textContent = "Save Vote Ban";
 	});
 
-	const vkAction = document.getElementById("action");
-	const vkDuration = document.getElementById("duration-field");
-	if (vkAction && vkDuration) {
-		vkAction.addEventListener("change", () => {
-			vkDuration.hidden = vkAction.value !== "custom";
+	document.getElementById("votekick-timeout-form").addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const btn = e.target.querySelector("button");
+		btn.disabled = true;
+		btn.textContent = "Saving…";
+		try {
+			clearError();
+			await request("PUT", `/dash/server/${serverId}/config`, {
+				votekickTimeoutEnabled: document.getElementById("timeoutEnabled").checked,
+				votekickTimeoutVotesRequired: Number(document.getElementById("timeoutVotesRequired").value),
+				votekickTimeoutVoteDuration: Number(document.getElementById("timeoutVoteDuration").value),
+				votekickTimeoutDuration: Number(document.getElementById("timeoutDuration").value),
+			});
+		} catch (err) {
+			showError(err.message);
+		}
+		btn.disabled = false;
+		btn.textContent = "Save Vote Timeout";
+	});
+
+	document.getElementById("kickEnabled").addEventListener("change", function () {
+		document.querySelector(".vk-kick-options").style.display = this.checked ? "" : "none";
+	});
+	document.getElementById("banEnabled").addEventListener("change", function () {
+		document.querySelector(".vk-ban-options").style.display = this.checked ? "" : "none";
+	});
+	document.getElementById("timeoutEnabled").addEventListener("change", function () {
+		document.querySelector(".vk-timeout-options").style.display = this.checked ? "" : "none";
+	});
+
+	const vkBanAction = document.getElementById("banAction");
+	const vkBanDuration = document.getElementById("ban-duration-field");
+	if (vkBanAction && vkBanDuration) {
+		vkBanAction.addEventListener("change", () => {
+			vkBanDuration.style.display = vkBanAction.value !== "custom" ? "none" : "";
 		});
 	}
 

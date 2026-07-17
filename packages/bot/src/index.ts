@@ -35,6 +35,7 @@ let dbs: {
 	SESSIONS: Collection<any>;
 	TEMPBANS: Collection<TempBan>;
 	REACTION_ROLES: Collection<ReactionRoles>;
+	VOTEKICKS: Collection<any>;
 };
 
 export { client, dbs };
@@ -61,6 +62,7 @@ console.info(`\
 			SESSIONS: db.collection("sessions"),
 			TEMPBANS: db.collection<TempBan>("tempbans"),
 			REACTION_ROLES: db.collection<ReactionRoles>("reaction_roles"),
+		VOTEKICKS: db.collection("votekicks"),
 		};
 
 		const clientOptions: Partial<import("./stoat/index.js").ClientOptions> = {

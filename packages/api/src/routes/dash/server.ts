@@ -142,8 +142,17 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 					["dmOnWarn", ["boolean"], 2],
 					["antispamEnabled", ["boolean"], 2],
 					["votekickEnabled", ["boolean"], 2],
-					["votekickVotesRequired", ["number"], 2],
+					["votekickKickEnabled", ["boolean"], 2],
+					["votekickBanEnabled", ["boolean"], 2],
+					["votekickTimeoutEnabled", ["boolean"], 2],
+					["votekickKickVotesRequired", ["number"], 2],
+					["votekickKickVoteDuration", ["number"], 2],
+					["votekickBanVotesRequired", ["number"], 2],
+					["votekickBanVoteDuration", ["number"], 2],
+					["votekickTimeoutVotesRequired", ["number"], 2],
+					["votekickTimeoutVoteDuration", ["number"], 2],
 					["votekickBanDuration", ["number"], 2],
+					["votekickTimeoutDuration", ["number"], 2],
 					["wordlistEnabled", ["boolean"], 2],
 				] as const;
 				for (const [field, types, level] of fields) {
@@ -163,8 +172,17 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 
 				// Votekick nested fields
 				if (body.votekickEnabled !== undefined) setFields["votekick.enabled"] = body.votekickEnabled;
-				if (body.votekickVotesRequired !== undefined) setFields["votekick.votesRequired"] = body.votekickVotesRequired;
+				if (body.votekickKickEnabled !== undefined) setFields["votekick.kickEnabled"] = body.votekickKickEnabled;
+				if (body.votekickBanEnabled !== undefined) setFields["votekick.banEnabled"] = body.votekickBanEnabled;
+				if (body.votekickTimeoutEnabled !== undefined) setFields["votekick.timeoutEnabled"] = body.votekickTimeoutEnabled;
+				if (body.votekickKickVotesRequired !== undefined) setFields["votekick.kickVotesRequired"] = body.votekickKickVotesRequired;
+				if (body.votekickKickVoteDuration !== undefined) setFields["votekick.kickVoteDuration"] = body.votekickKickVoteDuration;
+				if (body.votekickBanVotesRequired !== undefined) setFields["votekick.banVotesRequired"] = body.votekickBanVotesRequired;
+				if (body.votekickBanVoteDuration !== undefined) setFields["votekick.banVoteDuration"] = body.votekickBanVoteDuration;
+				if (body.votekickTimeoutVotesRequired !== undefined) setFields["votekick.timeoutVotesRequired"] = body.votekickTimeoutVotesRequired;
+				if (body.votekickTimeoutVoteDuration !== undefined) setFields["votekick.timeoutVoteDuration"] = body.votekickTimeoutVoteDuration;
 				if (body.votekickBanDuration !== undefined) setFields["votekick.banDuration"] = body.votekickBanDuration;
+				if (body.votekickTimeoutDuration !== undefined) setFields["votekick.timeoutDuration"] = body.votekickTimeoutDuration;
 
 				await servers.updateOne({ id: server }, { $set: setFields });
 				return res.send({ success: true });

@@ -11,7 +11,15 @@ const SYNTAX = '{prefix}infractions; {prefix}infractions @username ["export-csv"
 
 const formatInfraction = async (inf: Infraction) => {
 	const timestamp = Math.floor(inf.date / 1000);
-	return `- ${getInfEmoji(inf)} ID: \`${inf._id}\` — ${inf.reason} (<t:${timestamp}:f> by ${inf.type === InfractionType.Manual ? await fetchUsername(inf.createdBy!) : "System"})\n`;
+	let creatorStr: string;
+	if (inf.createdBy == null) {
+		creatorStr = "Unknown";
+	} else if (inf.reason?.startsWith("Vote")) {
+		creatorStr = "Vote";
+	} else {
+		creatorStr = inf.type === InfractionType.Manual ? await fetchUsername(inf.createdBy) : "System";
+	}
+	return `- ${getInfEmoji(inf)} ID: \`${inf._id}\` — ${inf.reason} (<t:${timestamp}:f> by ${creatorStr})\n`;
 };
 
 const createCSVData = async (userId: string, infs: Infraction[]) => {
@@ -177,6 +185,8 @@ function getInfEmoji(inf: Infraction) {
 			return "🥾 ";
 		case "ban":
 			return "🔨 ";
+		case "timeout":
+			return "⏱️ ";
 		default:
 			return "⚠️ ";
 	}

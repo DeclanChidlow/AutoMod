@@ -4,6 +4,7 @@ import { client, dbs } from "../..";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import { storeInfraction } from "../util";
+import { fetchUsername } from "./mod_logs";
 import { DEFAULT_PREFIX } from "./command_handler";
 import type { SendableEmbed } from "../../stoat/index.js";
 import { UserSystemMessage } from "../../stoat/index.js";
@@ -29,15 +30,19 @@ client.on("messageCreate", async (message) => {
 
 					if (!message.channel || !sysMsg.userId || recentEvents) return;
 
+					const actionType = sysMsg.type == "user_kicked" ? "kick" as const : "ban" as const;
+					const actorName = sysMsg.by ? await fetchUsername(sysMsg.by).catch(() => "Unknown") : "Unknown";
+					const reason = `${actionType === "kick" ? "Kicked" : "Banned"} by ${actorName} (caught system message)`;
+
 					storeInfraction({
 						_id: ulid(),
-						createdBy: null,
-						reason: "Unknown reason (caught system message)",
+						createdBy: sysMsg.by || null,
+						reason,
 						date: message.createdAt.getTime(),
 						server: message.channel!.serverId,
 						type: InfractionType.Manual,
 						user: sysMsg.userId,
-						actionType: sysMsg.type == "user_kicked" ? "kick" : "ban",
+						actionType,
 					} as Infraction).catch(console.warn);
 				} catch (e) {
 					console.error(e);

@@ -25,8 +25,9 @@ import {
 	yesNoMessage,
 } from "../../util";
 import { client } from "../../..";
+import { handleVoteCommand } from "../../modules/votekick";
 
-const SYNTAX = "{prefix}ban @username [duration] [p|purge <purge_duration>] [reason?]";
+const SYNTAX = "{prefix}ban @username [duration] [p|purge <purge_duration>] [reason?]\n{prefix}ban vote @username";
 
 export default {
 	name: "ban",
@@ -37,6 +38,57 @@ export default {
 	removeEmptyArgs: true,
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {
+		if (args[0]?.toLowerCase() === "vote") {
+			args.shift();
+			const banDuration = serverConfig?.votekick?.banDuration ?? 0;
+			const isTemp = banDuration > 0;
+			const isMod = await isModerator(message);
+			const originator = await fetchUsername(message.authorId!);
+			return await handleVoteCommand(message, args, serverConfig, {
+				type: "ban",
+				isModerator: isMod,
+				onPass: async (target) => {
+					const infId = ulid();
+					const infraction: Infraction = {
+						_id: infId,
+						createdBy: client.user!.id,
+						date: Date.now(),
+						reason: isTemp ? `Vote ban passed (${banDuration} minutes). Started by ${originator}` : `Vote ban passed. Started by ${originator}`,
+						server: message.serverContext.id,
+						type: InfractionType.Manual,
+						user: target.id,
+						actionType: "ban",
+					};
+					if (isTemp) {
+						const banUntil = Date.now() + 1000 * 60 * banDuration;
+						infraction.expires = banUntil;
+						await Promise.all([
+							storeInfraction(infraction),
+							message.serverContext.banUser(target.id, {
+								reason: `Automatic temporary ban triggered by /ban vote (${banDuration} minutes)`,
+							}),
+							storeTempBan({ id: infId, bannedUser: target.id, server: message.serverContext.id, until: banUntil }),
+							logModAction("ban", message.serverContext, message.member!, target.id, `Vote ban passed (${banDuration} minutes)`, infraction._id),
+						]);
+					} else {
+						await Promise.all([
+							storeInfraction(infraction),
+							message.serverContext.banUser(target.id, {
+								reason: "Automatic permanent ban triggered by /ban vote",
+							}),
+							logModAction("ban", message.serverContext, message.member!, target.id, "Vote ban passed (permanent)", infraction._id),
+						]);
+					}
+				},
+				logActionType: "ban",
+				logActionReason: isTemp ? `Vote ban passed (${banDuration} minutes)` : "Vote ban passed (permanent)",
+				passMessage: (target, votesCount, votesRequired) =>
+					isTemp
+						? `**${votesCount}/${votesRequired}** votes reached. **@${target.username}** has been banned for ${banDuration} minutes.`
+						: `**${votesCount}/${votesRequired}** votes reached. **@${target.username}** has been permanently banned.`,
+			});
+		}
+
 		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
 		if (!message.serverContext.havePermission("BanMembers")) {
 			return await message.reply({

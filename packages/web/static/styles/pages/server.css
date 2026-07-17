@@ -55,6 +55,24 @@
 	gap: 4rem;
 }
 
+.vote-form {
+	padding-block-end: 2rem;
+	border-block-end: 1px solid var(--grey);
+
+	h3 {
+		margin-block-end: 1rem;
+	}
+
+	button[type="submit"] {
+		margin-block-start: 1rem;
+	}
+
+	&:last-of-type {
+		border-block-end: none;
+		padding-block-end: 0;
+	}
+}
+
 .rule-modal {
 	padding-block: 1.5rem;
 	padding-inline: 2rem;
