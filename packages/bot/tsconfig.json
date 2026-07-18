@@ -1,32 +1,32 @@
 {
-  "compilerOptions": {
-    // Enable latest features
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "allowJs": true,
-    "types": ["bun"],
-    // Bundler mode
-    "moduleResolution": "Bundler",
-    // Best practices
-    "strict": true,
-	"noImplicitAny": false,
-    "skipLibCheck": true,
-	"strictPropertyInitialization": false,
-    "noFallthroughCasesInSwitch": true,
-    // Some stricter flags (enabled)
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "declaration": true,
-    "declarationMap": true,
-    // Additional improvements
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true,
-    "useDefineForClassFields": true,
-    "rootDir": "./src",
-    "outDir": "./dist"
-  }
+	"compilerOptions": {
+		// Enable latest features
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleDetection": "force",
+		"allowJs": true,
+		"types": ["bun"],
+		// Bundler mode
+		"moduleResolution": "Bundler",
+		// Best practices
+		"strict": true,
+		"noImplicitAny": false,
+		"skipLibCheck": true,
+		"strictPropertyInitialization": false,
+		"noFallthroughCasesInSwitch": true,
+		// Some stricter flags (enabled)
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"declaration": true,
+		"declarationMap": true,
+		// Additional improvements
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"forceConsistentCasingInFileNames": true,
+		"useDefineForClassFields": true,
+		"rootDir": "./src",
+		"outDir": "./dist"
+	}
 }

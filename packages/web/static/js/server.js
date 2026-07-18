@@ -5,10 +5,19 @@ if (!serverId) {
 	document.getElementById("content").innerHTML += "<h1>Invalid server</h1>";
 }
 
-const isAntiSpamURL = /\/anti-spam\/?$/.test(window.location.pathname);
-let activeTab = isAntiSpamURL ? "anti-spam" : "settings";
+function detectTab() {
+	if (/\/anti-spam\/?$/.test(window.location.pathname)) return "anti-spam";
+	if (/\/vote-moderation\/?$/.test(window.location.pathname)) return "vote";
+	if (/\/infractions\/?$/.test(window.location.pathname)) return "infractions";
+	if (/\/logging\/?$/.test(window.location.pathname)) return "logging";
+	return "general";
+}
+
+let activeTab = detectTab();
 let antispamLoaded = false;
 let antispamLoading = false;
+let infractionsLoaded = false;
+let infractionsLoading = false;
 let rules = [];
 let perms = 0;
 
@@ -16,22 +25,38 @@ function switchTab(tab, pushState = true) {
 	if (activeTab === tab) return;
 	activeTab = tab;
 
-	const settingsEl = document.getElementById("tab-settings");
-	const antispamEl = document.getElementById("tab-anti-spam");
-	if (settingsEl) settingsEl.hidden = tab !== "settings";
-	if (antispamEl) antispamEl.hidden = tab !== "anti-spam";
+	const tabs = { "general": "tab-general", "anti-spam": "tab-anti-spam", "vote": "tab-vote", "infractions": "tab-infractions", "logging": "tab-logging" };
+	for (const [t, id] of Object.entries(tabs)) {
+		const el = document.getElementById(id);
+		if (el) el.hidden = t !== tab;
+	}
 
 	document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === tab));
 
-	const newPath = tab === "anti-spam" ? `${BASE_PATH}/${serverId}/anti-spam` : `${BASE_PATH}/${serverId}`;
-	if (pushState) history.pushState({ tab }, "", newPath);
-	document.title = tab === "anti-spam" ? "Anti-Spam | AutoMod" : "Server Settings | AutoMod";
+	const tabPaths = {
+		"general": `${BASE_PATH}/${serverId}`,
+		"anti-spam": `${BASE_PATH}/${serverId}/anti-spam`,
+		"vote": `${BASE_PATH}/${serverId}/vote-moderation`,
+		"infractions": `${BASE_PATH}/${serverId}/infractions`,
+		"logging": `${BASE_PATH}/${serverId}/logging`,
+	};
+	if (pushState) history.pushState({ tab }, "", tabPaths[tab]);
+
+	const tabTitles = {
+		"general": "Server Settings | AutoMod",
+		"anti-spam": "Anti-Spam | AutoMod",
+		"vote": "Vote Moderation | AutoMod",
+		"infractions": "Infractions | AutoMod",
+		"logging": "Logging | AutoMod",
+	};
+	document.title = tabTitles[tab] || "Server Dashboard | AutoMod";
 
 	if (tab === "anti-spam" && !antispamLoaded) loadAntiSpam();
+	if (tab === "infractions" && !infractionsLoaded) loadInfractions();
 }
 
 window.addEventListener("popstate", (e) => {
-	const tab = e.state?.tab || (/\/anti-?spam\/?$/.test(window.location.pathname) ? "anti-spam" : "settings");
+	const tab = e.state?.tab || detectTab();
 	switchTab(tab, false);
 });
 
@@ -47,14 +72,16 @@ window.addEventListener("popstate", (e) => {
 		const managers = cfg.botManagers || [];
 		const mods = cfg.moderators || [];
 
-		main.innerHTML += `<hgroup>
+		main.insertAdjacentHTML(
+			"beforeend",
+			`<hgroup>
 						<h1>Server Dashboard</h1>
 						<p>Manage AutoMod's presence in the server ${escHtml(s.name || s.id)}.</p>
 					</hgroup>
 
         <div class="server-header">
 						<div class="title">
-							${s.iconURL ? `<img src="${escHtml(s.iconURL)}" alt="">` : ""}
+							${s.iconURL ? `<img src="${escHtml(safeUrl(s.iconURL))}" alt="">` : ""}
 							<h2>${escHtml(s.name || s.id)}</h2>
 						</div>
 						<ul>
@@ -62,15 +89,22 @@ window.addEventListener("popstate", (e) => {
 							<li class="server-stats">${fmtServerStats(s)} | ${fmtServerSub(s)}</li>
 						</ul>
 						${s.description ? `<p>${escHtml(s.description)}</p>` : ""}
-        </div>
-        <div class="tabs">
-						<a href="${BASE_PATH}/${serverId}" class="tab${activeTab === "settings" ? " active" : ""}" data-tab="settings">Settings</a>
+        </div>`,
+		);
+
+		main.insertAdjacentHTML(
+			"beforeend",
+			`<div class="tabs">
+						<a href="${BASE_PATH}/${serverId}" class="tab${activeTab === "general" ? " active" : ""}" data-tab="general">General</a>
 						<a href="${BASE_PATH}/${serverId}/anti-spam" class="tab${activeTab === "anti-spam" ? " active" : ""}" data-tab="anti-spam">Anti-Spam</a>
+						<a href="${BASE_PATH}/${serverId}/vote-moderation" class="tab${activeTab === "vote" ? " active" : ""}" data-tab="vote">Vote Moderation</a>
+						<a href="${BASE_PATH}/${serverId}/infractions" class="tab${activeTab === "infractions" ? " active" : ""}" data-tab="infractions">Infractions</a>
+						<a href="${BASE_PATH}/${serverId}/logging" class="tab${activeTab === "logging" ? " active" : ""}" data-tab="logging">Logging</a>
         </div>
 
-					<div id="tab-settings" class="tab-content"${activeTab !== "settings" ? " hidden" : ""}>
+					<div id="tab-general" class="tab-content"${activeTab !== "general" ? " hidden" : ""}>
 						<div class="settings">
-							${perms >= 2 ? renderConfig(cfg, s.defaultPrefix, s.botId) : `<p>You need Manager permissions to edit the server configuration.</p>`}
+							${perms >= 2 ? renderGeneral(cfg, s.defaultPrefix, s.botId) : `<p>You need Manager permissions to edit the server configuration.</p>`}
 							${perms >= 3 ? renderUserSection("managers", "Bot Managers", managers, true) : ""}
 							${perms >= 2 ? renderUserSection("mods", "Moderators", mods, true) : ""}
 						</div>
@@ -78,7 +112,22 @@ window.addEventListener("popstate", (e) => {
 
 					<div id="tab-anti-spam" class="tab-content"${activeTab !== "anti-spam" ? " hidden" : ""}>
 						<div class="loading">Loading anti-spam rules…</div>
-					</div>`;
+					</div>
+
+					<div id="tab-vote" class="tab-content"${activeTab !== "vote" ? " hidden" : ""}>
+						<div class="settings">
+							${perms >= 2 ? renderVoteModeration(cfg, s.defaultPrefix, s.botId) : `<p>You need Manager permissions to edit vote moderation settings.</p>`}
+						</div>
+					</div>
+
+					<div id="tab-infractions" class="tab-content"${activeTab !== "infractions" ? " hidden" : ""}>
+						${perms >= 1 ? `<div class="loading">Loading infractions…</div>` : `<p>You need Moderator permissions to view infractions.</p>`}
+					</div>
+
+				<div id="tab-logging" class="tab-content"${activeTab !== "logging" ? " hidden" : ""}>
+						${perms >= 2 ? renderLogging(cfg, s.channels) : `<p>You need Manager permissions to configure logging.</p>`}
+				</div>`,
+		);
 
 		document.querySelectorAll(".tab").forEach((tab) => {
 			tab.addEventListener("click", (e) => {
@@ -87,18 +136,25 @@ window.addEventListener("popstate", (e) => {
 			});
 		});
 
-		if (perms >= 2) bindConfigForms();
+		if (perms >= 2) {
+			bindConfigForms();
+			bindVoteForms();
+			bindLoggingForms();
+		}
 		if (perms >= 3) bindUserActions("managers");
 		if (perms >= 2) bindUserActions("mods");
 
 		if (activeTab === "anti-spam") loadAntiSpam();
+		if (activeTab === "infractions") loadInfractions();
+
+		document.getElementById("tab-infractions").addEventListener("click", handleInfractionAction);
+		document.getElementById("tab-infractions").addEventListener("change", handleInfractionChange);
 	} catch (e) {
-		main.innerHTML += `<h1>Server Settings</h1><p>${escHtml(e.message)}</p><a href="${BASE_PATH}/" class="btn btn-primary">Back to Servers</a>`;
+		main.insertAdjacentHTML("beforeend", `<h1>Server Settings</h1><p>${escHtml(e.message)}</p><a href="${BASE_PATH}/" class="btn btn-primary">Back to Servers</a>`);
 	}
 })();
 
-function renderConfig(cfg, defaultPrefix, botId) {
-	const vk = cfg.votekick || {};
+function renderGeneral(cfg, defaultPrefix, botId) {
 	const mention = botId ? `<@${botId}>` : "@AutoMod";
 	return `<section><h2>General</h2><form id="config-form">
     <div class="form-field"><label>Command Prefix</label><p class="field-desc">You can always use <code>${mention}</code> instead of a prefix. Global default is <code>${escHtml(defaultPrefix || "/")}</code>. Leave empty to use the default.</p><input type="text" id="prefix" value="${escHtml(cfg.prefix || "")}"></div>
@@ -110,12 +166,18 @@ function renderConfig(cfg, defaultPrefix, botId) {
     <button type="submit" class="btn btn-primary">Save Configuration</button>
 </form></section>
 
-<section><h2>Vote Moderation</h2><p class="field-desc">Allows members to vote to kick, ban, or timeout a user. Use <code>${escHtml(cfg.prefix || defaultPrefix || "/")}kick vote</code>, <code>${escHtml(cfg.prefix || defaultPrefix || "/")}ban vote</code> and <code>${escHtml(cfg.prefix || defaultPrefix || "/")}timeout vote</code>.</p>
+<section id="wordlist-section"><div class="loading">Loading wordlist…</div></section>`;
+}
+
+function renderVoteModeration(cfg, defaultPrefix, botId) {
+	const vk = cfg.votekick || {};
+	const mention = botId ? `<@${botId}>` : "@AutoMod";
+	return `<section><h2>Vote Moderation</h2><p class="field-desc">Allows members to vote to kick, ban, or timeout a user. Use <code>${escHtml(cfg.prefix || defaultPrefix || "/")}kick vote</code>, <code>${escHtml(cfg.prefix || defaultPrefix || "/")}ban vote</code> and <code>${escHtml(cfg.prefix || defaultPrefix || "/")}timeout vote</code>.</p>
 
     <form id="votekick-kick-form" class="vote-form">
         <h3>Vote Kick</h3>
         <div class="form-field"><label><input type="checkbox" id="kickEnabled" ${vk.kickEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to kick a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}kick vote</code>.</p></div>
-        <div class="vk-kick-options"${vk.kickEnabled === false ? ' style="display:none"' : ''}>
+        <div class="vk-kick-options"${vk.kickEnabled === false ? ' style="display:none"' : ""}>
             <div class="form-field"><label>Votes required</label><input type="number" id="kickVotesRequired" value="${vk.kickVotesRequired || 3}" min="1"></div>
             <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="kickVoteDuration" value="${vk.kickVoteDuration || 1}" min="1"></div>
         </div>
@@ -125,7 +187,7 @@ function renderConfig(cfg, defaultPrefix, botId) {
     <form id="votekick-ban-form" class="vote-form">
         <h3>Vote Ban</h3>
         <div class="form-field"><label><input type="checkbox" id="banEnabled" ${vk.banEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to ban a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}ban vote</code>.</p></div>
-        <div class="vk-ban-options"${vk.banEnabled === false ? ' style="display:none"' : ''}>
+        <div class="vk-ban-options"${vk.banEnabled === false ? ' style="display:none"' : ""}>
             <div class="form-field"><label>Votes required</label><input type="number" id="banVotesRequired" value="${vk.banVotesRequired || 3}" min="1"></div>
             <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="banVoteDuration" value="${vk.banVoteDuration || 1}" min="1"></div>
             <div class="form-field"><label>Action on pass</label><p class="field-desc">What happens when enough members vote to ban.</p>
@@ -134,7 +196,7 @@ function renderConfig(cfg, defaultPrefix, botId) {
                     <option value="custom" ${(vk.banDuration ?? 0) > 0 ? "selected" : ""}>Temporary ban</option>
                 </select>
             </div>
-            <div class="form-field" id="ban-duration-field" style="${(vk.banDuration ?? 0) > 0 ? '' : 'display: none'}">
+            <div class="form-field" id="ban-duration-field" style="${(vk.banDuration ?? 0) > 0 ? "" : "display: none"}">
                 <label>Ban duration (minutes)</label><input type="number" id="banDuration" value="${(vk.banDuration ?? 0) > 0 ? vk.banDuration : 60}" min="1">
             </div>
         </div>
@@ -144,15 +206,13 @@ function renderConfig(cfg, defaultPrefix, botId) {
     <form id="votekick-timeout-form" class="vote-form">
         <h3>Vote Timeout</h3>
         <div class="form-field"><label><input type="checkbox" id="timeoutEnabled" ${vk.timeoutEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to timeout a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}timeout vote</code>.</p></div>
-        <div class="vk-timeout-options"${vk.timeoutEnabled === false ? ' style="display:none"' : ''}>
+        <div class="vk-timeout-options"${vk.timeoutEnabled === false ? ' style="display:none"' : ""}>
             <div class="form-field"><label>Votes required</label><input type="number" id="timeoutVotesRequired" value="${vk.timeoutVotesRequired || 3}" min="1"></div>
             <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="timeoutVoteDuration" value="${vk.timeoutVoteDuration || 1}" min="1"></div>
             <div class="form-field"><label>Timeout duration (minutes)</label><p class="field-desc">How long the timeout lasts when the vote passes.</p><input type="number" id="timeoutDuration" value="${vk.timeoutDuration || 60}" min="1"></div>
         </div>
         <button type="submit" class="btn btn-primary">Save Vote Timeout</button>
-    </form></section>
-
-<section id="wordlist-section"><div class="loading">Loading wordlist…</div></section>`;
+    </form></section>`;
 }
 
 function bindConfigForms() {
@@ -178,6 +238,10 @@ function bindConfigForms() {
 		btn.textContent = "Save Configuration";
 	});
 
+	loadWordlist();
+}
+
+function bindVoteForms() {
 	document.getElementById("votekick-kick-form").addEventListener("submit", async (e) => {
 		e.preventDefault();
 		const btn = e.target.querySelector("button");
@@ -256,8 +320,6 @@ function bindConfigForms() {
 			vkBanDuration.style.display = vkBanAction.value !== "custom" ? "none" : "";
 		});
 	}
-
-	loadWordlist();
 }
 
 function renderUserSection(key, title, items, editable) {
@@ -602,4 +664,338 @@ async function createRule(e) {
 		btn.disabled = false;
 		btn.textContent = "Create Rule";
 	}
+}
+
+async function loadInfractions() {
+	if (infractionsLoading) return;
+	if (perms < 1) {
+		const container = document.getElementById("tab-infractions");
+		container.innerHTML = `<p>You need Moderator permissions to view infractions.</p>`;
+		return;
+	}
+	if (infObs) {
+		infObs.disconnect();
+		infObs = null;
+	}
+	infractionsLoading = true;
+	infractionsLoaded = false;
+	const container = document.getElementById("tab-infractions");
+
+	try {
+		const data = await request("GET", `/dash/server/${serverId}/infractions?limit=50`);
+		renderInfractions(container, data);
+		infractionsLoaded = true;
+	} catch (e) {
+		container.innerHTML = `<p>Failed to load infractions: ${escHtml(e.message)}</p>`;
+	} finally {
+		infractionsLoading = false;
+	}
+}
+
+function renderInfractions(container, data, append = false) {
+	const items = data.infractions || [];
+	const total = data.total || 0;
+	const hasMore = data.hasMore || false;
+	const stats = data.stats || {};
+
+	if (!append) {
+		container.innerHTML = `
+			<section class="inf-stats">
+				<div class="inf-stat"><span class="inf-stat-num">${stats.total || 0}</span><span class="inf-stat-label">Total</span></div>
+				<div class="inf-stat"><span class="inf-stat-num">${stats.warns || 0}</span><span class="inf-stat-label">Warns</span></div>
+				<div class="inf-stat"><span class="inf-stat-num">${stats.kicks || 0}</span><span class="inf-stat-label">Kicks</span></div>
+				<div class="inf-stat"><span class="inf-stat-num">${stats.bans || 0}</span><span class="inf-stat-label">Bans</span></div>
+				<div class="inf-stat"><span class="inf-stat-num">${stats.timeouts || 0}</span><span class="inf-stat-label">Timeouts</span></div>
+			</section>
+
+			<section><h2>Infractions</h2>
+				<p class="field-desc">Showing ${items.length} of ${total} infractions.</p>
+				<form id="infraction-filter-form" class="inline-form">
+					<input type="text" id="inf-search" placeholder="Search by User ID" style="inline-size: 20ch;">
+					<span class="inf-filter-checks">
+						<label><input type="checkbox" class="inf-action-check" value="warn" checked> Warn</label>
+						<label><input type="checkbox" class="inf-action-check" value="kick" checked> Kick</label>
+						<label><input type="checkbox" class="inf-action-check" value="ban" checked> Ban</label>
+						<label><input type="checkbox" class="inf-action-check" value="timeout" checked> Timeout</label>
+					</span>
+					<button type="submit" class="btn btn-primary btn-sm">Filter</button>
+				</form>
+			</section>
+			${items.length ? renderInfractionTable(items, hasMore) : `<p class="empty">No infractions found.</p>`}`;
+	} else {
+		const table = container.querySelector("table tbody");
+		const loadMore = container.querySelector("#inf-load-more");
+		if (loadMore) loadMore.remove();
+
+		if (table) {
+			table.insertAdjacentHTML("beforeend", buildInfractionRows(items));
+		}
+		const selectAll = document.getElementById("inf-select-all");
+		if (selectAll) selectAll.checked = false;
+
+		if (hasMore) {
+			container.insertAdjacentHTML("beforeend", `<div id="inf-sentinel"></div>`);
+		}
+	}
+
+	if (hasMore && !append) {
+		container.insertAdjacentHTML("beforeend", `<div id="inf-sentinel"></div>`);
+	}
+
+	bindInfractionEvents();
+}
+
+function renderInfractionTable(items, hasMore) {
+	return `<table>
+		<thead><tr>
+			${perms >= 2 ? `<th style="inline-size:2ch"><input type="checkbox" id="inf-select-all"></th>` : ""}
+			<th>Date</th><th>User</th><th>Type</th><th>Moderator</th><th>Reason</th>
+			${perms >= 2 ? `<th></th>` : ""}
+		</tr></thead>
+		<tbody>${buildInfractionRows(items)}</tbody>
+	</table>
+	<div id="inf-selection-bar" class="inf-selection-bar" hidden>
+		<span id="inf-selection-count">0 selected</span>
+		<button id="inf-bulk-delete" class="btn btn-danger btn-sm">Delete Selected</button>
+	</div>
+	${hasMore ? `<div id="inf-sentinel"></div>` : ""}`;
+}
+
+function buildInfractionRows(items) {
+	return items
+		.map(
+			(i) => `<tr data-date="${i.date}">
+			${perms >= 2 ? `<td><input type="checkbox" class="inf-checkbox" data-id="${escHtml(i._id)}"></td>` : ""}
+			<td>${new Date(i.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</td>
+			<td>${i.userName ? `<span title="ID: ${escHtml(i.user)}">${escHtml(i.userName)}</span>` : `<code>${escHtml(i.user)}</code>`}</td>
+			<td class="inf-type inf-${i.actionType}">${i.actionType}</td>
+			<td>${i.createdByName ? `<span title="ID: ${escHtml(i.createdBy)}">${escHtml(i.createdByName)}</span>` : i.createdBy ? `<code>${escHtml(i.createdBy)}</code>` : "AutoMod"}</td>
+			<td>${escHtml(i.reason || "No reason provided")}</td>
+			<td class="inf-actions">
+				${perms >= 2 ? `<button class="btn btn-danger btn-sm inf-delete" data-id="${escHtml(i._id)}">Delete</button>` : ""}
+				${perms >= 2 && i.actionType === "ban" && i.isBanned ? `<button class="btn btn-warning btn-sm inf-unban" data-user="${escHtml(i.user)}">Unban</button>` : ""}
+			</td>
+		</tr>`,
+		)
+		.join("");
+}
+
+let infObs = null;
+
+async function handleInfractionAction(e) {
+	const delBtn = e.target.closest(".inf-delete");
+	const unbanBtn = e.target.closest(".inf-unban");
+	const bulkBtn = e.target.closest("#inf-bulk-delete");
+
+	if (delBtn) {
+		if (!confirm("Delete this infraction record?")) return;
+		delBtn.disabled = true;
+		delBtn.textContent = "…";
+		try {
+			clearError();
+			await request("DELETE", `/dash/server/${serverId}/infractions/${delBtn.dataset.id}`);
+			loadInfractions();
+		} catch (err) {
+			showError(err.message);
+			delBtn.disabled = false;
+			delBtn.textContent = "Delete";
+		}
+	}
+
+	if (unbanBtn) {
+		if (!confirm("Unban user " + unbanBtn.dataset.user + "?")) return;
+		unbanBtn.disabled = true;
+		unbanBtn.textContent = "…";
+		try {
+			clearError();
+			await request("POST", `/dash/server/${serverId}/unban`, { target: unbanBtn.dataset.user });
+			loadInfractions();
+		} catch (err) {
+			showError(err.message);
+			unbanBtn.disabled = false;
+			unbanBtn.textContent = "Unban";
+		}
+	}
+
+	if (bulkBtn) {
+		const checked = document.querySelectorAll(".inf-checkbox:checked");
+		if (!checked.length) return;
+		if (!confirm(`Delete ${checked.length} infraction record${checked.length > 1 ? "s" : ""}?`)) return;
+		bulkBtn.disabled = true;
+		bulkBtn.textContent = "Deleting…";
+		try {
+			clearError();
+			const ids = Array.from(checked).map((c) => c.dataset.id);
+			await request("POST", `/dash/server/${serverId}/infractions/bulk-delete`, { ids });
+			loadInfractions();
+		} catch (err) {
+			showError(err.message);
+			bulkBtn.disabled = false;
+			bulkBtn.textContent = "Delete Selected";
+		}
+	}
+}
+
+function updateSelectionBar() {
+	const all = document.querySelectorAll(".inf-checkbox");
+	const checked = document.querySelectorAll(".inf-checkbox:checked");
+	const bar = document.getElementById("inf-selection-bar");
+	const count = document.getElementById("inf-selection-count");
+	const selectAll = document.getElementById("inf-select-all");
+	if (!bar || !count) return;
+	if (checked.length > 0) {
+		bar.hidden = false;
+		count.textContent = `${checked.length} selected`;
+	} else {
+		bar.hidden = true;
+	}
+	if (selectAll) {
+		selectAll.checked = all.length > 0 && checked.length === all.length;
+		selectAll.indeterminate = checked.length > 0 && checked.length < all.length;
+	}
+}
+
+function handleInfractionChange(e) {
+	if (e.target.id === "inf-select-all") {
+		const all = document.querySelectorAll(".inf-checkbox");
+		all.forEach((cb) => {
+			cb.checked = e.target.checked;
+		});
+	}
+	updateSelectionBar();
+}
+
+function getCheckedActions() {
+	return Array.from(document.querySelectorAll(".inf-action-check:checked"))
+		.map((c) => c.value)
+		.join(",");
+}
+
+function bindInfractionEvents() {
+	document.getElementById("infraction-filter-form").addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const search = document.getElementById("inf-search").value.trim();
+		const action = getCheckedActions();
+		const params = new URLSearchParams({ limit: "50" });
+		if (search) params.set("search", search);
+		if (action) params.set("action", action);
+
+		try {
+			clearError();
+			const data = await request("GET", `/dash/server/${serverId}/infractions?${params.toString()}`);
+			const container = document.getElementById("tab-infractions");
+			if (infObs) infObs.disconnect();
+			renderInfractions(container, data, false);
+		} catch (err) {
+			showError(err.message);
+		}
+	});
+
+	const container = document.getElementById("tab-infractions");
+
+	const sentinel = document.getElementById("inf-sentinel");
+	if (sentinel) {
+		if (infObs) infObs.disconnect();
+		infObs = new IntersectionObserver(
+			async (entries) => {
+				if (!entries[0].isIntersecting) return;
+				infObs.disconnect();
+
+				const search = document.getElementById("inf-search").value.trim();
+				const action = getCheckedActions();
+				const rows = container.querySelectorAll("table tbody tr");
+				const lastRow = rows.length ? rows[rows.length - 1] : null;
+				const before = lastRow ? lastRow.dataset.date || "" : "";
+
+				const params = new URLSearchParams({ limit: "50" });
+				if (search) params.set("search", search);
+				if (action) params.set("action", action);
+				if (before) params.set("before", before);
+
+				try {
+					const data = await request("GET", `/dash/server/${serverId}/infractions?${params.toString()}`);
+					renderInfractions(container, data, true);
+				} catch (err) {
+					showError(err.message);
+				}
+			},
+			{ rootMargin: "200px" },
+		);
+		infObs.observe(sentinel);
+	}
+}
+
+function renderLogging(cfg, channels) {
+	const logs = cfg.logs || {};
+	const mu = logs.messageUpdate?.stoat || {};
+	const ma = logs.modAction?.stoat || {};
+
+	const channelOptions = `<option value="">— None —</option>` + channels.map((c) => `<option value="${escHtml(c.id)}">#${escHtml(c.name)}</option>`).join("");
+
+	const typeOptions = (selected) => `
+		<option value="EMBED" ${selected === "EMBED" ? "selected" : ""}>Embed</option>
+		<option value="QUOTEBLOCK" ${selected === "QUOTEBLOCK" ? "selected" : ""}>Quote Block</option>
+		<option value="PLAIN" ${selected === "PLAIN" ? "selected" : ""}>Plain</option>`;
+
+	return `<section><h2>Message Logs</h2>
+		<p class="field-desc">Logs when messages are edited or deleted.</p>
+		<form id="log-messageupdate-form" class="log-form">
+			<div class="form-row">
+				<div class="form-field"><label>Channel</label><select id="mu-channel">${channelOptions.replace(`value="${escHtml(mu.channel || "")}"`, `value="${escHtml(mu.channel || "")}" selected`)}</select></div>
+				<div class="form-field"><label>Format</label><select id="mu-type">${typeOptions(mu.type || "EMBED")}</select></div>
+			</div>
+			<button type="submit" class="btn btn-primary">Save Message Logs</button>
+		</form>
+	</section>
+
+	<section><h2>Mod Action Logs</h2>
+		<p class="field-desc">Logs moderation actions (warns, kicks, bans, timeouts).</p>
+		<form id="log-modaction-form" class="log-form">
+			<div class="form-row">
+				<div class="form-field"><label>Channel</label><select id="ma-channel">${channelOptions.replace(`value="${escHtml(ma.channel || "")}"`, `value="${escHtml(ma.channel || "")}" selected`)}</select></div>
+				<div class="form-field"><label>Format</label><select id="ma-type">${typeOptions(ma.type || "EMBED")}</select></div>
+			</div>
+			<button type="submit" class="btn btn-primary">Save Mod Action Logs</button>
+		</form>
+	</section>`;
+}
+
+function bindLoggingForms() {
+	document.getElementById("log-messageupdate-form").addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const btn = e.target.querySelector("button");
+		btn.disabled = true;
+		btn.textContent = "Saving…";
+		try {
+			clearError();
+			const channel = document.getElementById("mu-channel").value;
+			const type = document.getElementById("mu-type").value;
+			await request("PUT", `/dash/server/${serverId}/logs`, {
+				messageUpdate: channel ? { channel, type } : null,
+			});
+		} catch (err) {
+			showError(err.message);
+		}
+		btn.disabled = false;
+		btn.textContent = "Save Message Logs";
+	});
+
+	document.getElementById("log-modaction-form").addEventListener("submit", async (e) => {
+		e.preventDefault();
+		const btn = e.target.querySelector("button");
+		btn.disabled = true;
+		btn.textContent = "Saving…";
+		try {
+			clearError();
+			const channel = document.getElementById("ma-channel").value;
+			const type = document.getElementById("ma-type").value;
+			await request("PUT", `/dash/server/${serverId}/logs`, {
+				modAction: channel ? { channel, type } : null,
+			});
+		} catch (err) {
+			showError(err.message);
+		}
+		btn.disabled = false;
+		btn.textContent = "Save Mod Action Logs";
+	});
 }

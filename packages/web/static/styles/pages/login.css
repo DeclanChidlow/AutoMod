@@ -1,0 +1,44 @@
+.login-card {
+	max-inline-size: 28rem;
+	margin-inline: auto;
+	padding-block: 3rem;
+	padding-inline: 2rem;
+	border-radius: 1rem;
+	background: light-dark(oklch(from var(--grey) l c h / 0.2), oklch(from var(--white) l c h / 0.04));
+
+	hgroup {
+		margin-block-start: 0;
+	}
+
+	@media (max-width: 25rem) {
+		padding-inline: 1rem;
+	}
+}
+
+#login-form {
+	padding-block-end: 1.5rem;
+
+	.btn {
+		inline-size: 100%;
+	}
+
+	.error {
+		color: var(--red);
+		font-size: 0.9rem;
+		margin-block: 0.5rem;
+	}
+}
+
+pre {
+	margin-block: 1rem;
+	padding-block: 1rem;
+	border-radius: 0.75rem;
+	background: var(--grey);
+	color: var(--white);
+	text-align: center;
+}
+
+#login-status {
+	padding-block-end: 2rem;
+	text-align: center;
+}

@@ -62,7 +62,7 @@ console.info(`\
 			SESSIONS: db.collection("sessions"),
 			TEMPBANS: db.collection<TempBan>("tempbans"),
 			REACTION_ROLES: db.collection<ReactionRoles>("reaction_roles"),
-		VOTEKICKS: db.collection("votekicks"),
+			VOTEKICKS: db.collection("votekicks"),
 		};
 
 		const clientOptions: Partial<import("./stoat/index.js").ClientOptions> = {

@@ -62,6 +62,14 @@ app.patch("/dash/server/:server/antispam/:ruleid", requireAuth({ permission: 2 }
 	const rule = antiSpamRules.find((r) => r.id == ruleid);
 	if (!rule) return res.status(404).send({ error: "No rule with this ID could be found." });
 
+	const action = body.action != null ? Number(body.action) : rule.action;
+	const max_msg = body.max_msg != null ? Number(body.max_msg) : rule.max_msg;
+	const timeframe = body.timeframe != null ? Number(body.timeframe) : rule.timeframe;
+
+	if (action < 0 || action > 4) return res.status(400).send("Invalid action");
+	if (max_msg < 1 || max_msg > 1000) return res.status(400).send("max_msg must be between 1 and 1000");
+	if (timeframe < 1 || timeframe > 86400) return res.status(400).send("timeframe must be between 1 and 86400");
+
 	const result = await (
 		await serversCollection()
 	).updateOne(
@@ -70,11 +78,11 @@ app.patch("/dash/server/:server/antispam/:ruleid", requireAuth({ permission: 2 }
 			$set: {
 				"automodSettings.spam.$": {
 					...rule,
-					action: Number(body.action ?? rule.action),
+					action,
 					channels: body.channels ?? rule.channels,
 					message: body.message ?? rule.message,
-					max_msg: body.max_msg ?? rule.max_msg,
-					timeframe: body.timeframe ?? rule.timeframe,
+					max_msg,
+					timeframe,
 				},
 			},
 		},
@@ -106,7 +114,13 @@ app.post("/dash/server/:server/antispam", requireAuth({ permission: 2 }), async 
 		return res.status(400).send(e);
 	}
 
-	if ((rule.action != null && rule.action < 0) || rule.action > 4) return res.status(400).send("Invalid action");
+	if (rule.action == null || rule.action < 0 || rule.action > 4) return res.status(400).send("Invalid action");
+
+	if (rule.max_msg == null || rule.timeframe == null || rule.action == null) {
+		return res.status(400).send("Missing required fields: max_msg, timeframe, action");
+	}
+	if (rule.max_msg < 1 || rule.max_msg > 1000) return res.status(400).send("max_msg must be between 1 and 1000");
+	if (rule.timeframe < 1 || rule.timeframe > 86400) return res.status(400).send("timeframe must be between 1 and 86400");
 
 	const id = ulid();
 
@@ -145,7 +159,7 @@ app.delete("/dash/server/:server/antispam/:ruleid", requireAuth({ permission: 2 
 		} as any);
 	} catch (e) {
 		console.error(e);
-		res.status(500).send({ error: e });
+		res.status(500).send({ error: "Internal server error" });
 		return;
 	}
 

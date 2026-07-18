@@ -19,7 +19,10 @@ class RateLimiter {
 			try {
 				const ip = req.ip;
 				const reqId = ulid();
-				if (!ip) { next(); return; }
+				if (!ip) {
+					next();
+					return;
+				}
 				// ratelimit:ip_address_base64:route_base64
 				const redisKey = `ratelimit:${Buffer.from(ip).toString("base64")}:${Buffer.from(this.route).toString("base64")}`;
 
@@ -31,14 +34,15 @@ class RateLimiter {
 						limit: this.limit,
 						timeframe: this.timeframe,
 					});
-				} else {
-					const multi = redis.multi();
-					multi.SADD(redisKey, reqId);
-					multi.EXPIRE(redisKey, this.timeframe);
-					await multi.exec();
-
-					next();
+					return;
 				}
+
+				const multi = redis.multi();
+				multi.SADD(redisKey, reqId);
+				multi.EXPIRE(redisKey, this.timeframe);
+				await multi.exec();
+
+				next();
 			} catch (e) {
 				console.error(e);
 				next(e);

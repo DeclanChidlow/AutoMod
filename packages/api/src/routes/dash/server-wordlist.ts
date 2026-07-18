@@ -12,6 +12,8 @@ async function serversCollection() {
 type WordlistEntry = { word: string; strictness: "SOFT" | "HARD" | "STRICT" };
 type WordlistAction = { action: "LOG" | "DELETE" | "WARN"; message: string };
 
+const MAX_WORD_LENGTH = 2000;
+
 // GET — list all wordlist entries + config
 app.get("/dash/server/:server/wordlist", requireAuth({ permission: 2 }), async (req: Request, res: Response) => {
 	const user = await isAuthenticated(req, res, true);
@@ -40,6 +42,7 @@ app.post("/dash/server/:server/wordlist", requireAuth({ permission: 2 }), async 
 
 	const body = req.body;
 	if (!body.word || typeof body.word != "string") return badRequest(res, "Missing 'word' field");
+	if (body.word.length > MAX_WORD_LENGTH) return badRequest(res, `Word must be at most ${MAX_WORD_LENGTH} characters`);
 
 	const strictness = ["SOFT", "HARD", "STRICT"].includes(body.strictness) ? body.strictness : "SOFT";
 
@@ -47,10 +50,15 @@ app.post("/dash/server/:server/wordlist", requireAuth({ permission: 2 }), async 
 
 	const col = await serversCollection();
 
-	// Remove existing entry for the same word if it exists
-	await col.updateOne({ id: server }, { $pull: { wordlist: { word: entry.word } } } as any);
-	// Add new entry
-	const result = await col.updateOne({ id: server }, { $push: { wordlist: entry } } as any);
+	const result = await col.updateOne({ id: server }, [
+		{
+			$set: {
+				wordlist: {
+					$concatArrays: [{ $filter: { input: { $ifNull: ["$wordlist", []] }, cond: { $ne: [{ $toLower: "$$this.word" }, entry.word] } } }, [entry]],
+				},
+			},
+		},
+	]);
 
 	res.send({ success: result.modifiedCount > 0, entry });
 });
@@ -62,11 +70,12 @@ app.patch("/dash/server/:server/wordlist/:word", requireAuth({ permission: 2 }),
 
 	const { server, word } = req.params;
 	if (!server || !word) return badRequest(res);
+	if (word.length > MAX_WORD_LENGTH) return badRequest(res, `Word must be at most ${MAX_WORD_LENGTH} characters`);
 
 	const strictness = ["SOFT", "HARD", "STRICT"].includes(req.body.strictness) ? req.body.strictness : "SOFT";
 
 	const col = await serversCollection();
-	const result = await col.updateOne({ "id": server, "wordlist.word": word }, { $set: { "wordlist.$.strictness": strictness } } as any);
+	const result = await col.updateOne({ "id": server, "wordlist.word": word.toLowerCase() }, { $set: { "wordlist.$.strictness": strictness } } as any);
 
 	res.send({ success: result.modifiedCount > 0 });
 });
@@ -80,7 +89,7 @@ app.delete("/dash/server/:server/wordlist/:word", requireAuth({ permission: 2 })
 	if (!server || !word) return badRequest(res);
 
 	const col = await serversCollection();
-	const result = await col.updateOne({ id: server }, { $pull: { wordlist: { word } } } as any);
+	const result = await col.updateOne({ id: server }, { $pull: { wordlist: { word: word.toLowerCase() } } } as any);
 
 	res.send({ success: result.modifiedCount > 0 });
 });

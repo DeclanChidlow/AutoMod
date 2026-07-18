@@ -13,6 +13,7 @@ import { ulid } from "ulid";
 const wsEvents = new EventEmitter();
 const { API_WS_URL, API_WS_TOKEN } = process.env;
 const wsQueue: { [key: string]: string }[] = [];
+const MAX_QUEUE_SIZE = 500;
 let client: ws | undefined = undefined;
 let retryCount = 0;
 const MAX_RETRIES = 10;
@@ -90,6 +91,10 @@ function wsSend(data: { [key: string]: any }) {
 		console.debug(`[WS] [>] ${JSON.stringify(data)}`);
 		client.send(JSON.stringify(data));
 	} else {
+		if (wsQueue.length >= MAX_QUEUE_SIZE) {
+			console.warn(`[WS] [QUEUE FULL] Dropping message: ${JSON.stringify(data)}`);
+			return;
+		}
 		console.debug(`[WS] [QUEUED] [>] ${JSON.stringify(data)}`);
 		wsQueue.push(data);
 	}

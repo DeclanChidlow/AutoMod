@@ -54,7 +54,9 @@ app.post(
 		const body = req.body as CompleteReqBody;
 		if (!body.user || typeof body.user != "string" || !body.nonce || typeof body.nonce != "string" || !body.code || typeof body.code != "string") return badRequest(res);
 
-		const loginAttempt = await (await pendingLogins()).findOne({
+		const loginAttempt = await (
+			await pendingLogins()
+		).findOne({
 			code: body.code,
 			user: body.user,
 			nonce: body.nonce,

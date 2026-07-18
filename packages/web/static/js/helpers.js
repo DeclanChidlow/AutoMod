@@ -31,7 +31,7 @@ async function request(method, path, body) {
 	const res = await fetch(API_BASE + path, opts);
 	if (res.status === 401) {
 		clearSession();
-		window.location.href = BASE_PATH + "/";
+		window.location.href = BASE_PATH + "/login";
 		throw new Error("Session expired. Please log in again.");
 	}
 	const text = await res.text();
@@ -64,6 +64,12 @@ function escHtml(s) {
 	const d = document.createElement("div");
 	d.textContent = s || "";
 	return d.innerHTML;
+}
+function safeUrl(url) {
+	if (!url) return "";
+	const u = url.trim().toLowerCase();
+	if (u.startsWith("javascript:") || u.startsWith("data:")) return "";
+	return url;
 }
 function desc(text) {
 	return `<p class="field-desc">${text}</p>`;
@@ -106,10 +112,10 @@ if (document.readyState === "loading") {
 }
 
 (function initNavbar() {
-	const homePath = BASE_PATH + "/";
-	const atHome = window.location.pathname === BASE_PATH || window.location.pathname === homePath;
-	if (!isLoggedIn() && !atHome) {
-		window.location.href = homePath;
+	const loginPath = BASE_PATH + "/login";
+	const atLogin = window.location.pathname === loginPath || window.location.pathname === loginPath + "/";
+	if (!isLoggedIn() && !atLogin) {
+		window.location.href = loginPath;
 		return;
 	}
 	document.getElementById("nav-right").innerHTML = isLoggedIn() ? `<a href="#" id="logout-link">Logout</a>` : ``;
@@ -118,6 +124,6 @@ if (document.readyState === "loading") {
 		logoutLink.addEventListener("click", (e) => {
 			e.preventDefault();
 			clearSession();
-			window.location.href = BASE_PATH + "/";
+			window.location.href = loginPath;
 		});
 })();

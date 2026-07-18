@@ -6,7 +6,6 @@ let SERVER_COUNT = 0;
 let BOT_NAME = "AutoMod";
 let BOT_ID = "";
 let USER_COUNT = 0;
-let INFRACTION_COUNT = 0;
 let BOT_UPTIME = 0;
 let BOT_PING: number | null = null;
 
@@ -18,7 +17,6 @@ const fetchStats = async () => {
 		if (res["botName"]) BOT_NAME = String(res["botName"]);
 		if (res["botId"]) BOT_ID = String(res["botId"]);
 		if (res["users"]) USER_COUNT = Number(res["users"]);
-		if (res["infractions"]) INFRACTION_COUNT = Number(res["infractions"]);
 		if (res["uptime"] !== undefined) BOT_UPTIME = Number(res["uptime"]);
 		if (res["ping"] !== undefined) BOT_PING = res["ping"] as number | null;
 	} catch (e) {
@@ -27,7 +25,7 @@ const fetchStats = async () => {
 };
 
 fetchStats();
-setInterval(() => fetchStats(), 10000);
+setInterval(() => fetchStats(), 60000);
 
 app.get("/stats", async (_req: Request, res: Response) => {
 	res.send({
@@ -35,7 +33,6 @@ app.get("/stats", async (_req: Request, res: Response) => {
 		botName: BOT_NAME,
 		botId: BOT_ID,
 		users: USER_COUNT,
-		infractions: INFRACTION_COUNT,
 		uptime: BOT_UPTIME,
 		ping: BOT_PING,
 	});

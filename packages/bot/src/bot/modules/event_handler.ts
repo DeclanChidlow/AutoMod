@@ -9,7 +9,7 @@ import { DEFAULT_PREFIX } from "./command_handler";
 import type { SendableEmbed } from "../../stoat/index.js";
 import { UserSystemMessage } from "../../stoat/index.js";
 
-const DM_SESSION_LIFETIME = 1000 * 60 * 60 * 24 * 30;
+const DM_SESSION_LIFETIME = 1000 * 60 * 5;
 
 // Listen to system messages
 client.on("messageCreate", async (message) => {
@@ -30,7 +30,7 @@ client.on("messageCreate", async (message) => {
 
 					if (!message.channel || !sysMsg.userId || recentEvents) return;
 
-					const actionType = sysMsg.type == "user_kicked" ? "kick" as const : "ban" as const;
+					const actionType = sysMsg.type == "user_kicked" ? ("kick" as const) : ("ban" as const);
 					const actorName = sysMsg.by ? await fetchUsername(sysMsg.by).catch(() => "Unknown") : "Unknown";
 					const reason = `${actionType === "kick" ? "Kicked" : "Banned"} by ${actorName} (caught system message)`;
 

@@ -91,6 +91,7 @@ async function processReactionVote(session: VoteSession, userId: string) {
 
 	const target = await client.users.fetch(session.targetId);
 	if (!target) return;
+	if ((target as any)?.bot != null) return;
 	if ((await getPermissionLevel(target, { id: session.serverId } as any)) > 0) return;
 
 	const voteEntry = {
@@ -210,6 +211,10 @@ async function handleVoteCommand(message: MessageCommandContext, args: string[],
 
 		if (target.id === message.authorId) {
 			return message.reply("You can't vote against yourself.");
+		}
+
+		if ((target as any)?.bot != null) {
+			return message.reply("You can't vote against bots.");
 		}
 
 		if (target.id === client.user!.id) {

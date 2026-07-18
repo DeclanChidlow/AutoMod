@@ -159,6 +159,23 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 					if (!validateField(field as string, types as string[], level as 0 | 1 | 2 | 3)) return;
 				}
 
+				const bounds: [string, number, number][] = [
+					["votekickKickVotesRequired", 1, 1000],
+					["votekickKickVoteDuration", 1, 1440],
+					["votekickBanVotesRequired", 1, 1000],
+					["votekickBanVoteDuration", 1, 1440],
+					["votekickTimeoutVotesRequired", 1, 1000],
+					["votekickTimeoutVoteDuration", 1, 1440],
+					["votekickBanDuration", 0, 525600],
+					["votekickTimeoutDuration", 1, 525600],
+				];
+				for (const [field, min, max] of bounds) {
+					const val = req.body?.[field];
+					if (val !== undefined && typeof val === "number" && (val < min || val > max)) {
+						return res.status(400).send({ error: `Field '${field}' must be between ${min} and ${max}` });
+					}
+				}
+
 				const body = req.body;
 				const setFields: Record<string, any> = {};
 
@@ -193,7 +210,7 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 		}
 	} catch (e: any) {
 		console.error(e);
-		res.status(500).send({ error: e });
+		res.status(500).send({ error: "Internal server error" });
 	}
 });
 
@@ -216,6 +233,8 @@ app.delete("/dash/server/:server/:option/:target", async (req: Request, res: Res
 		case "managers": {
 			if (permissionLevel3 < 3) return res.status(403).send({ error: "You are not allowed to remove bot managers." });
 
+			if (target === user) return res.status(400).send({ error: "You cannot remove yourself." });
+
 			if (!settings3?.["botManagers"]?.includes(target)) {
 				return res.status(400).send({ error: "This user is not manager" });
 			}
@@ -230,6 +249,8 @@ app.delete("/dash/server/:server/:option/:target", async (req: Request, res: Res
 		}
 		case "mods": {
 			if (permissionLevel3 < 2) return res.status(403).send({ error: "You are not allowed to remove moderators." });
+
+			if (target === user) return res.status(400).send({ error: "You cannot remove yourself." });
 
 			if (!settings3?.["moderators"]?.includes(target)) {
 				return res.status(400).send({ error: "This user is not moderator" });

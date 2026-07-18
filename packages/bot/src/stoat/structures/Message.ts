@@ -109,15 +109,11 @@ export class Message {
 	}
 
 	async react(emoji: string) {
-		return await this.client.api.put(
-			`/channels/${this.channelId}/messages/${this.id}/reactions/${encodeURIComponent(emoji)}`,
-		);
+		return await this.client.api.put(`/channels/${this.channelId}/messages/${this.id}/reactions/${encodeURIComponent(emoji)}`);
 	}
 
 	async unreact(emoji: string) {
-		return await this.client.api.delete(
-			`/channels/${this.channelId}/messages/${this.id}/reactions/${encodeURIComponent(emoji)}`,
-		);
+		return await this.client.api.delete(`/channels/${this.channelId}/messages/${this.id}/reactions/${encodeURIComponent(emoji)}`);
 	}
 
 	async reply(data: any, mention: boolean = true) {

@@ -9,4 +9,3 @@ app.get("/", async (req: Request, res: Response) => {
 		sessionInfo: isAuthed ? await getSessionInfo(req.header("x-auth-user")!, req.header("x-auth-token")!) : {},
 	});
 });
-

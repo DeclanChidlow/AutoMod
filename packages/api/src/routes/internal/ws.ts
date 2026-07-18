@@ -5,6 +5,7 @@
 
 import { WebSocketServer, WebSocket } from "ws";
 import { EventEmitter } from "events";
+import crypto from "crypto";
 import server from "../../server";
 
 if (!process.env["BOT_API_TOKEN"]) {
@@ -66,7 +67,7 @@ function sendBotWS(msg: { [key: string]: any }) {
 type botReqRes = { success: false; error: string; statusCode?: number } | { success: true; [key: string]: any };
 function botReq(type: string, data?: { [key: string]: any }, timeoutMs = 30000): Promise<botReqRes> {
 	return new Promise((resolve, reject) => {
-		const nonce = `${Date.now()}.${Math.round(Math.random() * 10000000)}`;
+		const nonce = `${Date.now()}.${crypto.randomUUID()}`;
 		if (sockets.length == 0) return resolve({ success: false, error: "Unable to communicate with bot" });
 
 		const timeout = setTimeout(() => {

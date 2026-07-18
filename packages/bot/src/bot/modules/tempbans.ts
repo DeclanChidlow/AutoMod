@@ -6,9 +6,20 @@ let dontProcess: Set<string> = new Set();
 let expired: Set<string> = new Set();
 const MAX_TRACKED = 10_000;
 
+// Periodically prune tracking sets to prevent unbounded growth
+setInterval(() => {
+	if (dontProcess.size > MAX_TRACKED) {
+		const entries = [...dontProcess];
+		dontProcess = new Set(entries.slice(entries.length - MAX_TRACKED));
+	}
+	if (expired.size > MAX_TRACKED) {
+		const entries = [...expired];
+		expired = new Set(entries.slice(entries.length - MAX_TRACKED));
+	}
+}, 600_000);
+
 async function tick() {
 	let found = await dbs.TEMPBANS.find({ until: { $lt: Date.now() + 60000 } }).toArray();
-
 
 	for (const ban of found) {
 		if (!dontProcess.has(ban.id)) {
@@ -43,7 +54,7 @@ async function processUnban(ban: TempBan) {
 
 			await Promise.allSettled(promises);
 		} else dbs.TEMPBANS.deleteOne({ id: ban.id });
-			dontProcess.delete(ban.id);
+		dontProcess.delete(ban.id);
 	} catch (e) {
 		console.error(e);
 	}

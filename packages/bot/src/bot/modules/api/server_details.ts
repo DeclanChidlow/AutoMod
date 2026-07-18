@@ -86,7 +86,10 @@ wsEvents.on("req:getUserServerDetails", async (data: ReqData, cb: (data: WSRespo
 				icon: c!.iconURL,
 			})),
 			channelCount: channels.length,
-			ownerName: (() => { const o = server.owner; return o ? o.username : server.ownerId; })(),
+			ownerName: (() => {
+				const o = server.owner;
+				return o ? o.username : server.ownerId;
+			})(),
 			createdAt: server.createdAt.getTime(),
 			roleCount: server.roles?.size ?? 0,
 			dmOnKick: serverConfig?.dmOnKick,

@@ -21,12 +21,12 @@
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
-	    // Additional improvements
+		// Additional improvements
 		"esModuleInterop": true,
-	    "resolveJsonModule": true,
-	    "forceConsistentCasingInFileNames": true,
-	    "useDefineForClassFields": true,
-	    "rootDir": "./src",
+		"resolveJsonModule": true,
+		"forceConsistentCasingInFileNames": true,
+		"useDefineForClassFields": true,
+		"rootDir": "./src",
 		"outDir": "./dist"
 	},
 	"include": ["src/**/*.ts"]

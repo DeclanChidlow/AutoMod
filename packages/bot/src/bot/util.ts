@@ -102,22 +102,6 @@ function getPermissionLevelFromMember(serverMember: ServerMember, server: Server
 	return 0;
 }
 
-async function resolvePermissionLevelConfig(server: Server): Promise<ServerConfig | null> {
-	return await dbs.SERVERS.findOne({ id: server.id });
-}
-
-async function getPermissionLevelWithConfig(serverMember: ServerMember, server: Server, config?: ServerConfig | null): Promise<0 | 1 | 2 | 3> {
-	if (!config) config = await resolvePermissionLevelConfig(server);
-	return getPermissionLevelFromMember(serverMember, server, config);
-}
-
-function getPermissionBasedOnRole(member: ServerMember): 0 | 1 | 2 | 3 {
-	if (member.server && member.server.ownerId === member.id.user) return 3;
-	if (member.hasPermission(member.server!, "ManageServer")) return 2;
-	if (member.hasPermission(member.server!, "KickMembers")) return 1;
-	return 0;
-}
-
 async function getOwnMemberInServer(server: Server): Promise<ServerMember> {
 	return server.member || (await server.fetchMember(client.user!.id));
 }
@@ -368,10 +352,11 @@ const yesNoMessage = (channel: Channel, allowedUser: string, message: string, ti
 				if (m.id != msg.id) return;
 				if (userId != allowedUser) return;
 
+				client.removeListener("messageReactionAdd", cb);
+				destroyed = true;
+
 				switch (emoji) {
 					case EMOJI_YES:
-						client.removeListener("messageReactionAdd", cb);
-						destroyed = true;
 						resolve(true);
 						msg
 							.edit({
@@ -387,8 +372,6 @@ const yesNoMessage = (channel: Channel, allowedUser: string, message: string, ti
 						break;
 
 					case EMOJI_NO:
-						client.removeListener("messageReactionAdd", cb);
-						destroyed = true;
 						resolve(false);
 						msg
 							.edit({
@@ -405,6 +388,7 @@ const yesNoMessage = (channel: Channel, allowedUser: string, message: string, ti
 
 					default:
 						console.warn("Received unexpected reaction: " + emoji);
+						resolve(false);
 				}
 			};
 			client.on("messageReactionAdd", cb);
@@ -431,10 +415,10 @@ const yesNoMessage = (channel: Channel, allowedUser: string, message: string, ti
 		}
 	});
 
-// Get all cached members of a server. Whoever put STRINGIFIED JSON as map keys is now on my hit list.
+// Get all cached members of a server
 const getMembers = (id: string) =>
 	Array.from(client.serverMembers.entries())
-		.filter((item) => item[0].includes(`"${id}"`))
+		.filter((item) => item[0].startsWith(id))
 		.map((entry) => entry[1]);
 
 const memberRanking = (member: ServerMember) => {
@@ -535,7 +519,8 @@ const parseDuration = (input: string): number => {
 		total += num * multiplier;
 	}
 
-	return total;
+	const MAX_DURATION = 1000 * 60 * 60 * 24 * 365 * 2;
+	return Math.min(total, MAX_DURATION);
 };
 
 export {
@@ -544,8 +529,6 @@ export {
 	isBotManager,
 	getPermissionLevel,
 	getPermissionLevelFromMember,
-	getPermissionLevelWithConfig,
-	getPermissionBasedOnRole,
 	parseUser,
 	parseUserOrId,
 	storeInfraction,

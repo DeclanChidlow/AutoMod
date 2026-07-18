@@ -8,6 +8,7 @@ const STATIC_ROOT = resolve("./static");
 
 const titles: Record<string, string> = {
 	"/index.html": "Dashboard",
+	"/login.html": "Log In",
 	"/server.html": "Server Dashboard",
 };
 
@@ -35,7 +36,20 @@ async function servePage(contentPath: string, basePath: string): Promise<Respons
 		.replace(/{{base_path}}/g, basePath)
 		.replace("{{title}}", title)
 		.replace("{{content}}", content.replace(/{{base_path}}/g, basePath));
-	return new Response(html, { headers: { "Content-Type": "text/html" } });
+
+	const apiOrigin = (() => {
+		try {
+			return new URL(API_URL).origin;
+		} catch {
+			return "'self'";
+		}
+	})();
+	return new Response(html, {
+		headers: {
+			"Content-Type": "text/html",
+			"Content-Security-Policy": `default-src 'self'; img-src 'self' https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ${apiOrigin}; base-uri 'none'; form-action 'self';`,
+		},
+	});
 }
 
 Bun.serve({
@@ -49,15 +63,13 @@ Bun.serve({
 		}
 
 		if (path === "/config.js") {
-			return new Response(
-				`const API_BASE = ${JSON.stringify(API_URL)};\nconst BASE_PATH = ${JSON.stringify(BASE_PATH)};`,
-				{
-					headers: { "Content-Type": "application/javascript" },
-				},
-			);
+			return new Response(`const API_BASE = ${JSON.stringify(API_URL)};\nconst BASE_PATH = ${JSON.stringify(BASE_PATH)};`, {
+				headers: { "Content-Type": "application/javascript" },
+			});
 		}
 
 		if (path === "/") path = "/index.html";
+		if (path === "/login") path = "/login.html";
 
 		if (path.endsWith(".html")) {
 			return servePage(path, BASE_PATH);
@@ -70,7 +82,7 @@ Bun.serve({
 			}
 		}
 
-		const serverRoutePattern = /^\/[^/.]+(\/anti-spam)?\/?$/;
+		const serverRoutePattern = /^\/[^/.]+(\/(anti-spam|vote-moderation|infractions|logging))?\/?$/;
 		if (serverRoutePattern.test(path)) {
 			return servePage("/server.html", BASE_PATH);
 		}

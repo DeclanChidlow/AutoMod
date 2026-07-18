@@ -11,6 +11,16 @@ import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import { WORDLIST_DEFAULT_MESSAGE } from "../commands/configuration/filter";
 
 let msgCountStore: Map<string, { users: any }> = new Map();
+const MAX_STORE_ENTRIES = 10000;
+const STORE_PRUNE_INTERVAL = 60_000;
+
+// Periodically prune stale entries and enforce size cap
+setInterval(() => {
+	const keys = [...msgCountStore.keys()];
+	if (keys.length <= MAX_STORE_ENTRIES) return;
+	const toRemove = keys.slice(0, keys.length - MAX_STORE_ENTRIES);
+	for (const key of toRemove) msgCountStore.delete(key);
+}, STORE_PRUNE_INTERVAL);
 
 // Per-user:channel rate limit for word filter notifications (30s cooldown)
 const SENT_FILTER_MESSAGE: Set<string> = new Set();
@@ -211,56 +221,64 @@ function checkMessageForFilteredWords(message: string, config: ServerConfig): bo
 		if (softSegments.includes(word.toLowerCase())) return true;
 	}
 
+	const loweredMsg = message.toLowerCase();
 	for (const word of words.hard) {
-		if (message.toLowerCase().includes(word.toLowerCase())) return true;
+		if (loweredMsg.includes(word.toLowerCase())) return true;
 	}
 
-	const replace = {
-		"0": "o",
-		"1": "i",
-		"4": "a",
-		"3": "e",
-		"5": "s",
-		"6": "g",
-		"7": "t",
-		"8": "b",
-		"9": "g",
-		"@": "a",
-		"^": "a",
-		"Д": "a",
-		"ß": "b",
-		"¢": "c",
-		"©": "c",
-		"<": "c",
-		"€": "e",
-		"ƒ": "f",
-		"ท": "n",
-		"И": "n",
-		"Ø": "o",
-		"Я": "r",
-		"®": "r",
-		"$": "s",
-		"§": "s",
-		"†": "t",
-		"บ": "u",
-		"พ": "w",
-		"₩": "w",
-		"×": "x",
-		"¥": "y",
-	};
-	const replaceChars = (input: string) => {
-		input = `${input}`;
-		for (const pair of Object.entries(replace)) {
-			input = input.replaceAll(pair[0], pair[1]);
+	if (words.strict.length > 0) {
+		const replacedMsg = replaceChars(loweredMsg.replace(/\s/g, ""));
+		for (const word of words.strict) {
+			if (replacedMsg.includes(replaceChars(word.toLowerCase()))) return true;
 		}
-		return input;
-	};
-	const replacedMsg = replaceChars(message.toLowerCase().replace(/\s/g, ""));
-	for (const word of words.strict) {
-		if (replacedMsg.includes(replaceChars(word.toLowerCase()))) return true;
 	}
 
 	return false;
+}
+
+const CHAR_REPLACE: Record<string, string> = {
+	"0": "o",
+	"1": "i",
+	"4": "a",
+	"3": "e",
+	"5": "s",
+	"6": "g",
+	"7": "t",
+	"8": "b",
+	"9": "g",
+	"@": "a",
+	"^": "a",
+	"Д": "a",
+	"ß": "b",
+	"¢": "c",
+	"©": "c",
+	"<": "c",
+	"€": "e",
+	"ƒ": "f",
+	"ท": "n",
+	"И": "n",
+	"Ø": "o",
+	"Я": "r",
+	"®": "r",
+	"$": "s",
+	"§": "s",
+	"†": "t",
+	"บ": "u",
+	"พ": "w",
+	"₩": "w",
+	"×": "x",
+	"¥": "y",
+};
+
+const CHAR_REPLACE_REGEX = new RegExp(
+	Object.keys(CHAR_REPLACE)
+		.map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+		.join("|"),
+	"g",
+);
+
+function replaceChars(input: string): string {
+	return `${input}`.replace(CHAR_REPLACE_REGEX, (char) => CHAR_REPLACE[char]);
 }
 
 export { antispam, wordFilterCheck, checkMessageForFilteredWords };

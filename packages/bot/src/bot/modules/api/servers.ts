@@ -41,9 +41,7 @@ wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) =
 						if (!server) return reject("Server not found");
 						const member = client.serverMembers.getByKey({ server: server.id, user: user.id });
 						const config = configMap.get(server.id);
-						const perms = member
-							? getPermissionLevelFromMember(member, server, config)
-							: 0;
+						const perms = member ? getPermissionLevelFromMember(member, server, config) : 0;
 						resolve({
 							id: server.id,
 							perms,
@@ -51,7 +49,10 @@ wsEvents.on("req:getUserServers", async (data: ReqData, cb: (data: WSResponse) =
 							bannerURL: server.bannerURL,
 							iconURL: server.iconURL,
 							channelCount: server.channels.filter((c) => c != null).length,
-							ownerName: (() => { const o = server.owner; return o ? o.username : server.ownerId; })(),
+							ownerName: (() => {
+								const o = server.owner;
+								return o ? o.username : server.ownerId;
+							})(),
 							createdAt: server.createdAt.getTime(),
 							roleCount: server.roles?.size ?? 0,
 						});

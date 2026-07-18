@@ -21,11 +21,11 @@ app.use("*", async (req: Request, _res: Response, next: NextFunction) => {
 		const session = await col.findOne({
 			user,
 			token,
-			expires: { $gt: new Date() },
+			expires: { $gt: Date.now() },
 		});
 
 		if (session) {
-			await col.updateOne({ _id: session._id }, { $set: { expires: new Date(Date.now() + SESSION_LIFETIME) } });
+			await col.updateOne({ _id: session._id }, { $set: { expires: Date.now() + SESSION_LIFETIME } });
 		}
 	} catch (e) {
 		console.error(e);

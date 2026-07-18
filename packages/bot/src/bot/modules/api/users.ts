@@ -35,3 +35,68 @@ wsEvents.on("req:getUser", async (data: { user: string }, cb: (data: WSResponse)
 		cb({ success: false, error: `${e}` });
 	}
 });
+
+wsEvents.on("req:getUsers", async (data: { users: string[] }, cb: (data: WSResponse) => void) => {
+	try {
+		const ids = [...new Set(data.users || [])];
+		const results: Record<string, APIUser | null> = {};
+
+		const fetches = ids.map(async (id) => {
+			try {
+				const cached = client.users.get(id);
+				const user = cached || (await client.users.fetch(id));
+				results[id] = { id: user.id, username: user.username, avatarURL: user.avatarURL };
+			} catch {
+				results[id] = null;
+			}
+		});
+
+		await Promise.allSettled(fetches);
+		cb({ success: true, users: results });
+	} catch (e) {
+		console.error(e);
+		cb({ success: false, error: `${e}` });
+	}
+});
+
+wsEvents.on("req:unbanUser", async (data: { user: string; server: string }, cb: (data: WSResponse) => void) => {
+	try {
+		const server = client.servers.get(data.server);
+		if (!server) return cb({ success: false, error: "The requested server could not be found", statusCode: 404 });
+
+		let user: User;
+		try {
+			user = client.users.get(data.user) || (await client.users.fetch(data.user));
+		} catch (e) {
+			cb({ success: false, error: "The requested user could not be found", statusCode: 404 });
+			return;
+		}
+
+		try {
+			await server.unbanUser(user);
+		} catch (e: any) {
+			cb({ success: false, error: e.message || "Failed to unban user", statusCode: 500 });
+			return;
+		}
+
+		cb({ success: true });
+	} catch (e) {
+		console.error(e);
+		cb({ success: false, error: `${e}` });
+	}
+});
+
+wsEvents.on("req:getBannedUserIds", async (data: { server: string }, cb: (data: WSResponse) => void) => {
+	try {
+		const server = client.servers.get(data.server);
+		if (!server) return cb({ success: false, error: "The requested server could not be found", statusCode: 404 });
+
+		const bans = await server.fetchBans();
+		const bannedIds = bans.map((b: any) => b.id?.user || b.user || b.userId).filter(Boolean);
+
+		cb({ success: true, bannedIds });
+	} catch (e) {
+		console.error(e);
+		cb({ success: false, error: `${e}` });
+	}
+});
