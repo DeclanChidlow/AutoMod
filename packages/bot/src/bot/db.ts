@@ -72,6 +72,8 @@ async function databaseMigrations() {
 	}
 
 	await setIndexes(dbs.INFRACTIONS, ["createdBy", "user", "server"]);
+	await dbs.INFRACTIONS.createIndex({ server: 1, date: -1 }).catch((e) => console.warn(`Failed to create compound index on infractions (server+date): ${e}`));
+	await dbs.INFRACTIONS.createIndex({ server: 1, actionType: 1 }).catch((e) => console.warn(`Failed to create compound index on infractions (server+actionType): ${e}`));
 	await setIndexes(dbs.PENDING_LOGINS, ["code", "user"]);
 	await setIndexes(dbs.SERVERS, ["id"]);
 	await setIndexes(dbs.SESSIONS, ["user", "token"]);

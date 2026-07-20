@@ -176,8 +176,8 @@ function renderVoteModeration(cfg, defaultPrefix, botId) {
 
     <form id="votekick-kick-form" class="vote-form">
         <h3>Vote Kick</h3>
-        <div class="form-field"><label><input type="checkbox" id="kickEnabled" ${vk.kickEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to kick a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}kick vote</code>.</p></div>
-        <div class="vk-kick-options"${vk.kickEnabled === false ? ' style="display:none"' : ""}>
+        <div class="form-field"><label><input type="checkbox" id="kickEnabled" ${vk.kickEnabled === true ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to kick a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}kick vote</code>.</p></div>
+        <div class="vk-kick-options"${vk.kickEnabled !== true ? ' style="display:none"' : ""}>
             <div class="form-field"><label>Votes required</label><input type="number" id="kickVotesRequired" value="${vk.kickVotesRequired || 3}" min="1"></div>
             <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="kickVoteDuration" value="${vk.kickVoteDuration || 1}" min="1"></div>
         </div>
@@ -186,8 +186,8 @@ function renderVoteModeration(cfg, defaultPrefix, botId) {
 
     <form id="votekick-ban-form" class="vote-form">
         <h3>Vote Ban</h3>
-        <div class="form-field"><label><input type="checkbox" id="banEnabled" ${vk.banEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to ban a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}ban vote</code>.</p></div>
-        <div class="vk-ban-options"${vk.banEnabled === false ? ' style="display:none"' : ""}>
+        <div class="form-field"><label><input type="checkbox" id="banEnabled" ${vk.banEnabled === true ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to ban a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}ban vote</code>.</p></div>
+        <div class="vk-ban-options"${vk.banEnabled !== true ? ' style="display:none"' : ""}>
             <div class="form-field"><label>Votes required</label><input type="number" id="banVotesRequired" value="${vk.banVotesRequired || 3}" min="1"></div>
             <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="banVoteDuration" value="${vk.banVoteDuration || 1}" min="1"></div>
             <div class="form-field"><label>Action on pass</label><p class="field-desc">What happens when enough members vote to ban.</p>
@@ -205,8 +205,8 @@ function renderVoteModeration(cfg, defaultPrefix, botId) {
 
     <form id="votekick-timeout-form" class="vote-form">
         <h3>Vote Timeout</h3>
-        <div class="form-field"><label><input type="checkbox" id="timeoutEnabled" ${vk.timeoutEnabled !== false ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to timeout a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}timeout vote</code>.</p></div>
-        <div class="vk-timeout-options"${vk.timeoutEnabled === false ? ' style="display:none"' : ""}>
+        <div class="form-field"><label><input type="checkbox" id="timeoutEnabled" ${vk.timeoutEnabled === true ? "checked" : ""}>Enable</label><p class="field-desc">Let members vote to timeout a user via <code>${escHtml(cfg.prefix || defaultPrefix || "/")}timeout vote</code>.</p></div>
+        <div class="vk-timeout-options"${vk.timeoutEnabled !== true ? ' style="display:none"' : ""}>
             <div class="form-field"><label>Votes required</label><input type="number" id="timeoutVotesRequired" value="${vk.timeoutVotesRequired || 3}" min="1"></div>
             <div class="form-field"><label>Duration (minutes)</label><p class="field-desc">How long the vote stays open.</p><input type="number" id="timeoutVoteDuration" value="${vk.timeoutVoteDuration || 1}" min="1"></div>
             <div class="form-field"><label>Timeout duration (minutes)</label><p class="field-desc">How long the timeout lasts when the vote passes.</p><input type="number" id="timeoutDuration" value="${vk.timeoutDuration || 60}" min="1"></div>

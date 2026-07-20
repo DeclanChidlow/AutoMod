@@ -53,13 +53,21 @@ app.get("/dash/server/:server/infractions", requireAuth({ permission: 1 }), asyn
 			filter["$and"] = andFilters;
 		}
 
-		const [total, warns, kicks, bans, timeouts] = await Promise.all([
-			infractionsColl.countDocuments({ server }),
-			infractionsColl.countDocuments({ server, actionType: { $exists: false } }),
-			infractionsColl.countDocuments({ server, actionType: "kick" }),
-			infractionsColl.countDocuments({ server, actionType: "ban" }),
-			infractionsColl.countDocuments({ server, actionType: "timeout" }),
-		]);
+		let total = 0;
+		let warns = 0;
+		let kicks = 0;
+		let bans = 0;
+		let timeouts = 0;
+
+		if (isNaN(before)) {
+			[total, warns, kicks, bans, timeouts] = await Promise.all([
+				infractionsColl.countDocuments({ server }),
+				infractionsColl.countDocuments({ server, actionType: { $exists: false } }),
+				infractionsColl.countDocuments({ server, actionType: "kick" }),
+				infractionsColl.countDocuments({ server, actionType: "ban" }),
+				infractionsColl.countDocuments({ server, actionType: "timeout" }),
+			]);
+		}
 
 		const results = await infractionsColl
 			.find(filter)
@@ -89,39 +97,44 @@ app.get("/dash/server/:server/infractions", requireAuth({ permission: 1 }), asyn
 		});
 
 		const userIds = [...new Set(items.flatMap((i) => [i.user, i.createdBy].filter(Boolean)))];
-		const userMap: Record<string, { username: string } | null> = {};
-		if (userIds.length > 0) {
-			try {
-				const userRes = await botReq("getUsers", { users: userIds });
-				if (userRes.success && userRes.users) {
-					Object.assign(userMap, userRes.users);
+		const userMapPromise: Promise<Record<string, { username: string } | null>> = (async () => {
+			const map: Record<string, { username: string } | null> = {};
+			if (userIds.length > 0) {
+				try {
+					const userRes = await botReq("getUsers", { users: userIds });
+					if (userRes.success && userRes.users) {
+						Object.assign(map, userRes.users);
+					}
+				} catch {
+					/* fallback: show IDs only */
 				}
-			} catch {
-				/* fallback: show IDs only */
 			}
-		}
+			return map;
+		})();
+
+		const bannedSetPromise: Promise<Set<string>> = (async () => {
+			const banIds = items.filter((i) => i.actionType === "ban").map((i) => i.user);
+			if (banIds.length > 0) {
+				try {
+					const banRes = await botReq("getBannedUserIds", { server });
+					if (banRes.success && banRes.bannedIds) {
+						return new Set(banRes.bannedIds);
+					}
+				} catch {
+					/* fallback: no banned users shown */
+				}
+			}
+			return new Set<string>();
+		})();
+
+		const [userMap, bannedSet] = await Promise.all([userMapPromise, bannedSetPromise]);
 
 		const enriched = items.map((i) => ({
 			...i,
 			userName: userMap[i.user]?.username || null,
 			createdByName: i.createdBy ? userMap[i.createdBy]?.username || null : null,
-			isBanned: false,
+			isBanned: i.actionType === "ban" && bannedSet.has(i.user),
 		}));
-
-		const banItems = enriched.filter((i) => i.actionType === "ban");
-		if (banItems.length > 0) {
-			try {
-				const banRes = await botReq("getBannedUserIds", { server });
-				if (banRes.success && banRes.bannedIds) {
-					const bannedSet = new Set(banRes.bannedIds);
-					for (const item of banItems) {
-						if (bannedSet.has(item.user)) item.isBanned = true;
-					}
-				}
-			} catch {
-				/* fallback: isBanned stays false */
-			}
-		}
 
 		res.send({ infractions: enriched, total, hasMore, stats: { total, warns, kicks, bans, timeouts } });
 	} catch (e: any) {
