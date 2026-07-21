@@ -111,6 +111,10 @@ export class Channel {
 		return messages.map((msg: any) => this.client.messages.getOrCreate(msg._id, msg));
 	}
 
+	async deleteMessages(messageIds: string[]) {
+		return await this.client.api.delete(`/channels/${this.id}/messages/bulk`, { ids: messageIds });
+	}
+
 	async delete(leaveSilently?: boolean) {
 		await this.client.api.delete(`/channels/${this.id}`, { leave_silently: leaveSilently });
 		if (this.type === "DirectMessage") {
