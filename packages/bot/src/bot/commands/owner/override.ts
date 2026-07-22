@@ -37,8 +37,8 @@ export default {
 					`This will automatically disable **5 minutes** after your last bot interaction. ` +
 					`To disable now, run \`${message.prefix}override disable\`.`;
 
-				const sentMsg = await message.reply(msg.replace("%emoji%", ":lock:"), false);
-				setTimeout(() => sentMsg?.edit({ content: msg.replace("%emoji%", ":unlock:") }).catch(() => {}), 200);
+				const sentMsg = await message.reply(msg.replace("%emoji%", "🔒"), false);
+				setTimeout(() => sentMsg?.edit({ content: msg.replace("%emoji%", "🔓") }).catch(() => {}), 200);
 
 				break;
 			}
@@ -50,8 +50,8 @@ export default {
 				sudoOverrides[message.authorId!] = null;
 
 				let msg = `## %emoji% Override disabled`;
-				const sentMsg = await message.reply(msg.replace("%emoji%", ":unlock:"), false);
-				setTimeout(() => sentMsg?.edit({ content: msg.replace("%emoji%", ":lock:") }).catch(() => {}), 200);
+				const sentMsg = await message.reply(msg.replace("%emoji%", "🔓"), false);
+				setTimeout(() => sentMsg?.edit({ content: msg.replace("%emoji%", "🔒") }).catch(() => {}), 200);
 				break;
 			}
 

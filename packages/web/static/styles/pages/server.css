@@ -168,6 +168,13 @@
 	display: none;
 }
 
+td.empty {
+	text-align: center;
+	padding: 2rem 1rem;
+	color: var(--grey);
+	font-style: italic;
+}
+
 .inf-filter-checks {
 	display: flex;
 	gap: 0.75rem;

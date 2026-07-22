@@ -74,7 +74,7 @@ async function checkSudoPermission(message: Message, announce = true): Promise<b
 	if (!hasPerm) return false;
 
 	if (announce) {
-		await message.reply("# :unlock: Bypassed permission check\n" + `Sudo mode is enabled for @${message.author!.username}.\n`);
+		await message.reply(`# 🔓 Bypassed permission check\n Sudo mode is enabled for @${message.author!.username}.\n`);
 	}
 	return true;
 }

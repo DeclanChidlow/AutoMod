@@ -18,6 +18,8 @@ let antispamLoaded = false;
 let antispamLoading = false;
 let infractionsLoaded = false;
 let infractionsLoading = false;
+let infractionsResolving = false;
+let resolvedUserIds = new Set();
 let rules = [];
 let perms = 0;
 
@@ -721,11 +723,9 @@ function renderInfractions(container, data, append = false) {
 					<button type="submit" class="btn btn-primary btn-sm">Filter</button>
 				</form>
 			</section>
-			${items.length ? renderInfractionTable(items, hasMore) : `<p class="empty">No infractions found.</p>`}`;
+			${renderInfractionTable(items)}`;
 	} else {
 		const table = container.querySelector("table tbody");
-		const loadMore = container.querySelector("#inf-load-more");
-		if (loadMore) loadMore.remove();
 
 		if (table) {
 			table.insertAdjacentHTML("beforeend", buildInfractionRows(items));
@@ -743,22 +743,24 @@ function renderInfractions(container, data, append = false) {
 	}
 
 	bindInfractionEvents();
+
+	if (!append) resolvedUserIds = new Set();
+	resolveInfractionUsers();
 }
 
-function renderInfractionTable(items, hasMore) {
+function renderInfractionTable(items) {
 	return `<table>
 		<thead><tr>
 			${perms >= 2 ? `<th style="inline-size:2ch"><input type="checkbox" id="inf-select-all"></th>` : ""}
 			<th>Date</th><th>User</th><th>Type</th><th>Moderator</th><th>Reason</th>
 			${perms >= 2 ? `<th></th>` : ""}
 		</tr></thead>
-		<tbody>${buildInfractionRows(items)}</tbody>
+		<tbody>${items.length ? buildInfractionRows(items) : `<tr><td colspan="${perms >= 2 ? 7 : 5}" class="empty">No infractions found.</td></tr>`}</tbody>
 	</table>
 	<div id="inf-selection-bar" class="inf-selection-bar" hidden>
 		<span id="inf-selection-count">0 selected</span>
 		<button id="inf-bulk-delete" class="btn btn-danger btn-sm">Delete Selected</button>
-	</div>
-	${hasMore ? `<div id="inf-sentinel"></div>` : ""}`;
+	</div>`;
 }
 
 function buildInfractionRows(items) {
@@ -767,13 +769,13 @@ function buildInfractionRows(items) {
 			(i) => `<tr data-date="${i.date}">
 			${perms >= 2 ? `<td><input type="checkbox" class="inf-checkbox" data-id="${escHtml(i._id)}"></td>` : ""}
 			<td>${new Date(i.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</td>
-			<td>${i.userName ? `<span title="ID: ${escHtml(i.user)}">${escHtml(i.userName)}</span>` : `<code>${escHtml(i.user)}</code>`}</td>
+			<td data-resolve-user="${escHtml(i.user)}">${i.userName ? `<span title="ID: ${escHtml(i.user)}">${escHtml(i.userName)}</span>` : `<code>${escHtml(i.user)}</code>`}</td>
 			<td class="inf-type inf-${i.actionType}">${i.actionType}</td>
-			<td>${i.createdByName ? `<span title="ID: ${escHtml(i.createdBy)}">${escHtml(i.createdByName)}</span>` : i.createdBy ? `<code>${escHtml(i.createdBy)}</code>` : "AutoMod"}</td>
+			<td${i.createdBy ? ` data-resolve-user="${escHtml(i.createdBy)}"` : ""}>${i.createdByName ? `<span title="ID: ${escHtml(i.createdBy)}">${escHtml(i.createdByName)}</span>` : i.createdBy ? `<code>${escHtml(i.createdBy)}</code>` : "AutoMod"}</td>
 			<td>${escHtml(i.reason || "No reason provided")}</td>
 			<td class="inf-actions">
 				${perms >= 2 ? `<button class="btn btn-danger btn-sm inf-delete" data-id="${escHtml(i._id)}">Delete</button>` : ""}
-				${perms >= 2 && i.actionType === "ban" && i.isBanned ? `<button class="btn btn-warning btn-sm inf-unban" data-user="${escHtml(i.user)}">Unban</button>` : ""}
+				${perms >= 2 && i.actionType === "ban" ? `<button class="btn btn-warning btn-sm inf-unban" data-user="${escHtml(i.user)}" data-resolve-ban="${escHtml(i.user)}"${!i.isBanned ? " hidden" : ""}>Unban</button>` : ""}
 			</td>
 		</tr>`,
 		)
@@ -781,6 +783,58 @@ function buildInfractionRows(items) {
 }
 
 let infObs = null;
+
+async function resolveInfractionUsers() {
+	if (infractionsResolving) return;
+	const container = document.getElementById("tab-infractions");
+	const userCells = container.querySelectorAll("[data-resolve-user]");
+	const banButtons = container.querySelectorAll("[data-resolve-ban]");
+
+	const idsToResolve = new Set<string>();
+	for (const cell of userCells) {
+		const id = (cell as HTMLElement).dataset.resolveUser;
+		if (id && !resolvedUserIds.has(id)) idsToResolve.add(id);
+	}
+	for (const btn of banButtons) {
+		const id = (btn as HTMLElement).dataset.resolveBan;
+		if (id && !resolvedUserIds.has(id)) idsToResolve.add(id);
+	}
+
+	if (idsToResolve.size === 0) return;
+
+	infractionsResolving = true;
+	try {
+		const data = await request("POST", `/dash/server/${serverId}/infractions/resolve`, {
+			userIds: [...idsToResolve],
+		});
+
+		const users = data.users || {};
+		const bannedIds = new Set(data.bannedIds || []);
+
+		for (const cell of userCells) {
+			const id = (cell as HTMLElement).dataset.resolveUser;
+			if (!id || !users[id] || !users[id].username) continue;
+			cell.innerHTML = `<span title="ID: ${escHtml(id)}">${escHtml(users[id].username)}</span>`;
+			cell.removeAttribute("data-resolve-user");
+			resolvedUserIds.add(id);
+		}
+
+		for (const btn of banButtons) {
+			const id = (btn as HTMLElement).dataset.resolveBan;
+			if (!id) continue;
+			if (bannedIds.has(id)) {
+				(btn as HTMLElement).hidden = false;
+			} else {
+				btn.remove();
+			}
+			resolvedUserIds.add(id);
+		}
+	} catch {
+		/* names will remain as IDs */
+	} finally {
+		infractionsResolving = false;
+	}
+}
 
 async function handleInfractionAction(e) {
 	const delBtn = e.target.closest(".inf-delete");

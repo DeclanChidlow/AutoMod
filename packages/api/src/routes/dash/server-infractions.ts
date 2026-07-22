@@ -4,6 +4,32 @@ import { badRequest, forbidden, isAuthenticated, getPermissionLevel, requireAuth
 import { botReq } from "../internal/ws";
 import { ObjectId } from "mongodb";
 
+async function resolveUserInfo(userIds: string[]): Promise<Record<string, { username: string } | null>> {
+	const map: Record<string, { username: string } | null> = {};
+	if (userIds.length === 0) return map;
+	try {
+		const userRes = await botReq("getUsers", { users: [...new Set(userIds)] });
+		if (userRes.success && userRes.users) {
+			Object.assign(map, userRes.users);
+		}
+	} catch {
+		/* fallback: show IDs only */
+	}
+	return map;
+}
+
+async function resolveBannedUsers(server: string): Promise<Set<string>> {
+	try {
+		const banRes = await botReq("getBannedUserIds", { server });
+		if (banRes.success && banRes.bannedIds) {
+			return new Set(banRes.bannedIds);
+		}
+	} catch {
+		/* fallback: no banned users shown */
+	}
+	return new Set<string>();
+}
+
 app.get("/dash/server/:server/infractions", requireAuth({ permission: 1 }), async (req: Request, res: Response) => {
 	const user = await isAuthenticated(req, res, true);
 	if (!user) return;
@@ -96,47 +122,44 @@ app.get("/dash/server/:server/infractions", requireAuth({ permission: 1 }), asyn
 			};
 		});
 
-		const userIds = [...new Set(items.flatMap((i) => [i.user, i.createdBy].filter(Boolean)))];
-		const userMapPromise: Promise<Record<string, { username: string } | null>> = (async () => {
-			const map: Record<string, { username: string } | null> = {};
-			if (userIds.length > 0) {
-				try {
-					const userRes = await botReq("getUsers", { users: userIds });
-					if (userRes.success && userRes.users) {
-						Object.assign(map, userRes.users);
-					}
-				} catch {
-					/* fallback: show IDs only */
-				}
-			}
-			return map;
-		})();
-
-		const bannedSetPromise: Promise<Set<string>> = (async () => {
-			const banIds = items.filter((i) => i.actionType === "ban").map((i) => i.user);
-			if (banIds.length > 0) {
-				try {
-					const banRes = await botReq("getBannedUserIds", { server });
-					if (banRes.success && banRes.bannedIds) {
-						return new Set(banRes.bannedIds);
-					}
-				} catch {
-					/* fallback: no banned users shown */
-				}
-			}
-			return new Set<string>();
-		})();
-
-		const [userMap, bannedSet] = await Promise.all([userMapPromise, bannedSetPromise]);
-
 		const enriched = items.map((i) => ({
 			...i,
-			userName: userMap[i.user]?.username || null,
-			createdByName: i.createdBy ? userMap[i.createdBy]?.username || null : null,
-			isBanned: i.actionType === "ban" && bannedSet.has(i.user),
+			userName: null,
+			createdByName: null,
+			isBanned: false,
 		}));
 
 		res.send({ infractions: enriched, total, hasMore, stats: { total, warns, kicks, bans, timeouts } });
+	} catch (e: any) {
+		console.error(e);
+		res.status(500).send({ error: e.message || "Internal server error" });
+	}
+});
+
+app.post("/dash/server/:server/infractions/resolve", requireAuth({ permission: 1 }), async (req: Request, res: Response) => {
+	const user = await isAuthenticated(req, res, true);
+	if (!user) return;
+
+	const { server } = req.params;
+	if (!server || typeof server !== "string") return badRequest(res);
+
+	const { userIds } = req.body;
+	if (!Array.isArray(userIds) || !userIds.every((id: any) => typeof id === "string")) {
+		return badRequest(res, "userIds must be an array of strings");
+	}
+
+	try {
+		const [userMap, bannedSet] = await Promise.all([
+			resolveUserInfo(userIds),
+			resolveBannedUsers(server),
+		]);
+
+		const users: Record<string, { username: string } | null> = {};
+		for (const id of userIds) {
+			users[id] = userMap[id] || null;
+		}
+
+		res.send({ users, bannedIds: [...bannedSet] });
 	} catch (e: any) {
 		console.error(e);
 		res.status(500).send({ error: e.message || "Internal server error" });

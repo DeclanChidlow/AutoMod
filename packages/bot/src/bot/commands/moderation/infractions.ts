@@ -182,7 +182,7 @@ const getTopInfractionsMessage = async (userInfractions: Map<string, Infraction[
 function getInfEmoji(inf: Infraction) {
 	switch (inf.actionType) {
 		case "kick":
-			return "🥾 ";
+			return "👢 ";
 		case "ban":
 			return "🔨 ";
 		case "timeout":

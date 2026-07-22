@@ -109,7 +109,7 @@ client.on("serverMemberJoin", (member) => {
 	if (!channel) return console.debug("Cannot send hello message: No suitable channel found");
 	channel
 		.sendMessage({
-			content: `:wave: "Hi there!")`,
+			content: `👋 "Hi there!")`,
 			embeds: [embed],
 		})
 		.catch((e) => console.debug("Cannot send hello message: " + e));
