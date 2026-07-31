@@ -14,7 +14,7 @@ export class ServerCollection extends BaseCollection<Server> {
 		if (data.channels) {
 			for (const channel of data.channels) {
 				if (typeof channel !== "string") {
-					this.client.channels.getOrCreate(channel._id, channel);
+					this.client.channels.getOrCreate(channel._id, { ...channel, server: channel.server || channel.serverId || data._id });
 				}
 			}
 		}

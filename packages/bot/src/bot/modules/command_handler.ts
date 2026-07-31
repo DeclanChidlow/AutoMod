@@ -52,12 +52,9 @@ let commands: SimpleCommand[];
 
 			if (msg.author!.bot) return;
 
-			// If we can't reply to the message, return
-			const member = await getOwnMemberInServer(msg.channel.server);
-			if (!member.hasPermission(msg.channel, "SendMessage")) {
-				console.debug("Cannot reply to message; returning");
-				return;
-			}
+			// Don't bother with the computed SendMessage pre-check as the bot's permission calculation may not match Stoat's actual enforcement.
+			// The API enforces permissions anyway.
+			await getOwnMemberInServer(msg.channel.server);
 
 			// Send message through anti spam check and custom rules
 			if (!(await antispam(msg))) return;

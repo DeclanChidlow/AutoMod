@@ -271,8 +271,27 @@ export class Client extends EventEmitter {
 			case "ServerCreate": {
 				const data = event.server || event;
 				if (!this.servers.has(data._id)) {
-					if (event.channels) for (const ch of event.channels) this.channels.getOrCreate(ch._id, ch);
-					this.servers.getOrCreate(data._id, data, true);
+					try {
+						const serverData = await this.api.get(`/servers/${data._id}`, { include_channels: true });
+						if (serverData.channels) {
+							for (const channel of serverData.channels) {
+								if (typeof channel !== "string") {
+									this.channels.getOrCreate(channel._id, { ...channel, server: channel.server || channel.serverId || serverData._id });
+								}
+							}
+						}
+						this.servers.getOrCreate(data._id, serverData, true);
+					} catch (e) {
+						// Fallback: use the WS event data
+						if (event.channels)
+							for (const ch of event.channels) {
+								if (typeof ch !== "string") {
+									this.channels.getOrCreate(ch._id, { ...ch, server: ch.server || ch.serverId || data._id });
+								}
+							}
+						this.servers.getOrCreate(data._id, data, true);
+						console.error(`[WS] Failed to fetch server ${data._id}:`, (e as any)?.message || e);
+					}
 				}
 				break;
 			}

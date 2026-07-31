@@ -88,7 +88,7 @@ export class ServerMember {
 				}
 			}
 			// Apply channel-level overrides
-			const dp = target.data?.defaultPermissions;
+			const dp = target.data?.defaultPermissions ?? target.data?.default_permissions;
 			if (dp) {
 				perms |= BigInt(typeof dp === "number" ? 0n : (dp.a ?? 0n));
 				perms &= ~BigInt(typeof dp === "number" ? BigInt(dp) : (dp.d ?? 0n));

@@ -3,10 +3,9 @@ import crypto from "crypto";
 import { client, dbs } from "../..";
 import Infraction from "automod-lib/dist/types/antispam/Infraction";
 import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
-import { storeInfraction } from "../util";
+import { getOwnMemberInServer, storeInfraction } from "../util";
 import { fetchUsername } from "./mod_logs";
 import { DEFAULT_PREFIX } from "./command_handler";
-import type { SendableEmbed } from "../../stoat/index.js";
 import { UserSystemMessage } from "../../stoat/index.js";
 
 const DM_SESSION_LIFETIME = 1000 * 60 * 5;
@@ -83,36 +82,42 @@ client.on("messageCreate", async (message) => {
 });
 
 // Send a message when added to a server
-client.on("serverMemberJoin", (member) => {
-	if (member.id.user != client.user?.id) return;
+client.on("serverCreate", async (server) => {
+	console.log(`Joined new server: ${server.name} (${server.id})`);
 
-	if (!member.server) return;
+	const member = await getOwnMemberInServer(server).catch((e) => {
+		console.warn("Cannot send hello message: Failed to fetch own member in server:", e);
+		return undefined;
+	});
 
-	const embed: SendableEmbed = {
-		title: "Hi there, thanks for adding me!",
-		description: `My prefix is "${DEFAULT_PREFIX}", but you can also @mention me instead.\nCheck out ${DEFAULT_PREFIX}help to get started!`,
-		icon_url: client.user.avatarURL,
-		colour: "#ff6e6d",
-		url: `/bot/${client.user.id}`,
-	};
+	const channels = server.channels.filter((c) => c && c.type == "TextChannel");
 
-	let channels = member.server.channels.filter((c) => c && c.type == "TextChannel" && member.hasPermission(c, "SendMessage") && member.hasPermission(c, "SendEmbeds"));
+	// Filter by permissions when possible, but never reject ALL channels
+	let candidates = channels;
+	if (member) {
+		const permitted = channels.filter((c) => member.hasPermission(c, "SendMessage"));
+		if (permitted.length > 0) {
+			candidates = permitted;
+		}
+	}
 
 	// Attempt to find an appropriate channel, otherwise use the first one available
 	let channel =
-		channels.find((c) => c?.name?.toLowerCase() == "welcome") ||
-		channels.find((c) => c?.name?.toLowerCase() == "general") ||
-		channels.find((c) => c?.name?.toLowerCase() == "bots") ||
-		channels.find((c) => c?.name?.toLowerCase() == "spam") ||
-		channels[0];
+		candidates.find((c) => c?.name?.toLowerCase() == "welcome") ||
+		candidates.find((c) => c?.name?.toLowerCase() == "general") ||
+		candidates.find((c) => c?.name?.toLowerCase() == "bots") ||
+		candidates.find((c) => c?.name?.toLowerCase() == "spam") ||
+		candidates[0];
 
-	if (!channel) return console.debug("Cannot send hello message: No suitable channel found");
+	if (!channel) {
+		console.warn("Cannot send hello message: No suitable channel found in server", server.id);
+		return;
+	}
 	channel
 		.sendMessage({
-			content: `👋 "Hi there!")`,
-			embeds: [embed],
+			content: `## Hey ${server.name}!\nThanks for trusting AutoMod to protect and manage your community.\nThis bot's prefix is "${DEFAULT_PREFIX}", but you can also @mention it instead.\nCheck out \`${DEFAULT_PREFIX}help\` to get started!\n\nFull setup guide: <https://automod.vale.rocks/docs/automod/setup>`,
 		})
-		.catch((e) => console.debug("Cannot send hello message: " + e));
+		.catch((e) => console.warn("Cannot send hello message:", e));
 });
 
 client.on("error", (err) => console.error("Client error:", err));

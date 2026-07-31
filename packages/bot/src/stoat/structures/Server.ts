@@ -43,7 +43,12 @@ export class Server {
 		return b ? new File(this.client, b) : undefined;
 	}
 	get channelIds() {
-		return this.data.channelIds ?? this.data.channels ?? [];
+		const ids = this.data.channelIds ?? this.data.channel_ids;
+		if (ids && Array.isArray(ids)) return ids;
+		const channels = this.data.channels;
+		if (!channels || !Array.isArray(channels) || channels.length === 0) return [];
+		if (typeof channels[0] === "string") return channels;
+		return channels.map((c: any) => c._id || c.id || c);
 	}
 	get channels() {
 		return this.channelIds.map((id: string) => this.client.channels.get(id)).filter((x: any) => x);
@@ -59,7 +64,7 @@ export class Server {
 		return map;
 	}
 	get defaultPermissions() {
-		return this.data.defaultPermissions ?? 0n;
+		return this.data.default_permissions ?? this.data.defaultPermissions ?? 0n;
 	}
 	get discoverable() {
 		return this.data.discoverable;

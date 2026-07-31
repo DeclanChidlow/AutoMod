@@ -65,7 +65,7 @@ export class Channel {
 		const server = this.server;
 		if (server && this.client.user.id === server.ownerId) return (1n << 64n) - 1n;
 		let perms = server ? server.permission : 0n;
-		const dp = this.data.defaultPermissions;
+		const dp = this.data.defaultPermissions ?? this.data.default_permissions;
 		if (dp) {
 			perms |= BigInt(typeof dp === "number" ? 0n : (dp.a ?? 0n));
 			perms &= ~BigInt(typeof dp === "number" ? BigInt(dp) : (dp.d ?? 0n));

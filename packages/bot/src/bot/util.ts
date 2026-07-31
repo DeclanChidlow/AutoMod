@@ -103,7 +103,27 @@ function getPermissionLevelFromMember(serverMember: ServerMember, server: Server
 }
 
 async function getOwnMemberInServer(server: Server): Promise<ServerMember> {
-	return server.member || (await server.fetchMember(client.user!.id));
+	const member = server.member || (await server.fetchMember(client.user!.id));
+
+	// If the bot has no roles, the server's default_permissions determine what the bot can do.
+	if (!member.roles?.length) {
+		const raw = client.servers.getUnderlyingObject(server.id);
+		if (!raw.defaultPermissions && raw.default_permissions == null) {
+			try {
+				const data = await client.api.get(`/servers/${server.id}`, { include_channels: true });
+				client.servers.updateUnderlyingObject(server.id, data);
+				if (data.channels) {
+					for (const channel of data.channels) {
+						if (typeof channel !== "string") {
+							client.channels.getOrCreate(channel._id, { ...channel, server: channel.server || channel.serverId || data._id });
+						}
+					}
+				}
+			} catch (_) {}
+		}
+	}
+
+	return member;
 }
 
 // Utility functions
