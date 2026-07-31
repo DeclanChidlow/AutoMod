@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction } from "../../util";
 
 export default {
 	name: "avatar",
@@ -21,7 +21,10 @@ export default {
 			if (args[0]?.toLowerCase() == "reset" || args[0]?.toLowerCase() == "clear") {
 				// Clear server avatar
 				if (!message.member) return;
-				if (!message.member.hasPermission(message.member.server!, "RemoveAvatars") && !(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+				if (!(await canModerate(message, "RemoveAvatars"))) return message.reply(NO_MANAGER_MSG);
+
+				const hierarchyErr = await checkMemberAction(target, message, "manage avatar", "RemoveAvatars");
+				if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });
 
 				if (!target.avatar) {
 					await message.reply(`\`@${targetUser.username}\` does not currently have an avatar set for this server.`);

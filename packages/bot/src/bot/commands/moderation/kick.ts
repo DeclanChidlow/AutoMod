@@ -14,7 +14,8 @@ import {
 	generateInfractionDMEmbed,
 	getDmChannel,
 	getMembers,
-	isModerator,
+	canModerate,
+	checkMemberAction,
 	NO_MANAGER_MSG,
 	parseUserOrId,
 	sanitizeMessageContent,
@@ -36,7 +37,7 @@ export default {
 	run: async (message, args, serverConfig) => {
 		if (args[0]?.toLowerCase() === "vote") {
 			args.shift();
-			const isMod = await isModerator(message);
+			const isMod = await canModerate(message, "KickMembers");
 			return await handleVoteCommand(message, args, serverConfig, {
 				type: "kick",
 				isModerator: isMod,
@@ -65,7 +66,7 @@ export default {
 			});
 		}
 
-		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "KickMembers"))) return message.reply(NO_MANAGER_MSG);
 		if (!message.serverContext.havePermission("KickMembers")) {
 			return await message.reply(`Sorry, I do not have \`KickMembers\` permission.`);
 		}
@@ -146,6 +147,14 @@ export default {
 			try {
 				const member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
 
+				if (member) {
+					const err = await checkMemberAction(member, message, "kick", "KickMembers");
+					if (err) {
+						embeds.push(err);
+						continue;
+					}
+				}
+
 				let infId = ulid();
 				let infraction: Infraction = {
 					_id: infId,
@@ -198,7 +207,7 @@ export default {
 			const targetEmbeds = embeds.splice(0, 10);
 
 			if (firstMsg) {
-				await message.reply({ embeds: targetEmbeds, content: "Operation completed." }, false);
+				await message.reply({ embeds: targetEmbeds }, false);
 			} else {
 				await message.channel?.sendMessage({ embeds: targetEmbeds });
 			}

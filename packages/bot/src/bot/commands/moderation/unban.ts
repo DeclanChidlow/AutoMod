@@ -3,7 +3,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { removeTempBan } from "../../modules/tempbans";
 import { dbs } from "../../..";
-import { isModerator, NO_MANAGER_MSG, parseUser, ULID_REGEX, USER_MENTION_REGEX } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, ULID_REGEX, USER_MENTION_REGEX } from "../../util";
 
 const SYNTAX = "{prefix}unban [@user or ID]";
 
@@ -15,7 +15,7 @@ export default {
 	syntax: SYNTAX,
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
-		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "BanMembers"))) return message.reply(NO_MANAGER_MSG);
 		if (!message.serverContext.havePermission("BanMembers")) {
 			return await message.reply(`Sorry, I do not have \`BanMembers\` permission.`);
 		}

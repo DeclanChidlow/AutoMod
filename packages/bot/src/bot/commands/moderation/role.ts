@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction } from "../../util";
 import { dbs } from "../../..";
 
 export default {
@@ -13,7 +13,7 @@ export default {
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {
 			if (!message.member) return;
-			if (!message.member.hasPermission(message.member.server!, "ManageRole") && !(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+			if (!(await canModerate(message, "ManageRole"))) return message.reply(NO_MANAGER_MSG);
 
 			const action = args.shift()?.toLowerCase();
 
@@ -115,6 +115,9 @@ export default {
 			if (!targetUser) return message.reply("Couldn't find the specified user.");
 			const target = await message.channel?.server?.fetchMember(targetUser);
 			if (!target) return message.reply("The target is not part of this server.");
+
+			const hierarchyErr = await checkMemberAction(target, message, "manage roles", "ManageRole");
+			if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });
 
 			const roleArg = args.shift();
 			if (!roleArg) return message.reply("No role specified.");

@@ -3,7 +3,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { User } from "../../../stoat/index.js";
 import { client, dbs } from "../../..";
-import { parseUser } from "../../util";
+import { parseUser, isBotManager, NO_MANAGER_MSG } from "../../util";
 
 const SYNTAX = "{prefix}admin add @user; {prefix}admin remove @user; {prefix}admin list";
 
@@ -15,7 +15,7 @@ export default {
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
-		if (!message.member?.hasPermission(message.member.server!, "ManageServer")) return message.reply("You need **ManageServer** permission to use this command.");
+		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
 
 		let config = await dbs.SERVERS.findOne({ id: message.serverContext.id });
 		let admins = config?.botManagers ?? [];

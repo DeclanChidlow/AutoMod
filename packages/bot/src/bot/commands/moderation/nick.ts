@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { isModerator, NO_MANAGER_MSG, parseUser } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction } from "../../util";
 
 function getParseErrorMessage(targetStr: string): string {
 	const isUserMention = targetStr.startsWith("<@") || targetStr.match(/^01[A-HJKMNP-TV-Z0-9]{24}$/);
@@ -22,7 +22,7 @@ export default {
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {
 			if (!message.member) return;
-			if (!message.member.hasPermission(message.member.server!, "ManageNicknames") && !(await isModerator(message))) {
+			if (!(await canModerate(message, "ManageNicknames"))) {
 				return message.reply(NO_MANAGER_MSG);
 			}
 
@@ -48,6 +48,9 @@ export default {
 			}
 
 			if (!target) return message.reply("The target is not part of this server.");
+
+			const hierarchyErr = await checkMemberAction(target, message, "change nickname", "ManageNicknames");
+			if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });
 
 			const newName = args.join(" ");
 

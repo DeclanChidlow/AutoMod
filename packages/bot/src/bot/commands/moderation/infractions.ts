@@ -4,7 +4,7 @@ import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { fetchUsername } from "../../modules/mod_logs";
-import { arrayToCsv, formatRelativeTime, isModerator, NO_MANAGER_MSG, parseUserOrId, getDmChannel, embed, EmbedColor } from "../../util";
+import { arrayToCsv, formatRelativeTime, canModerate, NO_MANAGER_MSG, parseUserOrId, getDmChannel, embed, EmbedColor } from "../../util";
 import { client, dbs } from "../../..";
 
 const SYNTAX = '{prefix}infractions; {prefix}infractions @username ["export-csv"]; {prefix}infractions rm [ID]';
@@ -203,7 +203,7 @@ export default {
 		const { id: serverId, name: serverName } = message.serverContext;
 		const { id: authorId } = message;
 
-		if (!(await isModerator(message)) && !args[0]) {
+		if (!(await canModerate(message, "BanMembers", "KickMembers")) && !args[0]) {
 			return message.reply(NO_MANAGER_MSG);
 		}
 
@@ -228,7 +228,7 @@ export default {
 				case "rm":
 				case "del":
 				case "undo":
-					if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+					if (!(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG);
 
 					const id = args[1];
 					if (!id) return message.reply("No infraction ID provided.");
@@ -253,7 +253,7 @@ export default {
 					const user = await parseUserOrId(args[0]);
 					if (!user?.id) return message.reply("I can't find this user.");
 
-					if (user.id !== authorId && !(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+					if (user.id !== authorId && !(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG);
 
 					const infs = userInfractions.get(user.id);
 

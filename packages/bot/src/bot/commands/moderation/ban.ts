@@ -16,8 +16,8 @@ import {
 	parseDuration,
 	getDmChannel,
 	getMembers,
-	isModerator,
-	memberRanking,
+	canModerate,
+	checkMemberAction,
 	NO_MANAGER_MSG,
 	parseUserOrId,
 	sanitizeMessageContent,
@@ -42,7 +42,7 @@ export default {
 			args.shift();
 			const banDuration = serverConfig?.votekick?.banDuration ?? 0;
 			const isTemp = banDuration > 0;
-			const isMod = await isModerator(message);
+			const isMod = await canModerate(message, "BanMembers");
 			const originator = await fetchUsername(message.authorId!);
 			return await handleVoteCommand(message, args, serverConfig, {
 				type: "ban",
@@ -89,7 +89,7 @@ export default {
 			});
 		}
 
-		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "BanMembers"))) return message.reply(NO_MANAGER_MSG);
 		if (!message.serverContext.havePermission("BanMembers")) {
 			return await message.reply({
 				embeds: [embed(`Sorry, I do not have \`BanMembers\` permission.`, "", EmbedColor.SoftError)],
@@ -220,6 +220,16 @@ export default {
 
 		for (const user of targetUsers) {
 			try {
+				const member = members.find((m) => m.id.user == user.id);
+
+				if (member) {
+					const err = await checkMemberAction(member, message, "ban", "BanMembers");
+					if (err) {
+						embeds.push(err);
+						continue;
+					}
+				}
+
 				if (banDuration == 0) {
 					const infId = ulid();
 					const infraction: Infraction = {
@@ -234,18 +244,6 @@ export default {
 						expires: Infinity,
 					};
 					const { userWarnCount } = await storeInfraction(infraction);
-
-					const member = members.find((m) => m.id.user == user.id);
-
-					if (member && message.member && !member.inferiorTo(message.member)) {
-						embeds.push(embed(`\`${member.user?.username}\` has an equally or higher ranked role than you; refusing to ban.`, "Missing permission", EmbedColor.SoftError));
-						continue;
-					}
-
-					if (member && !memberRanking(member).bannable) {
-						embeds.push(embed(`AutoMod lacks permission to ban \`${member?.user?.username || user.id}\`.`, null, EmbedColor.SoftError));
-						continue;
-					}
 
 					if (serverConfig?.dmOnKick) {
 						try {
@@ -371,7 +369,7 @@ export default {
 			const targetEmbeds = embeds.splice(0, 10);
 
 			if (firstMsg) {
-				await message.reply({ embeds: targetEmbeds, content: "Operation completed." }, false);
+				await message.reply({ embeds: targetEmbeds }, false);
 			} else {
 				await message.channel?.sendMessage({ embeds: targetEmbeds });
 			}

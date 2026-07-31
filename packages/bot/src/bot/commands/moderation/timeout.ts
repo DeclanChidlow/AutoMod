@@ -4,7 +4,7 @@ import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { isModerator, NO_MANAGER_MSG, parseUser, parseDuration, storeInfraction } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, parseDuration, storeInfraction, checkMemberAction } from "../../util";
 import { client } from "../../..";
 import { handleVoteCommand } from "../../modules/votekick";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
@@ -23,7 +23,7 @@ export default {
 			args.shift();
 			const timeoutMinutes = serverConfig?.votekick?.timeoutDuration || 60;
 			const durationMs = timeoutMinutes * 60 * 1000;
-			const isMod = await isModerator(message);
+			const isMod = await canModerate(message, "MuteMembers");
 			const originator = await fetchUsername(message.authorId!);
 			return await handleVoteCommand(message, args, serverConfig, {
 				type: "timeout",
@@ -53,10 +53,16 @@ export default {
 		}
 
 		try {
-			if (!(await isModerator(message))) return await message.reply(NO_MANAGER_MSG);
+			if (!(await canModerate(message, "MuteMembers"))) return await message.reply(NO_MANAGER_MSG);
 
 			const target = await parseUser(args[0] ?? "");
 			if (!target) return await message.reply("No user provided or provided user is not valid");
+
+			const member = await message.channel?.server?.fetchMember(target);
+			if (!member) return await message.reply("That user is not a member of this server.");
+
+			const hierarchyErr = await checkMemberAction(member, message, "timeout", "MuteMembers");
+			if (hierarchyErr) return await message.reply({ embeds: [hierarchyErr] });
 
 			const duration = parseDuration(args[1] ?? "");
 			if (!duration) {

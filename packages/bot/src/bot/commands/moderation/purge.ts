@@ -3,7 +3,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { Message } from "../../../stoat/index.js";
 import { decodeTime } from "ulid";
-import { isModerator, NO_MANAGER_MSG, parseUserOrId } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUserOrId } from "../../util";
 
 const SYNTAX = "{prefix}purge [number] [user[,user...]]";
 const MAX_PURGE_AMOUNT = 100;
@@ -30,7 +30,7 @@ class PurgeHandler {
 	}
 
 	async execute(args: string[]): Promise<void> {
-		if (!(await isModerator(this.message))) {
+		if (!(await canModerate(this.message, "ManageMessages"))) {
 			await this.message.reply(NO_MANAGER_MSG);
 			return;
 		}

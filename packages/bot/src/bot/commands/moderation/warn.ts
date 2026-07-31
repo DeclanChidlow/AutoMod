@@ -6,7 +6,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import type { SendableEmbed } from "../../../stoat/index.js";
 import { User } from "../../../stoat/index.js";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
-import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, isModerator, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, canModerate, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
 
 export default {
 	name: "warn",
@@ -16,7 +16,7 @@ export default {
 	documentation: "/moderation/warn",
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {
-		if (!(await isModerator(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG);
 
 		const userInput = !message.replyIds?.length ? args.shift() || "" : undefined;
 		if (!userInput && !message.replyIds?.length)
@@ -118,7 +118,7 @@ export default {
 			const targetEmbeds = embeds.splice(0, 10);
 
 			if (firstMsg) {
-				await message.reply({ embeds: targetEmbeds, content: "Operation completed." }, false);
+				await message.reply({ embeds: targetEmbeds }, false);
 			} else {
 				await message.channel?.sendMessage({ embeds: targetEmbeds });
 			}

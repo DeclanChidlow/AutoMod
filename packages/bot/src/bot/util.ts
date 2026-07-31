@@ -69,12 +69,38 @@ async function isBotManager(message: Message, announceSudo = false): Promise<boo
 	return (managers?.botManagers?.includes(member.user!.id) ?? false) || isSudo;
 }
 
+async function canModerate(message: Message, ...permissions: string[]): Promise<boolean> {
+	if (await isModerator(message)) return true;
+	const member = message.member!;
+	const server = message.channel!.server!;
+	return permissions.some((p) => member.hasPermission(server, p));
+}
+
+async function checkMemberAction(member: ServerMember, message: Message, action: string, permission?: string): Promise<SendableEmbed | null> {
+	const username = member.user?.username ?? "that user";
+
+	if (message.member && !member.inferiorTo(message.member)) {
+		return embed(`\`${username}\` has an equally or higher ranked role than you. Refusing to ${action}.`, "Missing permission", EmbedColor.SoftError);
+	}
+
+	const botMember = await getOwnMemberInServer(message.channel!.server!);
+	if (!member.inferiorTo(botMember)) {
+		return embed(`AutoMod lacks permission to ${action} \`${username}\`.`, null, EmbedColor.SoftError);
+	}
+
+	if (permission && !message.channel!.server!.havePermission(permission)) {
+		return embed(`Sorry, AutoMod lacks the \`${permission}\` permission.`, null, EmbedColor.SoftError);
+	}
+
+	return null;
+}
+
 async function checkSudoPermission(message: Message, announce = true): Promise<boolean> {
 	const hasPerm = isSudo(message.author!);
 	if (!hasPerm) return false;
 
 	if (announce) {
-		await message.reply(`# 🔓 Bypassed permission check\n Sudo mode is enabled for @${message.author!.username}.\n`);
+		await message.reply(`## 🔓 Bypassed permission check\n Sudo mode is enabled for @${message.author!.username}.`);
 	}
 	return true;
 }
@@ -441,14 +467,6 @@ const getMembers = (id: string) =>
 		.filter((item) => item[0].startsWith(id))
 		.map((entry) => entry[1]);
 
-const memberRanking = (member: ServerMember) => {
-	const inferior = (member.server?.member?.ranking ?? Infinity) < member.ranking;
-	const kickable = member.server?.havePermission("KickMembers") && inferior;
-	const bannable = member.server?.havePermission("BanMembers") && inferior;
-
-	return { inferior, kickable, bannable };
-};
-
 /**
  * Converts a 2D array to a CSV string with proper escaping.
  */
@@ -547,6 +565,8 @@ export {
 	getOwnMemberInServer,
 	isModerator,
 	isBotManager,
+	canModerate,
+	checkMemberAction,
 	getPermissionLevel,
 	getPermissionLevelFromMember,
 	parseUser,
@@ -563,7 +583,6 @@ export {
 	generateInfractionDMEmbed,
 	yesNoMessage,
 	getMembers,
-	memberRanking,
 	EmbedColor,
 	NO_MANAGER_MSG,
 	ULID_REGEX,
