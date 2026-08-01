@@ -179,6 +179,7 @@ export default {
 	aliases: ["debug"],
 	description: "Provides information about a given ULID, user, channel, role, or emoji.",
 	documentation: "/miscellaneous/info",
+	guildOnly: false,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const [input] = args;

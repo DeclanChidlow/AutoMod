@@ -32,7 +32,7 @@ let commands: SimpleCommand[];
 	).map((c) => (c as any).default);
 
 	client.on("messageUpdate", async (msg) => {
-		checkCustomRules(msg, true);
+		if (msg.channel?.server) checkCustomRules(msg, true);
 	});
 
 	client.on("messageCreate", async (msg) => {
@@ -41,27 +41,33 @@ let commands: SimpleCommand[];
 
 			if (msg.systemMessage !== undefined || msg.webhook !== undefined) return;
 
-			if (typeof msg.content != "string" || msg.authorId == client.user?.id || !msg.channel?.server) return;
+			if (typeof msg.content != "string" || msg.authorId == client.user?.id) return;
 
-			try {
-				if (!msg.member) await msg.channel.server.fetchMember(msg.authorId!);
-				if (!msg.author) await client.users.fetch(msg.authorId!);
-			} catch (e) {
-				return msg.reply("⚠ Failed to fetch message author");
+			// Skip system messages and webhooks
+			const isServerChannel = !!msg.channel?.server;
+
+			if (isServerChannel) {
+				try {
+					if (!msg.member) await msg.channel.server.fetchMember(msg.authorId!);
+					if (!msg.author) await client.users.fetch(msg.authorId!);
+				} catch (e) {
+					return msg.reply("⚠ Failed to fetch message author");
+				}
+
+				if (msg.author!.bot) return;
+
+				await getOwnMemberInServer(msg.channel.server);
+
+				if (!(await antispam(msg))) return;
+				await checkCustomRules(msg);
+			} else {
+				if (!msg.author) await client.users.fetch(msg.authorId!).catch(() => {});
+				if (!msg.author) return;
+				if (msg.author.bot) return;
 			}
 
-			if (msg.author!.bot) return;
-
-			// Don't bother with the computed SendMessage pre-check as the bot's permission calculation may not match Stoat's actual enforcement.
-			// The API enforces permissions anyway.
-			await getOwnMemberInServer(msg.channel.server);
-
-			// Send message through anti spam check and custom rules
-			if (!(await antispam(msg))) return;
-			await checkCustomRules(msg);
-
 			let [config, userConfig] = await Promise.all([
-				dbs.SERVERS.findOne({ id: msg.channel!.serverId! }),
+				isServerChannel ? dbs.SERVERS.findOne({ id: msg.channel!.serverId! }) : Promise.resolve(null),
 				(async () => {
 					const cached = userConfigCache.get(msg.authorId!);
 					if (cached && cached.expires > Date.now()) return cached.data;
@@ -83,7 +89,7 @@ let commands: SimpleCommand[];
 
 			if (cmdName.startsWith(`<@${client.user?.id}>`)) {
 				cmdName = cmdName.substring(`<@${client.user?.id}>`.length);
-				if (!cmdName) cmdName = args.shift() ?? ""; // Space between mention and command name
+				if (!cmdName) cmdName = args.shift() ?? "";
 			} else if (cmdName.startsWith(guildPrefix)) {
 				cmdName = cmdName.substring(guildPrefix.length);
 				if (config?.spaceAfterPrefix && !cmdName) cmdName = args.shift() ?? "";
@@ -106,16 +112,20 @@ let commands: SimpleCommand[];
 				return;
 			}
 
+			if (!isServerChannel && (cmd.guildOnly ?? true)) {
+				msg.reply("This command can only be used in servers.");
+				return;
+			}
+
 			let serverCtx = msg.channel?.server;
 
 			let message: MessageCommandContext = msg as MessageCommandContext;
-			message.serverContext = serverCtx;
+			message.serverContext = serverCtx as any;
 			message.prefix = guildPrefix;
 
-			console.info(`Command: ${message.author?.username} (${message.author?.id}) in ${message.channel?.server?.name} (${message.channel?.serverId}): ${message.content}`);
+			console.info(`Command: ${message.author?.username} (${message.author?.id}) in ${message.channel?.server?.name ?? message.channel?.type ?? "unknown"} (${message.channel?.serverId ?? message.channelId}): ${message.content}`);
 
-			// Create document for server in DB, if not already present
-			if (JSON.stringify(config) == "{}" || !config) await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $setOnInsert: { id: message.channel!.serverId! } }, { upsert: true });
+			if (isServerChannel && (JSON.stringify(config) == "{}" || !config)) await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $setOnInsert: { id: message.channel!.serverId! } }, { upsert: true });
 
 			if (cmd.removeEmptyArgs !== false) {
 				args = args.filter((a) => a.length > 0);

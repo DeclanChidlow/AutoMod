@@ -43,6 +43,7 @@ export default {
 	description: "Displays instructions for using the bot's commands.",
 	documentation: "/miscellaneous/help",
 	removeEmptyArgs: true,
+	guildOnly: false,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const isBotOwner = ownerIDs.includes(message.authorId!);
@@ -66,7 +67,11 @@ export default {
 				}
 			}
 
-			msg += `\n[Open Server Settings](<${process.env["WEB_UI_URL"]}/${message.channel?.serverId}>)`;
+			if (message.channel?.server) {
+				msg += `\n[Open Server Settings](<${process.env["WEB_UI_URL"]}/${message.channel?.serverId}>)`;
+			} else {
+				msg += `\nUse AutoMod in a server for more features.`;
+			}
 
 			await message.reply(msg);
 		} else {

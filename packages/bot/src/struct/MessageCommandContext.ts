@@ -8,10 +8,9 @@ class MessageCommandContext extends Message {
 	// The resolved prefix for this server (guild-specific or default).
 	prefix: string;
 
-	constructor(messageData: any, channelData: any, serverContext: Server) {
-		// Assuming `Message` expects `messageData` and `channelData` as its arguments.
+	constructor(messageData: any, channelData: any, serverContext?: Server) {
 		super(messageData, channelData);
-		this.serverContext = serverContext;
+		this.serverContext = serverContext!;
 		this.prefix = "";
 	}
 }

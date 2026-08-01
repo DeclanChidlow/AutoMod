@@ -7,6 +7,7 @@ export default {
 	aliases: ["donate", "tip"],
 	description: "Provides details regarding how to financially support AutoMod's development and hosting.",
 	documentation: "/miscellaneous/support",
+	guildOnly: false,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		message.reply({

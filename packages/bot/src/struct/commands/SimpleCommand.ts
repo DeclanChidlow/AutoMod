@@ -29,6 +29,10 @@ class SimpleCommand {
 	// remove empty args (e.g. double spaces).
 	removeEmptyArgs?: boolean | null;
 
+	// When true (default), the command will only run in server channels.
+	// Set to false to allow usage in group DMs and direct messages.
+	guildOnly?: boolean;
+
 	// This is executed whenever the command is ran.
 	run: (message: MessageCommandContext, args: string[], serverConfig?: ServerConfig | null) => Promise<any>;
 

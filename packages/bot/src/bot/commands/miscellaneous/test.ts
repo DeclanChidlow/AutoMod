@@ -7,6 +7,7 @@ export default {
 	aliases: [],
 	description: "Checks that the bot works.",
 	documentation: "/miscellaneous/test",
+	guildOnly: false,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		message.reply({

@@ -10,7 +10,7 @@ async function handleLogin(message: MessageCommandContext, args: string[]) {
 		const code = args.shift();
 		if (!code) {
 			return message.reply(
-				`If you're trying to log in, you can access the dashboard at <(${process.env["WEB_UI_URL"]}>.\n\n` + `If you already have a code, you can use \`${message.prefix}web login [Code]\`.`,
+				`If you're trying to log in, you can access the dashboard at <${process.env["WEB_UI_URL"]}>.\n\n If you already have a code, you can use \`${message.prefix}web login [code]\`.`,
 			);
 		}
 
@@ -100,6 +100,7 @@ export default {
 	aliases: [],
 	description: "Allows you to log in and out of the web dashboard.",
 	documentation: "/miscellaneous/web",
+	guildOnly: false,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		const subcommand = args.shift()?.toLowerCase();

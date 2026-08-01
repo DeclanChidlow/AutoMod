@@ -8,6 +8,7 @@ export default {
 	aliases: [],
 	description: "Checks how long it takes AutoMod to respond.",
 	documentation: "/miscellaneous/ping",
+	guildOnly: false,
 	category: CommandCategory.Miscellaneous,
 	run: async (message: MessageCommandContext) => {
 		const now = Date.now();

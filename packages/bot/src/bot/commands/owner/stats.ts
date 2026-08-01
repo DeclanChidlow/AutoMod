@@ -24,6 +24,7 @@ export default {
 	description: "Returns information about AutoMod.",
 	documentation: "/owner/stats",
 	restrict: "BOTOWNER",
+	guildOnly: false,
 	category: CommandCategory.Owner,
 	run: async (message: MessageCommandContext) => {
 		const now = Date.now();
