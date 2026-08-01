@@ -790,13 +790,13 @@ async function resolveInfractionUsers() {
 	const userCells = container.querySelectorAll("[data-resolve-user]");
 	const banButtons = container.querySelectorAll("[data-resolve-ban]");
 
-	const idsToResolve = new Set<string>();
+	const idsToResolve = new Set();
 	for (const cell of userCells) {
-		const id = (cell as HTMLElement).dataset.resolveUser;
+		const id = cell.dataset.resolveUser;
 		if (id && !resolvedUserIds.has(id)) idsToResolve.add(id);
 	}
 	for (const btn of banButtons) {
-		const id = (btn as HTMLElement).dataset.resolveBan;
+		const id = btn.dataset.resolveBan;
 		if (id && !resolvedUserIds.has(id)) idsToResolve.add(id);
 	}
 
@@ -812,7 +812,7 @@ async function resolveInfractionUsers() {
 		const bannedIds = new Set(data.bannedIds || []);
 
 		for (const cell of userCells) {
-			const id = (cell as HTMLElement).dataset.resolveUser;
+			const id = cell.dataset.resolveUser;
 			if (!id || !users[id] || !users[id].username) continue;
 			cell.innerHTML = `<span title="ID: ${escHtml(id)}">${escHtml(users[id].username)}</span>`;
 			cell.removeAttribute("data-resolve-user");
@@ -820,10 +820,10 @@ async function resolveInfractionUsers() {
 		}
 
 		for (const btn of banButtons) {
-			const id = (btn as HTMLElement).dataset.resolveBan;
+			const id = btn.dataset.resolveBan;
 			if (!id) continue;
 			if (bannedIds.has(id)) {
-				(btn as HTMLElement).hidden = false;
+				btn.hidden = false;
 			} else {
 				btn.remove();
 			}
