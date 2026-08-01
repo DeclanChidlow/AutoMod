@@ -33,17 +33,23 @@ export default {
 
 			case "add": {
 				let strictness: any = "HARD";
-				if (["soft", "hard", "strict"].includes(args[0]?.toLowerCase())) {
+				if (["soft", "hard", "strict", "regex"].includes(args[0]?.toLowerCase())) {
 					strictness = args.shift()!.toUpperCase() as any;
 				}
 
 				const rawInput = args.join(" ");
 				if (!rawInput) return message.reply("You didn't provide any words to add to the list!");
 
-				const words = rawInput
-					.split(",")
-					.map((w) => w.trim().toLowerCase())
-					.filter((w) => w.length > 0);
+				let words: string[];
+				if (strictness === "REGEX") {
+					words = [rawInput.trim()];
+					if (words[0].length === 0) return message.reply("No valid regex pattern found in your input.");
+				} else {
+					words = rawInput
+						.split(",")
+						.map((w) => w.trim().toLowerCase())
+						.filter((w) => w.length > 0);
+				}
 				if (words.length === 0) return message.reply("No valid words found in your input.");
 
 				const existingWords = config?.wordlist?.map((w) => w.word) ?? [];
@@ -64,12 +70,16 @@ export default {
 
 				const words = rawInput
 					.split(",")
-					.map((w) => w.trim().toLowerCase())
+					.map((w) => w.trim())
 					.filter((w) => w.length > 0);
 				if (words.length === 0) return message.reply("No valid words found in your input.");
 
-				const existingWords = config?.wordlist?.map((w) => w.word) ?? [];
-				const wordsToRemove = words.filter((word) => existingWords.includes(word));
+				const existingEntries = config?.wordlist ?? [];
+				const wordsToRemove: string[] = [];
+				for (const word of words) {
+					const match = existingEntries.find((w) => w.word === word || w.word.toLowerCase() === word.toLowerCase());
+					if (match) wordsToRemove.push(match.word);
+				}
 
 				if (wordsToRemove.length === 0) {
 					return await message.reply("None of those words are on the list.");
@@ -228,7 +238,7 @@ export default {
 					`### This command allows you to configure a manual word filter.\n` +
 						`- **${message.prefix}filter enable** - Enable the word filter.\n` +
 						`- **${message.prefix}filter disable** - Disable the word filter.\n` +
-						`- **${message.prefix}filter add [soft|hard|strict] [word]** - Add a word to the list. If omitted, defaults to 'hard'.\n` +
+						`- **${message.prefix}filter add [soft|hard|strict|regex] [word]** - Add a word to the list. If omitted, defaults to 'hard'. Regex patterns are case-insensitive.\n` +
 						`- **${message.prefix}filter remove** - Remove a word from the list.\n` +
 						`- **${message.prefix}filter list** - Send the current filter list.\n` +
 						`- **${message.prefix}filter message [message]** - Set the message sent when a message is matched.\n` +

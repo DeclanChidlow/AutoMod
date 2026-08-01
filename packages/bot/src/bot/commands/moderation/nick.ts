@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction, ULID_REGEX } from "../../util";
 
 function getParseErrorMessage(targetStr: string): string {
 	const isUserMention = targetStr.startsWith("<@") || targetStr.match(/^01[A-HJKMNP-TV-Z0-9]{24}$/);
@@ -13,6 +13,19 @@ function getFetchErrorMessage(targetStr: string): string {
 	return isUserMention ? "The target is not part of this server." : "Couldn't find the specified user. Make sure to specify the user first, then the nickname.";
 }
 
+function quickSelfCheck(targetStr: string, message: MessageCommandContext): boolean {
+	if (targetStr.startsWith("<@")) {
+		const mentionId = targetStr.replace(/<@|>/g, "").toUpperCase();
+		if (mentionId === message.authorId) return true;
+	} else if (ULID_REGEX.test(targetStr)) {
+		if (targetStr.toUpperCase() === message.authorId) return true;
+	} else {
+		const lowered = targetStr.toLowerCase();
+		if (lowered === message.author?.displayName?.toLowerCase() || lowered === message.author?.username?.toLowerCase()) return true;
+	}
+	return false;
+}
+
 export default {
 	name: "nick",
 	aliases: ["setnick"],
@@ -22,12 +35,20 @@ export default {
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {
 			if (!message.member) return;
-			if (!(await canModerate(message, "ManageNicknames"))) {
+
+			const targetStr = args[0];
+			if (!targetStr) return message.reply("No target user specified.");
+
+			const hasManageNicknames = await canModerate(message, "ManageNicknames");
+			if (!hasManageNicknames && !quickSelfCheck(targetStr, message)) {
 				return message.reply(NO_MANAGER_MSG);
 			}
 
-			const targetStr = args.shift();
-			if (!targetStr) return message.reply("No target user specified.");
+			if (!hasManageNicknames && !message.member.hasPermission(message.channel!, "ChangeNickname")) {
+				return message.reply("You don't have permission to change your own nickname.");
+			}
+
+			args.shift();
 
 			let targetUser;
 			try {
@@ -49,8 +70,12 @@ export default {
 
 			if (!target) return message.reply("The target is not part of this server.");
 
-			const hierarchyErr = await checkMemberAction(target, message, "change nickname", "ManageNicknames");
-			if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });
+			const isSelf = targetUser.id === message.authorId;
+
+			if (!isSelf) {
+				const hierarchyErr = await checkMemberAction(target, message, "change nickname", "ManageNicknames");
+				if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });
+			}
 
 			const newName = args.join(" ");
 

@@ -6,7 +6,8 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import type { SendableEmbed } from "../../../stoat/index.js";
 import { User } from "../../../stoat/index.js";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
-import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, canModerate, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, getMembers, canModerate, checkMemberAction, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import { client } from "../../..";
 
 export default {
 	name: "warn",
@@ -64,6 +65,21 @@ export default {
 					continue;
 				}
 
+				if (user.id == message.authorId!) {
+					embeds.push(embed("You cannot warn yourself.", null, EmbedColor.SoftError));
+					continue;
+				}
+
+				if (user.id == client.user!.id) {
+					embeds.push(embed("You cannot use the AutoMod to warn the AutoMod.", null, EmbedColor.SoftError));
+					continue;
+				}
+
+				if (user.id == message.serverContext.ownerId) {
+					embeds.push(embed("You cannot warn the server owner.", null, EmbedColor.SoftError));
+					continue;
+				}
+
 				targetUsers.push(user);
 			} catch (e) {
 				console.error(e);
@@ -71,7 +87,18 @@ export default {
 			}
 		}
 
+		const members = getMembers(message.serverContext.id);
+
 		for (const user of targetUsers) {
+			const member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
+			if (member) {
+				const err = await checkMemberAction(member, message, "warn");
+				if (err) {
+					embeds.push(err);
+					continue;
+				}
+			}
+
 			let infraction = {
 				_id: ulid(),
 				createdBy: message.authorId,
@@ -91,9 +118,7 @@ export default {
 							const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
 							const dmChannel = await getDmChannel(user);
 
-							if (true) {
-								await dmChannel.sendMessage({ embeds: [embed] });
-							} else console.warn("Missing permission to DM user.");
+						await dmChannel.sendMessage({ embeds: [embed] });
 						} catch (e) {
 							console.error(e);
 						}

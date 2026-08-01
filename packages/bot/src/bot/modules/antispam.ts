@@ -38,6 +38,8 @@ async function antispam(message: Message): Promise<boolean> {
 
 		let ruleTriggered = false;
 
+		const member = message.member!;
+
 		for (const rule of serverRules.automodSettings.spam) {
 			if (msgCountStore.get(rule.id) == null) {
 				msgCountStore.set(rule.id, { users: {} });
@@ -46,7 +48,7 @@ async function antispam(message: Message): Promise<boolean> {
 			if (message.author?.bot) break;
 			if (!message.authorId) break;
 			if (serverRules.whitelist?.users?.includes(message.authorId)) break;
-			if (message.member?.roles?.filter((r) => serverRules!.whitelist?.roles?.includes(r)).length) break;
+			if (member.roles?.filter((r) => serverRules!.whitelist?.roles?.includes(r)).length) break;
 			if (serverRules.whitelist?.managers !== false && (await isModerator(message, false))) break;
 			if (rule.channels?.length && (!message.channelId || rule.channels.indexOf(message.channelId) == -1)) continue;
 
@@ -211,6 +213,7 @@ function checkMessageForFilteredWords(message: string, config: ServerConfig): bo
 		soft: config.wordlist.filter((w) => w.strictness == "SOFT").map((w) => w.word),
 		hard: config.wordlist.filter((w) => w.strictness == "HARD").map((w) => w.word),
 		strict: config.wordlist.filter((w) => w.strictness == "STRICT").map((w) => w.word),
+		regex: config.wordlist.filter((w) => w.strictness == "REGEX").map((w) => w.word),
 	};
 
 	const softSegments = message
@@ -230,6 +233,18 @@ function checkMessageForFilteredWords(message: string, config: ServerConfig): bo
 		const replacedMsg = replaceChars(loweredMsg.replace(/\s/g, ""));
 		for (const word of words.strict) {
 			if (replacedMsg.includes(replaceChars(word.toLowerCase()))) return true;
+		}
+	}
+
+	if (words.regex.length > 0) {
+		for (const pattern of words.regex) {
+			try {
+				if (new RegExp(pattern, "i").test(message)) {
+					return true;
+				}
+			} catch (e) {
+				console.warn(`Invalid regex filter pattern: ${pattern} - ${e}`);
+			}
 		}
 	}
 

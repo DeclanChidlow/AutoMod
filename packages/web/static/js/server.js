@@ -407,7 +407,7 @@ async function loadWordlist() {
         <form id="wl-add-form" class="inline-form">
             <input type="text" id="wl-new-word" placeholder="Word or phrase" required>
             <select id="wl-new-strictness">
-                <option value="SOFT">SOFT</option><option value="HARD">HARD</option><option value="STRICT">STRICT</option>
+                <option value="SOFT">SOFT</option><option value="HARD">HARD</option><option value="STRICT">STRICT</option><option value="REGEX">REGEX</option>
             </select>
             <button type="submit" class="btn btn-primary btn-sm">Add</button>
         </form>

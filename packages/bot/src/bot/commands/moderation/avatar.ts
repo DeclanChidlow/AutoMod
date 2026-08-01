@@ -18,22 +18,32 @@ export default {
 			const target = await message.channel?.server?.fetchMember(targetUser);
 			if (!target) return message.reply("The target is not part of this server.");
 
+			const isSelf = targetUser.id === message.authorId;
+
 			if (args[0]?.toLowerCase() == "reset" || args[0]?.toLowerCase() == "clear") {
-				// Clear server avatar
 				if (!message.member) return;
-				if (!(await canModerate(message, "RemoveAvatars"))) return message.reply(NO_MANAGER_MSG);
 
-				const hierarchyErr = await checkMemberAction(target, message, "manage avatar", "RemoveAvatars");
-				if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });
-
-				if (!target.avatar) {
-					await message.reply(`\`@${targetUser.username}\` does not currently have an avatar set for this server.`);
+				if (isSelf) {
+					if (!target.avatar) {
+						await message.reply(`You do not currently have an avatar set for this server.`);
+					} else {
+						await target.edit({ remove: ["Avatar"] });
+						await message.reply(`Your server avatar has been cleared.`);
+					}
 				} else {
-					await target.edit({ remove: ["Avatar"] });
-					await message.reply(`\`@${targetUser.username}\`'s server avatar has been cleared.`);
+					if (!(await canModerate(message, "RemoveAvatars"))) return message.reply(NO_MANAGER_MSG);
+
+					const hierarchyErr = await checkMemberAction(target, message, "manage avatar", "RemoveAvatars");
+					if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });
+
+					if (!target.avatar) {
+						await message.reply(`\`@${targetUser.username}\` does not currently have an avatar set for this server.`);
+					} else {
+						await target.edit({ remove: ["Avatar"] });
+						await message.reply(`\`@${targetUser.username}\`'s server avatar has been cleared.`);
+					}
 				}
 			} else {
-				// Print server and global avatar
 				await message.reply(
 					`### \`@${targetUser.username}\`'s avatar\n` +
 						(targetUser.avatar ? `[\\[Global\\]](<${targetUser.avatarURL}>)` : "[No global avatar]") +

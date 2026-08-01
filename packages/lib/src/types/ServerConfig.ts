@@ -45,7 +45,7 @@ class ServerConfig {
 		action: "LOG" | "DELETE" | "WARN";
 		message: string;
 	};
-	wordlist?: { word: string; strictness: "SOFT" | "HARD" | "STRICT" }[];
+	wordlist?: { word: string; strictness: "SOFT" | "HARD" | "STRICT" | "REGEX" }[];
 }
 
 export default ServerConfig;

@@ -47,12 +47,16 @@ export default {
 						return message.reply("Please provide a valid emoji.");
 					}
 
-					const channel = message.channel;
-					if (!channel) {
-						return message.reply("This command must be used in a channel.");
-					}
+				const channel = message.channel;
+				if (!channel) {
+					return message.reply("This command must be used in a channel.");
+				}
 
-					try {
+				if (!channel.havePermission("React")) {
+					return message.reply("I don't have permission to add reactions in this channel.");
+				}
+
+				try {
 						const targetMsg = await channel.fetchMessage(messageId);
 						await targetMsg.react(emoji);
 
@@ -89,8 +93,8 @@ export default {
 						return message.reply("No reaction role found for that message and emoji combination.");
 					}
 
-					const channel = message.channel;
-					if (channel) {
+				const channel = message.channel;
+				if (channel && channel.havePermission("React")) {
 						try {
 							const targetMsg = await channel.fetchMessage(messageId);
 							await targetMsg.unreact(emoji);

@@ -44,20 +44,19 @@ export default {
 				onPass: async (target) => {
 					const originator = await fetchUsername(message.authorId!);
 					const infId = ulid();
-					const infraction: Infraction = {
-						_id: infId,
-						createdBy: client.user!.id,
-						date: Date.now(),
-						reason: `Vote kick passed. Started by ${originator}`,
-						server: message.serverContext.id,
-						type: InfractionType.Manual,
-						user: target.id,
-						actionType: "kick",
-					};
+					await message.serverContext.kickUser(target.id);
 					await Promise.all([
-						storeInfraction(infraction),
-						message.serverContext.kickUser(target.id),
-						logModAction("kick", message.serverContext, message.member!, target.id, "Vote kick passed", infraction._id),
+						storeInfraction({
+							_id: infId,
+							createdBy: client.user!.id,
+							date: Date.now(),
+							reason: `Vote kick passed. Started by ${originator}`,
+							server: message.serverContext.id,
+							type: InfractionType.Manual,
+							user: target.id,
+							actionType: "kick",
+						} as Infraction),
+						logModAction("kick", message.serverContext, message.member!, target.id, "Vote kick passed", infId),
 					]);
 				},
 				logActionType: "kick",
@@ -122,6 +121,11 @@ export default {
 					continue;
 				}
 
+				if (user.id == message.serverContext.ownerId) {
+					embeds.push(embed("You cannot kick the server owner.", null, EmbedColor.SoftError));
+					continue;
+				}
+
 				targetUsers.push(user);
 			} catch (e) {
 				console.error(e);
@@ -147,13 +151,18 @@ export default {
 			try {
 				const member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
 
-				if (member) {
-					const err = await checkMemberAction(member, message, "kick", "KickMembers");
-					if (err) {
-						embeds.push(err);
-						continue;
-					}
+				if (!member) {
+					embeds.push(embed(`Could not find that user in the server.`, null, EmbedColor.SoftError));
+					continue;
 				}
+
+				const err = await checkMemberAction(member, message, "kick", "KickMembers");
+				if (err) {
+					embeds.push(err);
+					continue;
+				}
+
+				await message.serverContext.kickUser(user.id);
 
 				let infId = ulid();
 				let infraction: Infraction = {
@@ -172,9 +181,7 @@ export default {
 						const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
 						const dmChannel = await getDmChannel(user);
 
-						if (true) {
-							await dmChannel.sendMessage({ embeds: [embed] });
-						} else console.warn("Missing permission to DM user.");
+						await dmChannel.sendMessage({ embeds: [embed] });
 					} catch (e) {
 						console.error(e);
 					}
@@ -183,7 +190,6 @@ export default {
 				let [{ userWarnCount }] = await Promise.all([
 					storeInfraction(infraction),
 					logModAction("kick", message.serverContext, message.member!, user.id, reason, infraction._id),
-					message.serverContext.kickUser(member),
 				]);
 
 				embeds.push({

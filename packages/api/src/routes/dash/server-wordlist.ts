@@ -9,7 +9,7 @@ async function serversCollection() {
 	return _servers;
 }
 
-type WordlistEntry = { word: string; strictness: "SOFT" | "HARD" | "STRICT" };
+type WordlistEntry = { word: string; strictness: "SOFT" | "HARD" | "STRICT" | "REGEX" };
 type WordlistAction = { action: "LOG" | "DELETE" | "WARN"; message: string };
 
 const MAX_WORD_LENGTH = 2000;
@@ -44,17 +44,22 @@ app.post("/dash/server/:server/wordlist", requireAuth({ permission: 2 }), async 
 	if (!body.word || typeof body.word != "string") return badRequest(res, "Missing 'word' field");
 	if (body.word.length > MAX_WORD_LENGTH) return badRequest(res, `Word must be at most ${MAX_WORD_LENGTH} characters`);
 
-	const strictness = ["SOFT", "HARD", "STRICT"].includes(body.strictness) ? body.strictness : "SOFT";
+	const strictness = ["SOFT", "HARD", "STRICT", "REGEX"].includes(body.strictness) ? body.strictness : "SOFT";
 
-	const entry: WordlistEntry = { word: body.word.toLowerCase(), strictness };
+	const isRegex = strictness === "REGEX";
+	const entry: WordlistEntry = { word: isRegex ? body.word : body.word.toLowerCase(), strictness };
 
 	const col = await serversCollection();
+
+	const dedupCond = isRegex
+		? { $ne: ["$$this.word", entry.word] }
+		: { $ne: [{ $toLower: "$$this.word" }, entry.word] };
 
 	const result = await col.updateOne({ id: server }, [
 		{
 			$set: {
 				wordlist: {
-					$concatArrays: [{ $filter: { input: { $ifNull: ["$wordlist", []] }, cond: { $ne: [{ $toLower: "$$this.word" }, entry.word] } } }, [entry]],
+					$concatArrays: [{ $filter: { input: { $ifNull: ["$wordlist", []] }, cond: dedupCond } }, [entry]],
 				},
 			},
 		},
@@ -72,10 +77,10 @@ app.patch("/dash/server/:server/wordlist/:word", requireAuth({ permission: 2 }),
 	if (!server || !word) return badRequest(res);
 	if (word.length > MAX_WORD_LENGTH) return badRequest(res, `Word must be at most ${MAX_WORD_LENGTH} characters`);
 
-	const strictness = ["SOFT", "HARD", "STRICT"].includes(req.body.strictness) ? req.body.strictness : "SOFT";
+	const strictness = ["SOFT", "HARD", "STRICT", "REGEX"].includes(req.body.strictness) ? req.body.strictness : "SOFT";
 
 	const col = await serversCollection();
-	const result = await col.updateOne({ "id": server, "wordlist.word": word.toLowerCase() }, { $set: { "wordlist.$.strictness": strictness } } as any);
+	const result = await col.updateOne({ "id": server, "wordlist.word": word }, { $set: { "wordlist.$.strictness": strictness } } as any);
 
 	res.send({ success: result.modifiedCount > 0 });
 });
@@ -89,7 +94,7 @@ app.delete("/dash/server/:server/wordlist/:word", requireAuth({ permission: 2 })
 	if (!server || !word) return badRequest(res);
 
 	const col = await serversCollection();
-	const result = await col.updateOne({ id: server }, { $pull: { wordlist: { word: word.toLowerCase() } } } as any);
+	const result = await col.updateOne({ id: server }, { $pull: { wordlist: { word } } } as any);
 
 	res.send({ success: result.modifiedCount > 0 });
 });

@@ -50,10 +50,7 @@ export default {
 			}
 
 			if (!id) {
-				let tempnum = await checkTempBans(target);
-				if (tempnum > 0) {
-					return msg.edit({ content: "The user could not be found, but leftover database entries have been cleaned up." });
-				} else return msg.edit({ content: "The user could not be found." });
+				return msg.edit({ content: "The user could not be found." });
 			}
 
 			let ban = bans.find((b) => b.id.user == id);
@@ -69,7 +66,8 @@ export default {
 
 			await msg.edit({ content: `@${ban.user?.username ?? ban.id.user} has been unbanned.` });
 		} catch (e) {
-			console.error(e);
+			console.error("" + e);
+			message.reply("Something went wrong: " + e);
 		}
 	},
 } as SimpleCommand;

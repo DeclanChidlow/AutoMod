@@ -51,11 +51,14 @@ async function isModerator(message: Message, announceSudo = false): Promise<bool
 	const member = message.member!;
 	const server = message.channel!.server!;
 
-	if (member.hasPermission(server, "ManageMessages")) return true;
+	if (member.hasPermission(message.channel!, "ManageMessages")) return true;
+	if (member.hasPermission(server, "ManageServer")) return true;
 
-	const [isManager, mods, isSudo] = await Promise.all([isBotManager(message), dbs.SERVERS.findOne({ id: server.id }), checkSudoPermission(message, announceSudo)]);
+	const [config, isSudo] = await Promise.all([dbs.SERVERS.findOne({ id: server.id }), checkSudoPermission(message, announceSudo)]);
 
-	return isManager || (mods?.moderators?.includes(member.user!.id) ?? false) || isSudo;
+	return (config?.botManagers?.includes(member.user!.id) ?? false) ||
+		(config?.moderators?.includes(member.user!.id) ?? false) ||
+		isSudo;
 }
 
 async function isBotManager(message: Message, announceSudo = false): Promise<boolean> {
@@ -72,8 +75,7 @@ async function isBotManager(message: Message, announceSudo = false): Promise<boo
 async function canModerate(message: Message, ...permissions: string[]): Promise<boolean> {
 	if (await isModerator(message)) return true;
 	const member = message.member!;
-	const server = message.channel!.server!;
-	return permissions.some((p) => member.hasPermission(server, p));
+	return permissions.some((p) => member.hasPermission(message.channel!, p));
 }
 
 async function checkMemberAction(member: ServerMember, message: Message, action: string, permission?: string): Promise<SendableEmbed | null> {

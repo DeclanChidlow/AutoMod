@@ -49,34 +49,42 @@ export default {
 				isModerator: isMod,
 				onPass: async (target) => {
 					const infId = ulid();
-					const infraction: Infraction = {
-						_id: infId,
-						createdBy: client.user!.id,
-						date: Date.now(),
-						reason: isTemp ? `Vote ban passed (${banDuration} minutes). Started by ${originator}` : `Vote ban passed. Started by ${originator}`,
-						server: message.serverContext.id,
-						type: InfractionType.Manual,
-						user: target.id,
-						actionType: "ban",
-					};
 					if (isTemp) {
 						const banUntil = Date.now() + 1000 * 60 * banDuration;
-						infraction.expires = banUntil;
+						await message.serverContext.banUser(target.id, {
+							reason: `Automatic temporary ban triggered by /ban vote (${banDuration} minutes)`,
+						});
 						await Promise.all([
-							storeInfraction(infraction),
-							message.serverContext.banUser(target.id, {
-								reason: `Automatic temporary ban triggered by /ban vote (${banDuration} minutes)`,
-							}),
+							storeInfraction({
+								_id: infId,
+								createdBy: client.user!.id,
+								date: Date.now(),
+								reason: `Vote ban passed (${banDuration} minutes). Started by ${originator}`,
+								server: message.serverContext.id,
+								type: InfractionType.Manual,
+								user: target.id,
+								actionType: "ban",
+								expires: banUntil,
+							} as Infraction),
 							storeTempBan({ id: infId, bannedUser: target.id, server: message.serverContext.id, until: banUntil }),
-							logModAction("ban", message.serverContext, message.member!, target.id, `Vote ban passed (${banDuration} minutes)`, infraction._id),
+							logModAction("ban", message.serverContext, message.member!, target.id, `Vote ban passed (${banDuration} minutes)`, infId),
 						]);
 					} else {
+						await message.serverContext.banUser(target.id, {
+							reason: "Automatic permanent ban triggered by /ban vote",
+						});
 						await Promise.all([
-							storeInfraction(infraction),
-							message.serverContext.banUser(target.id, {
-								reason: "Automatic permanent ban triggered by /ban vote",
-							}),
-							logModAction("ban", message.serverContext, message.member!, target.id, "Vote ban passed (permanent)", infraction._id),
+							storeInfraction({
+								_id: infId,
+								createdBy: client.user!.id,
+								date: Date.now(),
+								reason: `Vote ban passed. Started by ${originator}`,
+								server: message.serverContext.id,
+								type: InfractionType.Manual,
+								user: target.id,
+								actionType: "ban",
+							} as Infraction),
+							logModAction("ban", message.serverContext, message.member!, target.id, "Vote ban passed (permanent)", infId),
 						]);
 					}
 				},
@@ -196,6 +204,11 @@ export default {
 					continue;
 				}
 
+				if (user.id == message.serverContext.ownerId) {
+					embeds.push(embed("You cannot ban the server owner.", null, EmbedColor.SoftError));
+					continue;
+				}
+
 				targetUsers.push(user);
 			} catch (e) {
 				console.error(e);
@@ -220,7 +233,12 @@ export default {
 
 		for (const user of targetUsers) {
 			try {
-				const member = members.find((m) => m.id.user == user.id);
+				let member;
+				try {
+					member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
+				} catch {
+					// Fetch failed. Continue without hierarchy check
+				}
 
 				if (member) {
 					const err = await checkMemberAction(member, message, "ban", "BanMembers");
@@ -231,6 +249,13 @@ export default {
 				}
 
 				if (banDuration == 0) {
+					const banOptions: Record<string, any> = {
+						reason: reason + ` (by ${await fetchUsername(message.authorId!)} ${message.authorId})`,
+					};
+					if (purgeSeconds > 0) banOptions["delete_message_seconds"] = purgeSeconds;
+
+					await message.serverContext.banUser(user.id, banOptions);
+
 					const infId = ulid();
 					const infraction: Infraction = {
 						_id: infId,
@@ -250,22 +275,11 @@ export default {
 							const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
 							const dmChannel = await getDmChannel(user);
 
-							if (true) {
-								await dmChannel.sendMessage({
-									embeds: [embed],
-								});
-							} else console.warn("Missing permission to DM user.");
+							await dmChannel.sendMessage({ embeds: [embed] });
 						} catch (e) {
 							console.error(e);
 						}
 					}
-
-					const banOptions: Record<string, any> = {
-						reason: reason + ` (by ${await fetchUsername(message.authorId!)} ${message.authorId})`,
-					};
-					if (purgeSeconds > 0) banOptions["delete_message_seconds"] = purgeSeconds;
-
-					await message.serverContext.banUser(user.id, banOptions);
 
 					await logModAction(
 						"ban",
@@ -291,6 +305,14 @@ export default {
 				} else {
 					const banUntil = Date.now() + banDuration;
 					const banDurationFancy = formatRelativeTime(banUntil, true);
+
+					const banOptions: Record<string, any> = {
+						reason: reason + ` (by ${await fetchUsername(message.authorId!)} ${message.authorId}) (${durationStr})`,
+					};
+					if (purgeSeconds > 0) banOptions["delete_message_seconds"] = purgeSeconds;
+
+					await message.serverContext.banUser(user.id, banOptions);
+
 					const infId = ulid();
 					const infraction: Infraction = {
 						_id: infId,
@@ -310,22 +332,11 @@ export default {
 							const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
 							const dmChannel = await getDmChannel(user);
 
-							if (true) {
-								await dmChannel.sendMessage({
-									embeds: [embed],
-								});
-							} else console.warn("Missing permission to DM user.");
+							await dmChannel.sendMessage({ embeds: [embed] });
 						} catch (e) {
 							console.error(e);
 						}
 					}
-
-					const banOptions: Record<string, any> = {
-						reason: reason + ` (by ${await fetchUsername(message.authorId!)} ${message.authorId}) (${durationStr})`,
-					};
-					if (purgeSeconds > 0) banOptions["delete_message_seconds"] = purgeSeconds;
-
-					await message.serverContext.banUser(user.id, banOptions);
 
 					await Promise.all([
 						storeTempBan({
