@@ -7,7 +7,9 @@ import { isSudo } from "./commands/owner/override";
 import type { SendableEmbed } from "../stoat/index.js";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 
-const NO_MANAGER_MSG = "Missing permission";
+function NO_MANAGER_MSG(action: string): string {
+	return `Missing permission to ${action}`;
+}
 const ULID_REGEX = /^[0-9A-HJ-KM-NP-TV-Z]{26}$/i;
 const USER_MENTION_REGEX = /^<@[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
 const CHANNEL_MENTION_REGEX = /^<#[0-9A-HJ-KM-NP-TV-Z]{26}>$/i;
@@ -81,17 +83,46 @@ async function canModerate(message: Message, ...permissions: string[]): Promise<
 async function checkMemberAction(member: ServerMember, message: Message, action: string, permission?: string): Promise<SendableEmbed | null> {
 	const username = member.user?.username ?? "that user";
 
-	if (message.member && !member.inferiorTo(message.member)) {
+	const server = message.channel!.server!;
+
+	const executorMember = message.member ? await server.fetchMemberFresh(message.authorId!) : null;
+	const targetMember = await server.fetchMemberFresh(member.id.user);
+
+	if (executorMember && !targetMember.inferiorTo(executorMember)) {
 		return embed(`\`${username}\` has an equally or higher ranked role than you. Refusing to ${action}.`, "Missing permission", EmbedColor.SoftError);
 	}
 
-	const botMember = await getOwnMemberInServer(message.channel!.server!);
-	if (!member.inferiorTo(botMember)) {
+	const botMember = await getOwnMemberInServer(server);
+	if (!targetMember.inferiorTo(botMember)) {
 		return embed(`AutoMod lacks permission to ${action} \`${username}\`.`, null, EmbedColor.SoftError);
 	}
 
-	if (permission && !message.channel!.server!.havePermission(permission)) {
+	if (permission && !server.havePermission(permission)) {
 		return embed(`Sorry, AutoMod lacks the \`${permission}\` permission.`, null, EmbedColor.SoftError);
+	}
+
+	return null;
+}
+
+async function checkRoleAction(role: { rank?: number }, message: Message, action: string, permission?: string): Promise<SendableEmbed | null> {
+	const server = message.channel!.server!;
+
+	if (permission && !server.havePermission(permission)) {
+		return embed(`Sorry, AutoMod lacks the \`${permission}\` permission.`, null, EmbedColor.SoftError);
+	}
+
+	const roleRank = role.rank;
+	if (roleRank != null) {
+		const executorRanking = message.member!.ranking;
+
+		if (roleRank <= executorRanking) {
+			return embed(`You can only ${action} roles below your own highest role.`, null, EmbedColor.SoftError);
+		}
+
+		const botMember = await getOwnMemberInServer(server);
+		if (roleRank <= botMember.ranking) {
+			return embed(`AutoMod lacks permission to ${action}. Its highest role is not above the target role.`, null, EmbedColor.SoftError);
+		}
 	}
 
 	return null;
@@ -569,6 +600,7 @@ export {
 	isBotManager,
 	canModerate,
 	checkMemberAction,
+	checkRoleAction,
 	getPermissionLevel,
 	getPermissionLevelFromMember,
 	parseUser,

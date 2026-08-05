@@ -19,7 +19,7 @@ export default {
 		if (!config) config = { id: message.channel!.serverId! };
 		if (!config.whitelist) config.whitelist = { users: [], roles: [], managers: true };
 
-		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG("manage allowlist"));
 
 		const action = args[0]?.toLowerCase();
 

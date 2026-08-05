@@ -15,7 +15,7 @@ export default {
 	syntax: SYNTAX,
 	category: CommandCategory.Moderation,
 	run: async (message: MessageCommandContext, args: string[]) => {
-		if (!(await canModerate(message, "BanMembers"))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "BanMembers"))) return message.reply(NO_MANAGER_MSG("unban users"));
 		if (!message.serverContext.havePermission("BanMembers")) {
 			return await message.reply(`Sorry, I do not have \`BanMembers\` permission.`);
 		}

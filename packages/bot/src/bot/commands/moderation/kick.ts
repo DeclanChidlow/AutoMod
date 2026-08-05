@@ -65,7 +65,7 @@ export default {
 			});
 		}
 
-		if (!(await canModerate(message, "KickMembers"))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "KickMembers"))) return message.reply(NO_MANAGER_MSG("kick users"));
 		if (!message.serverContext.havePermission("KickMembers")) {
 			return await message.reply(`Sorry, I do not have \`KickMembers\` permission.`);
 		}

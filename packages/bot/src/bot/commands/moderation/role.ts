@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction, checkRoleAction } from "../../util";
 import { dbs } from "../../..";
 
 export default {
@@ -13,7 +13,7 @@ export default {
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {
 			if (!message.member) return;
-			if (!(await canModerate(message, "ManageRole"))) return message.reply(NO_MANAGER_MSG);
+			if (!(await canModerate(message, "ManageRole"))) return message.reply(NO_MANAGER_MSG("manage roles"));
 
 			const action = args.shift()?.toLowerCase();
 
@@ -46,6 +46,14 @@ export default {
 					if (!emoji || emoji.includes(" ")) {
 						return message.reply("Please provide a valid emoji.");
 					}
+
+				const roleHierarchyErr = await checkRoleAction(
+					server.roles.get(roleId),
+					message,
+					"assign this role",
+					"AssignRoles",
+				);
+				if (roleHierarchyErr) return message.reply({ embeds: [roleHierarchyErr] });
 
 				const channel = message.channel;
 				if (!channel) {

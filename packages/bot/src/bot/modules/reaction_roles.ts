@@ -1,4 +1,5 @@
 import { client, dbs } from "../../index";
+import { getOwnMemberInServer } from "../util";
 
 const normalizeEmoji = (emoji: string) => {
 	return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/[️︎]/g, "");
@@ -19,16 +20,26 @@ async function notifyUser(userId: string, message: string) {
 	}
 }
 
+function isNotElevated(error: any): boolean {
+	if (error?.type === "NotElevated") return true;
+	if (error?.message?.includes("NotElevated")) return true;
+	if (typeof error === "string" && error.includes("NotElevated")) return true;
+	return false;
+}
+
 client.on("messageReactionAdd", async (message, user, emoji) => {
 	if (user === client.user?.id) return;
+
+	let reactionRole: any;
+	let server: any;
 
 	try {
 		const normalizedEmoji = normalizeEmoji(emoji);
 
-		const reactionRole = await dbs.REACTION_ROLES.findOne({ messageId: message.id, emoji: normalizedEmoji });
+		reactionRole = await dbs.REACTION_ROLES.findOne({ messageId: message.id, emoji: normalizedEmoji });
 		if (!reactionRole) return;
 
-		const server = client.servers.get(reactionRole.server);
+		server = client.servers.get(reactionRole.server);
 		if (!server) return;
 
 		// Verify the role still exists on the server.
@@ -45,24 +56,51 @@ client.on("messageReactionAdd", async (message, user, emoji) => {
 		const currentRoles = member.roles || [];
 
 		if (!currentRoles.includes(reactionRole.roleId)) {
+			const role = server.roles?.get(reactionRole.roleId);
+			const botMember = await getOwnMemberInServer(server);
+
+			if (!member.inferiorTo(botMember)) {
+				notifyUser(user, `AutoMod cannot assign roles to you because your highest role is above AutoMod's role in the hierarchy. A server admin must move AutoMod's role higher.`).catch(() => {});
+				return;
+			}
+
+			if (role?.rank != null && role.rank <= botMember.ranking) {
+				notifyUser(
+					user,
+					`AutoMod cannot assign the role \`${role.name || reactionRole.roleId}\` because it is above AutoMod's own role in the permission hierarchy. A server admin must move AutoMod's role higher.`,
+				).catch(() => {});
+				return;
+			}
+
+			if (!server.havePermission("AssignRoles")) {
+				notifyUser(user, `AutoMod lacks permission to assign roles in this server. A server admin must grant the bot permission.`).catch(() => {});
+				return;
+			}
+
 			await member.edit({ roles: [...currentRoles, reactionRole.roleId] });
 		}
-	} catch (e) {
+	} catch (e: any) {
 		console.error("Failed to process reaction role add:", e);
-		notifyUser(user, "Unable to assign your reaction role. Please contact a server admin.").catch(() => {});
+		const message = isNotElevated(e)
+			? `AutoMod cannot assign the role \`${server.roles?.get(reactionRole.roleId)?.name || reactionRole.roleId}\` because it is above AutoMod's role in the hierarchy. A server admin must move AutoMod's role higher.`
+			: "Unable to assign your reaction role. Please contact a server admin.";
+		notifyUser(user, message).catch(() => {});
 	}
 });
 
 client.on("messageReactionRemove", async (message, user, emoji) => {
 	if (user === client.user?.id) return;
 
+	let reactionRole: any;
+	let server: any;
+
 	try {
 		const normalizedEmoji = normalizeEmoji(emoji);
 
-		const reactionRole = await dbs.REACTION_ROLES.findOne({ messageId: message.id, emoji: normalizedEmoji });
+		reactionRole = await dbs.REACTION_ROLES.findOne({ messageId: message.id, emoji: normalizedEmoji });
 		if (!reactionRole) return;
 
-		const server = client.servers.get(reactionRole.server);
+		server = client.servers.get(reactionRole.server);
 		if (!server) return;
 
 		// Verify the role still exists on the server.
@@ -78,11 +116,38 @@ client.on("messageReactionRemove", async (message, user, emoji) => {
 
 		const currentRoles = member.roles || [];
 		if (currentRoles.includes(reactionRole.roleId)) {
+			const role = server.roles?.get(reactionRole.roleId);
+			const botMember = await getOwnMemberInServer(server);
+
+			if (!member.inferiorTo(botMember)) {
+				notifyUser(
+					user,
+					`AutoMod cannot remove roles from you because your highest role is above AutoMod's role in the hierarchy. A server admin must move AutoMod's role higher or remove your role manually.`,
+				).catch(() => {});
+				return;
+			}
+
+			if (role?.rank != null && role.rank <= botMember.ranking) {
+				notifyUser(
+					user,
+					`AutoMod cannot remove the role \`${role.name || reactionRole.roleId}\` because it is above AutoMod's own role in the hierarchy. A server admin must move AutoMod's role higher or remove your role manually.`,
+				).catch(() => {});
+				return;
+			}
+
+			if (!server.havePermission("AssignRoles")) {
+				notifyUser(user, `AutoMod lacks permission to assign roles in this server. A server admin must grant the bot permission.`).catch(() => {});
+				return;
+			}
+
 			await member.edit({ roles: currentRoles.filter((role) => role !== reactionRole.roleId) });
 		}
-	} catch (e) {
+	} catch (e: any) {
 		console.error("Failed to process reaction role remove:", e);
-		notifyUser(user, "Unable to remove your reaction role. Please contact a server admin.").catch(() => {});
+		const message = isNotElevated(e)
+			? `AutoMod cannot remove the role \`${server.roles?.get(reactionRole.roleId)?.name || reactionRole.roleId}\` because it is above AutoMod's role in the hierarchy. A server admin must move AutoMod's role higher.`
+			: "Unable to remove your reaction role. Please contact a server admin.";
+		notifyUser(user, message).catch(() => {});
 	}
 });
 

@@ -41,7 +41,7 @@ export default {
 
 			const hasManageNicknames = await canModerate(message, "ManageNicknames");
 			if (!hasManageNicknames && !quickSelfCheck(targetStr, message)) {
-				return message.reply(NO_MANAGER_MSG);
+				return message.reply(NO_MANAGER_MSG("manage nicknames"));
 			}
 
 			if (!hasManageNicknames && !message.member.hasPermission(message.channel!, "ChangeNickname")) {

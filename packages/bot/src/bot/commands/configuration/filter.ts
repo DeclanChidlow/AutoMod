@@ -15,7 +15,7 @@ export default {
 	documentation: "/configuration/filter",
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
-		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG("manage filters"));
 
 		const config = await dbs.SERVERS.findOne({ id: message.channel!.serverId! });
 

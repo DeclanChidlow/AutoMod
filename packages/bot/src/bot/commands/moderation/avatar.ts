@@ -31,7 +31,7 @@ export default {
 						await message.reply(`Your server avatar has been cleared.`);
 					}
 				} else {
-					if (!(await canModerate(message, "RemoveAvatars"))) return message.reply(NO_MANAGER_MSG);
+					if (!(await canModerate(message, "RemoveAvatars"))) return message.reply(NO_MANAGER_MSG("manage avatars"));
 
 					const hierarchyErr = await checkMemberAction(target, message, "manage avatar", "RemoveAvatars");
 					if (hierarchyErr) return message.reply({ embeds: [hierarchyErr] });

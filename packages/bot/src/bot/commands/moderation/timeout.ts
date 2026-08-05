@@ -52,7 +52,7 @@ export default {
 		}
 
 		try {
-			if (!(await canModerate(message, "TimeoutMembers"))) return await message.reply(NO_MANAGER_MSG);
+			if (!(await canModerate(message, "TimeoutMembers"))) return await message.reply(NO_MANAGER_MSG("timeout users"));
 			if (!message.serverContext.havePermission("TimeoutMembers")) {
 				return await message.reply({ embeds: [embed("Sorry, I do not have `TimeoutMembers` permission.", "", EmbedColor.SoftError)] });
 			}

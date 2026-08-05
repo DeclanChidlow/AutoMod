@@ -15,7 +15,7 @@ export default {
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
-		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG("manage bot managers"));
 
 		let config = await dbs.SERVERS.findOne({ id: message.serverContext.id });
 		let admins = config?.botManagers ?? [];

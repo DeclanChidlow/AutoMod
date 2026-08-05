@@ -17,7 +17,7 @@ export default {
 	documentation: "/moderation/warn",
 	category: CommandCategory.Moderation,
 	run: async (message, args, serverConfig) => {
-		if (!(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG("warn users"));
 
 		const userInput = !message.replyIds?.length ? args.shift() || "" : undefined;
 		if (!userInput && !message.replyIds?.length)
@@ -91,12 +91,15 @@ export default {
 
 		for (const user of targetUsers) {
 			const member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
-			if (member) {
-				const err = await checkMemberAction(member, message, "warn");
-				if (err) {
-					embeds.push(err);
-					continue;
-				}
+			if (!member) {
+				embeds.push(embed(`Could not find that user in the server.`, null, EmbedColor.SoftError));
+				continue;
+			}
+
+			const err = await checkMemberAction(member, message, "warn");
+			if (err) {
+				embeds.push(err);
+				continue;
 			}
 
 			let infraction = {

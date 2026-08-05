@@ -204,7 +204,7 @@ export default {
 		const { id: authorId } = message;
 
 		if (!(await canModerate(message, "BanMembers", "KickMembers")) && !args[0]) {
-			return message.reply(NO_MANAGER_MSG);
+			return message.reply(NO_MANAGER_MSG("view infractions"));
 		}
 
 		const infractions: Array<Infraction> = await dbs.INFRACTIONS.find({ server: serverId }).toArray();
@@ -228,7 +228,7 @@ export default {
 				case "rm":
 				case "del":
 				case "undo":
-					if (!(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG);
+					if (!(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG("delete infractions"));
 
 					const id = args[1];
 					if (!id) return message.reply("No infraction ID provided.");
@@ -253,7 +253,7 @@ export default {
 					const user = await parseUserOrId(args[0]);
 					if (!user?.id) return message.reply("I can't find this user.");
 
-					if (user.id !== authorId && !(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG);
+					if (user.id !== authorId && !(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG("view infractions"));
 
 					const infs = userInfractions.get(user.id);
 

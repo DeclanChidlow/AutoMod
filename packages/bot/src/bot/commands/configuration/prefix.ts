@@ -20,7 +20,7 @@ export default {
 
 		switch (args[0]?.toLowerCase()) {
 			case "set":
-				if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
+				if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG("manage prefix"));
 
 				args.shift();
 				if (args.length == 0) return message.reply("You need to specify a prefix.");
@@ -43,7 +43,7 @@ export default {
 				break;
 			case "clear":
 			case "reset":
-				if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
+				if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG("manage prefix"));
 
 				if (config?.prefix != null) {
 					await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { prefix: undefined } });

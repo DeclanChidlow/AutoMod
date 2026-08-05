@@ -3,7 +3,7 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { Message } from "../../../stoat/index.js";
 import { decodeTime } from "ulid";
-import { canModerate, NO_MANAGER_MSG, parseUserOrId } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUserOrId, embed, EmbedColor } from "../../util";
 
 const SYNTAX = "{prefix}purge [number] [user[,user...]]";
 const MAX_PURGE_AMOUNT = 100;
@@ -31,7 +31,12 @@ class PurgeHandler {
 
 	async execute(args: string[]): Promise<void> {
 		if (!(await canModerate(this.message, "ManageMessages"))) {
-			await this.message.reply(NO_MANAGER_MSG);
+			await this.message.reply(NO_MANAGER_MSG("purge messages"));
+			return;
+		}
+
+		if (!this.message.channel?.havePermission("ManageMessages")) {
+			await this.message.reply({ embeds: [embed("Sorry, I do not have `ManageMessages` permission in this channel.", "", EmbedColor.SoftError)] });
 			return;
 		}
 

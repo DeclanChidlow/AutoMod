@@ -14,7 +14,7 @@ export default {
 	syntax: SYNTAX,
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
-		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG);
+		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG("manage logging"));
 
 		if (!args[0]) {
 			return await message.reply(`No category specified. Syntax: \`${SYNTAX.replace(/{prefix}/g, message.prefix)}\`\n` + `Categories: \`messageupdate\`, \`modaction\``);

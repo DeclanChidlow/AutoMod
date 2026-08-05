@@ -97,7 +97,7 @@ export default {
 			});
 		}
 
-		if (!(await canModerate(message, "BanMembers"))) return message.reply(NO_MANAGER_MSG);
+		if (!(await canModerate(message, "BanMembers"))) return message.reply(NO_MANAGER_MSG("ban users"));
 		if (!message.serverContext.havePermission("BanMembers")) {
 			return await message.reply({
 				embeds: [embed(`Sorry, I do not have \`BanMembers\` permission.`, "", EmbedColor.SoftError)],
@@ -237,7 +237,8 @@ export default {
 				try {
 					member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
 				} catch {
-					// Fetch failed. Continue without hierarchy check
+					embeds.push(embed(`Failed to fetch member data for this user. Cannot verify permissions.`, null, EmbedColor.Error));
+					continue;
 				}
 
 				if (member) {
