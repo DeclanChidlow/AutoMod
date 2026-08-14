@@ -148,8 +148,8 @@ async function logModAction(
 					`\`@${mod.user?.username}\` **${aType}** \`` +
 					`${await fetchUsername(target)}\`${type == "warn" ? "." : ` from ${server.name}.`}\n` +
 					`**Reason**: \`${reason ? reason : "No reason provided."}\`\n` +
-					`**Warn ID**: \`${infractionID}\`\n` +
-					(extraText ?? ""),
+					`**Warn ID**: \`${infractionID}\`` +
+					(extraText ? `\n${extraText}` : ""),
 				color: embedColor,
 			});
 		}

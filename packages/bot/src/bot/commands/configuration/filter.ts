@@ -243,7 +243,7 @@ export default {
 						`- **${message.prefix}filter list** - Send the current filter list.\n` +
 						`- **${message.prefix}filter message [message]** - Set the message sent when a message is matched.\n` +
 						`- **${message.prefix}filter action [log|delete|warn]** - Configure the action taken on filtered messages.\n` +
-						`- **${message.prefix}filter test [phrase]** - Test whether a phrase matches your word list.\n`,
+						`- **${message.prefix}filter test [phrase]** - Test whether a phrase matches your word list.`,
 				);
 				break;
 			}

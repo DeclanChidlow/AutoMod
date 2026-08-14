@@ -124,6 +124,8 @@ const getInfractionMessage = async (userId: string, infs: Infraction[], args: st
 		}
 	}
 
+	msg = msg.trimEnd();
+
 	if (args[1]?.toLowerCase() === "export-csv" || args[1]?.toLowerCase() === "csv" || args[1]?.toLowerCase() === "export") {
 		attachSpreadsheet = true;
 	}
@@ -176,7 +178,7 @@ const getTopInfractionsMessage = async (userInfractions: Map<string, Infraction[
 		msg += `${index++}. **${await fetchUsername(user)}** (\`${user}\`) — **${count}** infraction${count !== 1 ? "s" : ""}\n`;
 	}
 
-	return msg.substring(0, 1999);
+	return msg.trimEnd().substring(0, 1999);
 };
 
 function getInfEmoji(inf: Infraction) {
@@ -188,7 +190,7 @@ function getInfEmoji(inf: Infraction) {
 		case "timeout":
 			return "⏰ ";
 		default:
-			return "⚠️ ";
+			return "⚠ ";
 	}
 }
 

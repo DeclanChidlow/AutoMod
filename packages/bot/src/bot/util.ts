@@ -309,7 +309,7 @@ function sanitizeMessageContent(msg: string): string {
 		str += line + "\n";
 	}
 
-	return str;
+	return str.trimEnd();
 }
 
 function embed(content: string, title?: string | null, color?: string | EmbedColor): SendableEmbed {
