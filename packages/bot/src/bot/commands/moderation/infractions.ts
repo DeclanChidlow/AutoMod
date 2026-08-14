@@ -186,7 +186,7 @@ function getInfEmoji(inf: Infraction) {
 		case "ban":
 			return "🔨 ";
 		case "timeout":
-			return "⏱️ ";
+			return "⏰ ";
 		default:
 			return "⚠️ ";
 	}

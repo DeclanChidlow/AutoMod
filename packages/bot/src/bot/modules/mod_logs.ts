@@ -137,7 +137,7 @@ async function logModAction(
 		let config = await dbs.SERVERS.findOne({ id: server.id });
 
 		if (config?.logs?.modAction) {
-			let aType = type == "ban" ? "banned" : type + "ed";
+			let aType = type == "ban" ? "banned" : type == "timeout" ? "timed out" : type + "ed";
 			let embedColor = "#0576ff";
 			if (type == "kick") embedColor = "#ff861d";
 			if (type == "ban") embedColor = "#ff2f05";
