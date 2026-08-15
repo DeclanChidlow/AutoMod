@@ -60,7 +60,11 @@ export class ServerMember {
 	private get orderedRoles() {
 		const server = this.server;
 		if (!server) return [];
-		return this.roles?.map((id: string) => ({ id, ...(server.roles?.get(id) || {}) })).sort((a: any, b: any) => (b.rank ?? 0) - (a.rank ?? 0)) ?? [];
+		const serverRoles = server.roles;
+		return (this.roles ?? [])
+			.map((id: string) => serverRoles?.get(id))
+			.filter((role) => role)
+			.sort((a: any, b: any) => (b.rank ?? 0) - (a.rank ?? 0));
 	}
 
 	hasPermission(target: any, ...permission: string[]) {

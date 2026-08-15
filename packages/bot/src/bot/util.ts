@@ -58,9 +58,7 @@ async function isModerator(message: Message, announceSudo = false): Promise<bool
 
 	const [config, isSudo] = await Promise.all([dbs.SERVERS.findOne({ id: server.id }), checkSudoPermission(message, announceSudo)]);
 
-	return (config?.botManagers?.includes(member.user!.id) ?? false) ||
-		(config?.moderators?.includes(member.user!.id) ?? false) ||
-		isSudo;
+	return (config?.botManagers?.includes(member.user!.id) ?? false) || (config?.moderators?.includes(member.user!.id) ?? false) || isSudo;
 }
 
 async function isBotManager(message: Message, announceSudo = false): Promise<boolean> {
@@ -88,7 +86,11 @@ async function checkMemberAction(member: ServerMember, message: Message, action:
 	const executorMember = message.member ? await server.fetchMemberFresh(message.authorId!) : null;
 	const targetMember = await server.fetchMemberFresh(member.id.user);
 
-	if (executorMember && !targetMember.inferiorTo(executorMember)) {
+	// Role ranks can change server-side without the bot being notified and cached member role lists can reference roles the cache does not know about yet.
+	// Refresh the server data before comparing hierarchy so valid actions aren't refused based on stale information.
+	await ensureFreshServerRoles(server, [executorMember, targetMember]);
+
+	if (!isSudo(message.author!) && executorMember && executorMember.ranking !== Infinity && !targetMember.inferiorTo(executorMember)) {
 		return embed(`\`${username}\` has an equally or higher ranked role than you. Refusing to ${action}.`, "Missing permission", EmbedColor.SoftError);
 	}
 
@@ -113,9 +115,13 @@ async function checkRoleAction(role: { rank?: number }, message: Message, action
 
 	const roleRank = role.rank;
 	if (roleRank != null) {
-		const executorRanking = message.member!.ranking;
+		const executorMember = message.member ? await server.fetchMemberFresh(message.authorId!) : null;
 
-		if (roleRank <= executorRanking) {
+		await ensureFreshServerRoles(server, [executorMember]);
+
+		const executorRanking = executorMember?.ranking ?? Infinity;
+
+		if (!isSudo(message.author!) && executorRanking !== Infinity && roleRank <= executorRanking) {
 			return embed(`You can only ${action} roles below your own highest role.`, null, EmbedColor.SoftError);
 		}
 
@@ -183,6 +189,35 @@ async function getOwnMemberInServer(server: Server): Promise<ServerMember> {
 	}
 
 	return member;
+}
+
+const serverRolesRefreshTimes = new Map<string, number>();
+const SERVER_ROLES_REFRESH_INTERVAL = 5 * 60_000;
+
+async function ensureFreshServerRoles(server: Server, involvedMembers: (ServerMember | null | undefined)[] = []): Promise<void> {
+	const roles = server.roles;
+	const involvedRoleIds = involvedMembers.flatMap((m) => m?.roles ?? []);
+
+	const incomplete = !roles || roles.size === 0 || involvedRoleIds.some((id) => !roles.has(id));
+	const lastRefresh = serverRolesRefreshTimes.get(server.id) ?? 0;
+	const stale = Date.now() - lastRefresh > SERVER_ROLES_REFRESH_INTERVAL;
+
+	if (!incomplete && !stale) return;
+
+	serverRolesRefreshTimes.set(server.id, Date.now());
+	try {
+		const data = await client.api.get(`/servers/${server.id}`, { include_channels: true });
+		client.servers.updateUnderlyingObject(server.id, data);
+		if (data.channels) {
+			for (const channel of data.channels) {
+				if (typeof channel !== "string") {
+					client.channels.getOrCreate(channel._id, { ...channel, server: channel.server || channel.serverId || data._id });
+				}
+			}
+		}
+	} catch (e) {
+		console.error(`Failed to refresh server data for hierarchy check: ${e}`);
+	}
 }
 
 // Utility functions

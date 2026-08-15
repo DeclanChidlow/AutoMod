@@ -362,6 +362,14 @@ export class Client extends EventEmitter {
 				}
 				break;
 			}
+			case "ServerRoleRanksUpdate": {
+				const roles = { ...(this.servers.getUnderlyingObject(event.id).roles || {}) };
+				(event.ranks ?? []).forEach((roleId: string, rank: number) => {
+					if (roles[roleId]) roles[roleId] = { ...roles[roleId], rank };
+				});
+				this.servers.updateUnderlyingObject(event.id, "roles", roles);
+				break;
+			}
 			case "UserUpdate": {
 				const user = this.users.get(event.id);
 				if (user && event.data) {
