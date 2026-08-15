@@ -36,6 +36,7 @@ class ServerConfig {
 	dmOnKick?: boolean; // Whether users should receive a DM when kicked. Default false
 	dmOnBan?: boolean; // Whether users should receive a DM when banned. Default false
 	dmOnWarn?: boolean; // Whether users should receive a DM when warned. Default false
+	selfInfractions?: boolean; // Whether users can view their own infractions. Default false
 
 	// TODO: rename this and write a migration for it (this is why you don't code when sleep deprived)
 	discoverAutospamNotify?: boolean; // Whether we have notified the server owner that antispam is enabled for servers on discover.

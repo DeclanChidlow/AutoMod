@@ -164,6 +164,7 @@ function renderGeneral(cfg, defaultPrefix, botId) {
     <div class="form-field"><label><input type="checkbox" id="dmOnKick" ${cfg.dmOnKick ? "checked" : ""}>DM on kick</label><p class="field-desc">Sends a direct message to the user when they're kicked, with reason and moderator info.</p></div>
     <div class="form-field"><label><input type="checkbox" id="dmOnBan" ${cfg.dmOnBan ? "checked" : ""}>DM on ban</label>${desc("Sends a direct message to the user when they're banned, including the reason, moderator info, and ban duration.")}</div>
 	<div class="form-field"><label><input type="checkbox" id="dmOnWarn" ${cfg.dmOnWarn ? "checked" : ""}>DM on warn</label><p class="field-desc">Sends a direct message to the user when they're warned, with reason and moderator info.</p></div>
+    <div class="form-field"><label><input type="checkbox" id="selfInfractions" ${cfg.selfInfractions ? "checked" : ""}>Users can view their own infractions</label><p class="field-desc">Allows members to check their own infraction history with <code>${escHtml(cfg.prefix || defaultPrefix || "/")}infractions</code>. Moderators can still view everyone's infractions.</p></div>
     <div class="form-field"><label><input type="checkbox" id="antispamEnabled" ${cfg.antispamEnabled ? "checked" : ""}>Anti-Spam enabled</label><p class="field-desc">Toggles the automatic spam detection module.</p></div>
     <button type="submit" class="btn btn-primary">Save Configuration</button>
 </form></section>
@@ -230,6 +231,7 @@ function bindConfigForms() {
 				spaceAfterPrefix: document.getElementById("spaceAfterPrefix").checked,
 				dmOnKick: document.getElementById("dmOnKick").checked,
 				dmOnWarn: document.getElementById("dmOnWarn").checked,
+				selfInfractions: document.getElementById("selfInfractions").checked,
 				antispamEnabled: document.getElementById("antispamEnabled").checked,
 				dmOnBan: document.getElementById("dmOnBan").checked,
 			});

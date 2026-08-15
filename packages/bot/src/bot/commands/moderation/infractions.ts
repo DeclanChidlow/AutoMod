@@ -201,11 +201,14 @@ export default {
 	documentation: "/moderation/infractions",
 	syntax: SYNTAX,
 	category: CommandCategory.Moderation,
-	run: async (message: MessageCommandContext, args: string[]) => {
+	run: async (message: MessageCommandContext, args: string[], serverConfig?) => {
 		const { id: serverId, name: serverName } = message.serverContext;
-		const { id: authorId } = message;
+		const authorId = message.authorId!;
 
-		if (!(await canModerate(message, "BanMembers", "KickMembers")) && !args[0]) {
+		const isModerator = await canModerate(message, "BanMembers", "KickMembers");
+		const canViewOwn = serverConfig?.selfInfractions === true;
+
+		if (!args[0] && !isModerator && !canViewOwn) {
 			return message.reply(NO_MANAGER_MSG("view infractions"));
 		}
 
@@ -221,8 +224,18 @@ export default {
 		});
 
 		if (!args[0]) {
-			const msg = await getTopInfractionsMessage(userInfractions, serverName);
-			await message.reply(msg);
+			if (isModerator) {
+				const msg = await getTopInfractionsMessage(userInfractions, serverName);
+				await message.reply(msg);
+			} else {
+				const infs = userInfractions.get(authorId);
+				if (!infs) {
+					await message.reply(`There are no infractions stored for \`${await fetchUsername(authorId)}\`.`, false);
+				} else {
+					const { content, attachments } = await getInfractionMessage(authorId, infs, args, message);
+					await message.reply({ content, attachments }, false);
+				}
+			}
 		} else {
 			switch (args[0]?.toLowerCase()) {
 				case "delete":
@@ -230,7 +243,7 @@ export default {
 				case "rm":
 				case "del":
 				case "undo":
-					if (!(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG("delete infractions"));
+					if (!isModerator) return message.reply(NO_MANAGER_MSG("delete infractions"));
 
 					const id = args[1];
 					if (!id) return message.reply("No infraction ID provided.");
@@ -255,7 +268,8 @@ export default {
 					const user = await parseUserOrId(args[0]);
 					if (!user?.id) return message.reply("I can't find this user.");
 
-					if (user.id !== authorId && !(await canModerate(message, "BanMembers", "KickMembers"))) return message.reply(NO_MANAGER_MSG("view infractions"));
+					if (user.id !== authorId && !isModerator) return message.reply(NO_MANAGER_MSG("view infractions"));
+					if (user.id === authorId && !isModerator && !canViewOwn) return message.reply(NO_MANAGER_MSG("view infractions"));
 
 					const infs = userInfractions.get(user.id);
 

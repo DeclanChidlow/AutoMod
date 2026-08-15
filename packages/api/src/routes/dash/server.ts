@@ -140,6 +140,7 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 					["dmOnKick", ["boolean"], 2],
 					["dmOnBan", ["boolean"], 2],
 					["dmOnWarn", ["boolean"], 2],
+					["selfInfractions", ["boolean"], 2],
 					["antispamEnabled", ["boolean"], 2],
 					["votekickEnabled", ["boolean"], 2],
 					["votekickKickEnabled", ["boolean"], 2],
@@ -184,6 +185,7 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 				if (body.dmOnKick !== undefined) setFields["dmOnKick"] = body.dmOnKick;
 				if (body.dmOnBan !== undefined) setFields["dmOnBan"] = body.dmOnBan;
 				if (body.dmOnWarn !== undefined) setFields["dmOnWarn"] = body.dmOnWarn;
+				if (body.selfInfractions !== undefined) setFields["selfInfractions"] = body.selfInfractions;
 				if (body.antispamEnabled !== undefined) setFields["antispamEnabled"] = body.antispamEnabled;
 				if (body.wordlistEnabled !== undefined) setFields["wordlistEnabled"] = body.wordlistEnabled;
 
