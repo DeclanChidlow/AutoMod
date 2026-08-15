@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, parseUserOrReply, checkMemberAction } from "../../util";
 
 export default {
 	name: "avatar",
@@ -12,8 +12,17 @@ export default {
 	run: async (message: MessageCommandContext, args: string[]) => {
 		try {
 			const targetStr = args.shift();
-			if (!targetStr) return message.reply("No target user specified.");
-			const targetUser = await parseUser(targetStr);
+			if (!targetStr && !message.replyIds?.length) return message.reply("No target user specified.");
+
+			const isResetToken = targetStr?.toLowerCase() == "reset" || targetStr?.toLowerCase() == "clear";
+			let targetUser;
+			if ((!targetStr || isResetToken) && message.replyIds?.length) {
+				targetUser = await parseUserOrReply(message);
+				if (isResetToken) args.unshift(targetStr);
+			} else {
+				targetUser = await parseUser(targetStr ?? "");
+			}
+
 			if (!targetUser) return message.reply("Couldn't find the specified user.");
 			const target = await message.channel?.server?.fetchMember(targetUser);
 			if (!target) return message.reply("The target is not part of this server.");

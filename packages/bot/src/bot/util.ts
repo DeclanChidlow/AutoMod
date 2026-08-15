@@ -31,8 +31,7 @@ async function parseUser(text: string): Promise<User | null> {
 	} else if (ULID_REGEX.test(text)) {
 		uid = text.toUpperCase();
 	} else {
-		if (text.startsWith("@")) text = text.slice(1);
-		return client.users.find((u) => u.username?.toLowerCase() === text.toLowerCase()) || null;
+		return null;
 	}
 
 	try {
@@ -46,6 +45,25 @@ async function parseUserOrId(text: string): Promise<User | { id: string } | null
 	const parsed = await parseUser(text);
 	if (parsed) return parsed;
 	if (ULID_REGEX.test(text)) return { id: text.toUpperCase() };
+	return null;
+}
+
+async function parseUserOrReply(message: Message, text?: string): Promise<User | null> {
+	if (text) {
+		const parsed = await parseUser(text);
+		if (parsed) return parsed;
+	}
+
+	if (message.replyIds?.length) {
+		try {
+			const replied = await message.channel?.fetchMessage(message.replyIds[message.replyIds.length - 1]);
+			const id = replied?.authorId;
+			if (id) {
+				return client.users.get(id) ?? (await client.users.fetch(id).catch(() => null)) ?? null;
+			}
+		} catch (_) {}
+	}
+
 	return null;
 }
 
@@ -423,9 +441,7 @@ const generateInfractionDMEmbed = (server: Server, _serverConfig: ServerConfig, 
 		url: message.url,
 		description:
 			"You have been " +
-			(infraction.actionType
-				? `**${infraction.actionType == "ban" ? "banned" : infraction.actionType == "timeout" ? "timed out" : "kicked"}** from `
-				: `**warned** in `) +
+			(infraction.actionType ? `**${infraction.actionType == "ban" ? "banned" : infraction.actionType == "timeout" ? "timed out" : "kicked"}** from ` : `**warned** in `) +
 			`'${sanitizeMessageContent(server.name).trim()}' <t:${Math.round(infraction.date / 1000)}:R>.\n` +
 			`**Reason:** ${infraction.reason}\n` +
 			`**Moderator:** [@${sanitizeMessageContent(message.author?.username || "Unknown")}](/@${message.authorId})\n` +
@@ -642,6 +658,7 @@ export {
 	getPermissionLevelFromMember,
 	parseUser,
 	parseUserOrId,
+	parseUserOrReply,
 	storeInfraction,
 	uploadFile,
 	sanitizeMessageContent,

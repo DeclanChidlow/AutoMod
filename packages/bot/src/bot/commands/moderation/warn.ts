@@ -6,7 +6,20 @@ import CommandCategory from "../../../struct/commands/CommandCategory";
 import type { SendableEmbed } from "../../../stoat/index.js";
 import { User } from "../../../stoat/index.js";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
-import { dedupeArray, embed, EmbedColor, generateInfractionDMEmbed, getDmChannel, getMembers, canModerate, checkMemberAction, NO_MANAGER_MSG, parseUserOrId, sanitizeMessageContent, storeInfraction } from "../../util";
+import {
+	dedupeArray,
+	embed,
+	EmbedColor,
+	generateInfractionDMEmbed,
+	getDmChannel,
+	getMembers,
+	canModerate,
+	checkMemberAction,
+	NO_MANAGER_MSG,
+	parseUserOrId,
+	sanitizeMessageContent,
+	storeInfraction,
+} from "../../util";
 import { client } from "../../..";
 
 export default {
@@ -24,7 +37,7 @@ export default {
 			return message.reply({
 				embeds: [
 					embed(
-						`Please specify one or more users by replying to their message while running this command or by specifying a comma-separated list of usernames.`,
+						`Please specify one or more users by replying to their message while running this command or by specifying a comma-separated list of user mentions or IDs.`,
 						"No target user specified",
 						EmbedColor.SoftError,
 					),
@@ -121,7 +134,7 @@ export default {
 							const embed = generateInfractionDMEmbed(message.serverContext, serverConfig, infraction, message);
 							const dmChannel = await getDmChannel(user);
 
-						await dmChannel.sendMessage({ embeds: [embed] });
+							await dmChannel.sendMessage({ embeds: [embed] });
 						} catch (e) {
 							console.error(e);
 						}

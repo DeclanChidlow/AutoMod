@@ -1,7 +1,7 @@
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { canModerate, NO_MANAGER_MSG, parseUser, checkMemberAction, ULID_REGEX } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, parseUserOrReply, checkMemberAction, ULID_REGEX } from "../../util";
 
 function getParseErrorMessage(targetStr: string): string {
 	const isUserMention = targetStr.startsWith("<@") || targetStr.match(/^01[A-HJKMNP-TV-Z0-9]{24}$/);
@@ -19,9 +19,6 @@ function quickSelfCheck(targetStr: string, message: MessageCommandContext): bool
 		if (mentionId === message.authorId) return true;
 	} else if (ULID_REGEX.test(targetStr)) {
 		if (targetStr.toUpperCase() === message.authorId) return true;
-	} else {
-		const lowered = targetStr.toLowerCase();
-		if (lowered === message.author?.displayName?.toLowerCase() || lowered === message.author?.username?.toLowerCase()) return true;
 	}
 	return false;
 }
@@ -37,10 +34,13 @@ export default {
 			if (!message.member) return;
 
 			const targetStr = args[0];
-			if (!targetStr) return message.reply("No target user specified.");
+			const replyTarget = !targetStr && message.replyIds?.length ? await parseUserOrReply(message) : null;
+			if (!targetStr && !replyTarget) return message.reply("No target user specified.");
 
 			const hasManageNicknames = await canModerate(message, "ManageNicknames");
-			if (!hasManageNicknames && !quickSelfCheck(targetStr, message)) {
+			const selfTargeted = targetStr ? quickSelfCheck(targetStr, message) : replyTarget?.id === message.authorId;
+
+			if (!hasManageNicknames && !selfTargeted) {
 				return message.reply(NO_MANAGER_MSG("manage nicknames"));
 			}
 
@@ -48,17 +48,21 @@ export default {
 				return message.reply("You don't have permission to change your own nickname.");
 			}
 
-			args.shift();
-
 			let targetUser;
-			try {
-				targetUser = await parseUser(targetStr);
-			} catch (parseError) {
-				return message.reply(getParseErrorMessage(targetStr));
-			}
+			if (targetStr) {
+				args.shift();
 
-			if (!targetUser) {
-				return message.reply(getParseErrorMessage(targetStr));
+				try {
+					targetUser = await parseUser(targetStr);
+				} catch (parseError) {
+					return message.reply(getParseErrorMessage(targetStr));
+				}
+
+				if (!targetUser) {
+					return message.reply(getParseErrorMessage(targetStr));
+				}
+			} else {
+				targetUser = replyTarget;
 			}
 
 			let target;

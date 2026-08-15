@@ -109,7 +109,7 @@ export default {
 			return message.reply({
 				embeds: [
 					embed(
-						`Please specify one or more users by replying to their message while running this command or by specifying a comma-separated list of usernames.`,
+						`Please specify one or more users by replying to their message while running this command or by specifying a comma-separated list of user mentions or IDs.`,
 						"No target user specified",
 						EmbedColor.SoftError,
 					),

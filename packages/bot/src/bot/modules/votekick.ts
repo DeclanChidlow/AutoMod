@@ -3,7 +3,7 @@ import { client, dbs } from "../..";
 import MessageCommandContext from "../../struct/MessageCommandContext";
 import ServerConfig from "automod-lib/dist/types/ServerConfig";
 import { User } from "../../stoat/index.js";
-import { getPermissionLevel, parseUser } from "../util";
+import { getPermissionLevel, parseUser, parseUserOrReply } from "../util";
 import { logModAction } from "./mod_logs";
 
 type VoteType = "kick" | "ban" | "timeout";
@@ -206,7 +206,8 @@ async function handleVoteCommand(message: MessageCommandContext, args: string[],
 			);
 		}
 
-		const target = await parseUser(args[0]);
+		let target = args[0] ? await parseUser(args[0]) : null;
+		if (!target && message.replyIds?.length) target = await parseUserOrReply(message);
 		if (!target) return message.reply("Sorry, I can't find this user.");
 
 		if (target.id === message.authorId) {

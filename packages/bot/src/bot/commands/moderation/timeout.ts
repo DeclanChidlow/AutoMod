@@ -4,7 +4,7 @@ import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
-import { canModerate, NO_MANAGER_MSG, parseUser, parseDuration, storeInfraction, checkMemberAction, embed, EmbedColor } from "../../util";
+import { canModerate, NO_MANAGER_MSG, parseUser, parseUserOrReply, parseDuration, storeInfraction, checkMemberAction, embed, EmbedColor } from "../../util";
 import { client } from "../../..";
 import { handleVoteCommand } from "../../modules/votekick";
 import { fetchUsername, logModAction } from "../../modules/mod_logs";
@@ -57,7 +57,17 @@ export default {
 				return await message.reply({ embeds: [embed("Sorry, I do not have `TimeoutMembers` permission.", "", EmbedColor.SoftError)] });
 			}
 
-			const target = await parseUser(args[0] ?? "");
+			const targetInput = args[0] ?? "";
+			let target = await parseUser(targetInput);
+			let durationArg: string | undefined = args[1];
+			let reasonStart = 2;
+
+			if (!target && message.replyIds?.length) {
+				target = await parseUserOrReply(message);
+				durationArg = args[0] || undefined;
+				reasonStart = 1;
+			}
+
 			if (!target) return await message.reply("No user provided, or the provided user is not valid.");
 
 			if (target.id == message.authorId!) return await message.reply("You cannot time out yourself.");
@@ -70,7 +80,7 @@ export default {
 			const hierarchyErr = await checkMemberAction(member, message, "timeout", "TimeoutMembers");
 			if (hierarchyErr) return await message.reply({ embeds: [hierarchyErr] });
 
-			const duration = parseDuration(args[1] ?? "");
+			const duration = parseDuration(durationArg ?? "");
 			if (!duration) {
 				await client.api.patch(
 					`/servers/${message.serverContext.id}/members/${target.id}` as "/servers/{server}/members/{target}",
@@ -88,7 +98,7 @@ export default {
 				);
 
 				const infId = ulid();
-				const reason = (args.slice(2).join(" ") || "No reason provided").replace(new RegExp("`", "g"), "'").replace(new RegExp("\n", "g"), " ").substring(0, 500);
+				const reason = (args.slice(reasonStart).join(" ") || "No reason provided").replace(new RegExp("`", "g"), "'").replace(new RegExp("\n", "g"), " ").substring(0, 500);
 				await Promise.all([
 					storeInfraction({
 						_id: infId,
