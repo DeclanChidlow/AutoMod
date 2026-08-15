@@ -106,10 +106,10 @@ async function antispam(message: Message): Promise<boolean> {
 						}
 						break;
 					case ModerationAction.Kick:
-						message.reply("(Kick user)");
+						console.info(`Antispam: Kick action triggered for ${message.authorId} (not yet implemented)`);
 						break;
 					case ModerationAction.Ban:
-						message.reply("(Ban user)");
+						console.info(`Antispam: Ban action triggered for ${message.authorId} (not yet implemented)`);
 						break;
 					default:
 						console.warn(`Unknown Moderation Action: ${rule.action}`);

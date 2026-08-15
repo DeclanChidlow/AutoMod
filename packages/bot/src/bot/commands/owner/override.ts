@@ -45,7 +45,7 @@ export default {
 
 			case "disable":
 			case "off": {
-				if (!isSudo(message.author!)) return message.reply("You currently not in sudo mode.");
+				if (!isSudo(message.author!)) return message.reply("You are currently not in sudo mode.");
 
 				sudoOverrides[message.authorId!] = null;
 

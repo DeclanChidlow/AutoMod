@@ -139,7 +139,7 @@ async function checkSudoPermission(message: Message, announce = true): Promise<b
 	if (!hasPerm) return false;
 
 	if (announce) {
-		await message.reply(`## 🔓 Bypassed permission check\n Sudo mode is enabled for @${message.author!.username}.`);
+		await message.reply(`## 🔓 Bypassed permission check\nSudo mode is enabled for @${message.author!.username}.`);
 	}
 	return true;
 }
@@ -423,7 +423,9 @@ const generateInfractionDMEmbed = (server: Server, _serverConfig: ServerConfig, 
 		url: message.url,
 		description:
 			"You have been " +
-			(infraction.actionType ? `**${infraction.actionType == "ban" ? "banned" : "kicked"}** from ` : `**warned** in `) +
+			(infraction.actionType
+				? `**${infraction.actionType == "ban" ? "banned" : infraction.actionType == "timeout" ? "timed out" : "kicked"}** from `
+				: `**warned** in `) +
 			`'${sanitizeMessageContent(server.name).trim()}' <t:${Math.round(infraction.date / 1000)}:R>.\n` +
 			`**Reason:** ${infraction.reason}\n` +
 			`**Moderator:** [@${sanitizeMessageContent(message.author?.username || "Unknown")}](/@${message.authorId})\n` +

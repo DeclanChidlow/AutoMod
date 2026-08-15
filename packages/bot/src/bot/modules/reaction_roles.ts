@@ -136,7 +136,7 @@ client.on("messageReactionRemove", async (message, user, emoji) => {
 			}
 
 			if (!server.havePermission("AssignRoles")) {
-				notifyUser(user, `AutoMod lacks permission to assign roles in this server. A server admin must grant the bot permission.`).catch(() => {});
+				notifyUser(user, `AutoMod lacks permission to remove roles in this server. A server admin must grant the bot permission.`).catch(() => {});
 				return;
 			}
 

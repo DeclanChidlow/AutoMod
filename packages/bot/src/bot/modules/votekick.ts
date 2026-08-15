@@ -222,7 +222,7 @@ async function handleVoteCommand(message: MessageCommandContext, args: string[],
 		}
 
 		if ((await getPermissionLevel(target, message.serverContext)) > 0) {
-			return message.reply("This target can not be vote-moderated.");
+			return message.reply("This target cannot be vote-moderated.");
 		}
 
 		const voteWindowMs = voteDurationMin * 60 * 1000;
@@ -243,7 +243,8 @@ async function handleVoteCommand(message: MessageCommandContext, args: string[],
 		}).toArray();
 
 		if (recentVotes.find((v) => v.user === message.authorId)) {
-			return message.reply(`You have already voted to ${options.type} this user recently.`);
+			const voteVerb = options.type === "kick" ? "kick" : options.type === "ban" ? "ban" : "time out";
+			return message.reply(`You have already voted to ${voteVerb} this user recently.`);
 		}
 
 		const voteEntry = {

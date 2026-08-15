@@ -186,7 +186,7 @@ export default {
 			try {
 				let user = await parseUserOrId(userStr);
 				if (!user) {
-					embeds.push(embed(`AutoMod can not resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, EmbedColor.SoftError));
+					embeds.push(embed(`AutoMod cannot resolve \`${sanitizeMessageContent(userStr).trim()}\` to a user.`, null, EmbedColor.SoftError));
 					continue;
 				}
 

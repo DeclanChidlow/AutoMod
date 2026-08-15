@@ -137,13 +137,13 @@ async function logModAction(
 		let config = await dbs.SERVERS.findOne({ id: server.id });
 
 		if (config?.logs?.modAction) {
-			let aType = type == "ban" ? "banned" : type == "timeout" ? "timed out" : type + "ed";
+			let aType = type == "ban" ? "banned" : type == "timeout" ? "timed out" : type == "votekick" ? "started a vote against" : type + "ed";
 			let embedColor = "#0576ff";
 			if (type == "kick") embedColor = "#ff861d";
 			if (type == "ban") embedColor = "#ff2f05";
 
 			sendLogMessage(config.logs.modAction, {
-				title: `User ${aType}`,
+				title: type == "votekick" ? "Vote started" : `User ${aType}`,
 				description:
 					`\`@${mod.user?.username}\` **${aType}** \`` +
 					`${await fetchUsername(target)}\`${type == "warn" ? "." : ` from ${server.name}.`}\n` +

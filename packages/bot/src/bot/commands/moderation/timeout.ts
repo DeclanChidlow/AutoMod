@@ -58,11 +58,11 @@ export default {
 			}
 
 			const target = await parseUser(args[0] ?? "");
-			if (!target) return await message.reply("No user provided or provided user is not valid");
+			if (!target) return await message.reply("No user provided, or the provided user is not valid.");
 
-			if (target.id == message.authorId!) return await message.reply("You cannot timeout yourself.");
-			if (target.id == client.user!.id) return await message.reply("You cannot timeout the AutoMod.");
-			if (target.id == message.serverContext.ownerId) return await message.reply("You cannot timeout the server owner.");
+			if (target.id == message.authorId!) return await message.reply("You cannot time out yourself.");
+			if (target.id == client.user!.id) return await message.reply("You cannot time out the AutoMod.");
+			if (target.id == message.serverContext.ownerId) return await message.reply("You cannot time out the server owner.");
 
 			const member = await message.channel?.server?.fetchMember(target);
 			if (!member) return await message.reply("That user is not a member of this server.");
@@ -78,7 +78,7 @@ export default {
 						timeout: new Date(0).toISOString(),
 					} as any,
 				);
-				await message.reply(`Timeout cleared on @${target.username}`);
+				await message.reply(`Timeout cleared on @${target.username}.`);
 			} else {
 				await client.api.patch(
 					`/servers/${message.serverContext.id}/members/${target.id}` as "/servers/{server}/members/{target}",
@@ -103,7 +103,7 @@ export default {
 					logModAction("timeout", message.serverContext, message.member!, target.id, reason, infId),
 				]);
 
-				await message.reply(`Successfully timed out @${target.username}`);
+				await message.reply(`Successfully timed out @${target.username}.`);
 			}
 		} catch (e) {
 			console.error("" + e);

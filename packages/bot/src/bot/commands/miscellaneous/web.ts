@@ -10,7 +10,7 @@ async function handleLogin(message: MessageCommandContext, args: string[]) {
 		const code = args.shift();
 		if (!code) {
 			return message.reply(
-				`If you're trying to log in, you can access the dashboard at <${process.env["WEB_UI_URL"]}>.\n\n If you already have a code, you can use \`${message.prefix}web login [code]\`.`,
+				`If you're trying to log in, you can access the dashboard at <${process.env["WEB_UI_URL"]}>.\n\nIf you already have a code, you can use \`${message.prefix}web login [code]\`.`,
 			);
 		}
 
@@ -43,7 +43,7 @@ async function handleLogin(message: MessageCommandContext, args: string[]) {
 		}
 
 		await Promise.all([
-			message.reply(`Successfully authenticated. Return to the web dashboard to finish logging in.\n\n If this wasn't you, run \`${message.prefix}web logout ${code}\` immediately.`),
+			message.reply(`Successfully authenticated. Return to the web dashboard to finish logging in.\n\nIf this wasn't you, run \`${message.prefix}web logout ${code}\` immediately.`),
 			dbs.PENDING_LOGINS.updateOne({ _id: login._id }, { $set: { confirmed: true } }),
 		]);
 	} catch (e) {
@@ -56,7 +56,7 @@ async function handleLogout(message: MessageCommandContext, args: string[]) {
 	try {
 		const code = args.shift();
 		if (!code) {
-			return message.reply(`### No code provided.\n You can invalidate a session by using \`${message.prefix}web logout [Code]\`, or log out everywhere with \`${message.prefix}web logout ALL\``);
+			return message.reply(`### No code provided.\nYou can invalidate a session by using \`${message.prefix}web logout [Code]\`, or log out everywhere with \`${message.prefix}web logout ALL\``);
 		}
 
 		if (code.toLowerCase() === "all") {

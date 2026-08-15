@@ -24,7 +24,7 @@ export default {
 		const action = args[0]?.toLowerCase();
 
 		if (["l", "ls", "list", "show"].includes(action)) {
-			let str = `@silent ## Allowlist\n ### Users\n`;
+			let str = `@silent ## Allowlist\n### Users\n`;
 
 			if (config.whitelist.users?.length) {
 				config.whitelist.users.forEach((u, index) => {
