@@ -57,12 +57,15 @@ export class ServerMember {
 		return Infinity;
 	}
 
-	private get orderedRoles() {
+	get orderedRoles() {
 		const server = this.server;
 		if (!server) return [];
 		const serverRoles = server.roles;
 		return (this.roles ?? [])
-			.map((id: string) => serverRoles?.get(id))
+			.map((id: string) => {
+				const role = serverRoles?.get(id);
+				return role ? { id, ...role } : null;
+			})
 			.filter((role) => role)
 			.sort((a: any, b: any) => (b.rank ?? 0) - (a.rank ?? 0));
 	}
@@ -80,26 +83,27 @@ export class ServerMember {
 			// target is a Channel: compute server-level perms for THIS member, then apply channel overrides
 			if (server) {
 				perms = BigInt(server.defaultPermissions ?? 0);
-				const serverRoles = server.roles;
-				if (serverRoles) {
-					for (const roleId of this.roles ?? []) {
-						const role = serverRoles.get(roleId);
-						if (role?.permissions) {
-							perms |= BigInt(role.permissions.a ?? 0n);
-							perms &= ~BigInt(role.permissions.d ?? 0n);
-						}
+				for (const role of this.orderedRoles) {
+					if (role?.permissions) {
+						perms |= BigInt(role.permissions.a ?? 0n);
+						perms &= ~BigInt(role.permissions.d ?? 0n);
 					}
 				}
 			}
 			// Apply channel-level overrides
 			const dp = target.data?.defaultPermissions ?? target.data?.default_permissions;
 			if (dp) {
-				perms |= BigInt(typeof dp === "number" ? 0n : (dp.a ?? 0n));
-				perms &= ~BigInt(typeof dp === "number" ? BigInt(dp) : (dp.d ?? 0n));
+				if (typeof dp === "number") {
+					perms |= BigInt(dp);
+				} else {
+					perms |= BigInt(dp.a ?? 0n);
+					perms &= ~BigInt(dp.d ?? 0n);
+				}
 			}
-			if (server && target.data?.rolePermissions) {
-				for (const roleId of this.roles ?? []) {
-					const rp = target.data.rolePermissions[roleId];
+			const rolePerms = target.data?.rolePermissions ?? target.data?.role_permissions;
+			if (server && rolePerms) {
+				for (const role of this.orderedRoles) {
+					const rp = rolePerms[role.id];
 					if (rp) {
 						perms |= BigInt(rp.a ?? 0n);
 						perms &= ~BigInt(rp.d ?? 0n);
@@ -109,14 +113,10 @@ export class ServerMember {
 		} else {
 			// target is a Server: compute server-level perms for THIS member
 			perms = BigInt(target.defaultPermissions ?? 0);
-			const roles = target.roles;
-			if (roles) {
-				for (const roleId of this.roles ?? []) {
-					const role = roles.get(roleId);
-					if (role?.permissions) {
-						perms |= BigInt(role.permissions.a ?? 0n);
-						perms &= ~BigInt(role.permissions.d ?? 0n);
-					}
+			for (const role of this.orderedRoles) {
+				if (role?.permissions) {
+					perms |= BigInt(role.permissions.a ?? 0n);
+					perms &= ~BigInt(role.permissions.d ?? 0n);
 				}
 			}
 		}

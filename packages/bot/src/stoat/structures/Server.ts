@@ -85,15 +85,10 @@ export class Server {
 		if (!this.member) return 0n;
 		if (this.ownerId && this.client.user?.id === this.ownerId) return (1n << 64n) - 1n;
 		let perms = BigInt(this.defaultPermissions ?? 0);
-		const memberRoles = this.member?.roles ?? [];
-		const roles = this.roles;
-		if (roles) {
-			for (const roleId of memberRoles) {
-				const role = roles.get(roleId);
-				if (role?.permissions) {
-					perms |= BigInt(role.permissions.a ?? 0n);
-					perms &= ~BigInt(role.permissions.d ?? 0n);
-				}
+		for (const role of this.member.orderedRoles ?? []) {
+			if (role?.permissions) {
+				perms |= BigInt(role.permissions.a ?? 0n);
+				perms &= ~BigInt(role.permissions.d ?? 0n);
 			}
 		}
 		return perms;

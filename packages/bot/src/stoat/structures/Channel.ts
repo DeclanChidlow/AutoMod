@@ -67,14 +67,17 @@ export class Channel {
 		let perms = server ? server.permission : 0n;
 		const dp = this.data.defaultPermissions ?? this.data.default_permissions;
 		if (dp) {
-			perms |= BigInt(typeof dp === "number" ? 0n : (dp.a ?? 0n));
-			perms &= ~BigInt(typeof dp === "number" ? BigInt(dp) : (dp.d ?? 0n));
+			if (typeof dp === "number") {
+				perms |= BigInt(dp);
+			} else {
+				perms |= BigInt(dp.a ?? 0n);
+				perms &= ~BigInt(dp.d ?? 0n);
+			}
 		}
-		if (server && this.data.rolePermissions) {
-			const member = server.member;
-			const roles = member?.roles ?? [];
-			for (const roleId of roles) {
-				const rp = this.data.rolePermissions[roleId];
+		const rolePerms = this.data.rolePermissions ?? this.data.role_permissions;
+		if (server && rolePerms) {
+			for (const role of server.member?.orderedRoles ?? []) {
+				const rp = rolePerms[role.id];
 				if (rp) {
 					perms |= BigInt(rp.a ?? 0n);
 					perms &= ~BigInt(rp.d ?? 0n);
