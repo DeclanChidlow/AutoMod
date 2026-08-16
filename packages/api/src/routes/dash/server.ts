@@ -1,7 +1,7 @@
 import { app, db } from "../..";
 import type { Request, Response } from "express";
 import { badRequest, getPermissionLevel, isAuthenticated, requireAuth, unauthorized } from "../../utils";
-import { botReq } from "../internal/ws";
+import { botReq, sendBotWS } from "../internal/ws";
 import { redis } from "../../db";
 
 type User = { id: string; username?: string; avatarURL?: string };
@@ -204,6 +204,11 @@ app.put("/dash/server/:server/:option", async (req: Request, res: Response) => {
 				if (body.votekickTimeoutDuration !== undefined) setFields["votekick.timeoutDuration"] = body.votekickTimeoutDuration;
 
 				await servers.updateOne({ id: server }, { $set: setFields });
+
+				if (setFields["prefix"] !== undefined) {
+					sendBotWS({ type: "prefixChanged", data: { server, prefix: setFields["prefix"] ?? null } });
+				}
+
 				return res.send({ success: true });
 			}
 

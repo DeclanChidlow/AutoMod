@@ -106,6 +106,7 @@ export interface RawServerMember {
 	joinedAt?: string;
 	joined_at?: string;
 	nickname?: string;
+	pronouns?: string;
 	avatar?: RawFile;
 	roles?: string[];
 	timeout?: string;
@@ -268,6 +269,7 @@ export interface DataEditMessage {
 export interface DataMemberEdit {
 	roles?: string[];
 	nickname?: string;
+	pronouns?: string | null;
 	avatar?: string;
 	timeout?: string;
 	remove?: string[];

@@ -79,6 +79,8 @@ function connect() {
 						data: { success: false, error: "No event listeners available for event" },
 					});
 				}
+			} else if (jsonMsg["type"]) {
+				wsEvents.emit(`push:${jsonMsg.type}`, jsonMsg.data ?? {});
 			}
 		} catch (e) {
 			console.error(e);

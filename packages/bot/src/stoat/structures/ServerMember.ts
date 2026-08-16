@@ -26,6 +26,9 @@ export class ServerMember {
 	get nickname() {
 		return this.data.nickname;
 	}
+	get pronouns() {
+		return this.data.pronouns;
+	}
 	get avatar() {
 		const a = this.data.avatar;
 		return a ? new File(this.client, a) : undefined;

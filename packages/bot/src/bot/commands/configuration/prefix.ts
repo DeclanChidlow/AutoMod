@@ -2,6 +2,7 @@ import SimpleCommand from "../../../struct/commands/SimpleCommand";
 import CommandCategory from "../../../struct/commands/CommandCategory";
 import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { DEFAULT_PREFIX } from "../../modules/command_handler";
+import { setServerPrefixPronouns, clearServerPrefixPronouns } from "../../modules/prefix_pronouns";
 import { dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
@@ -34,6 +35,8 @@ export default {
 
 				await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { prefix: newPrefix } });
 
+				setServerPrefixPronouns(message.serverContext, newPrefix).catch((e) => console.warn("Failed to update prefix pronouns:", e));
+
 				message.reply(`✅ Prefix has been changed from \`${oldPrefix}\` to \`${newPrefix}\`.\n${MENTION_TEXT}`);
 				break;
 			case "get":
@@ -48,6 +51,8 @@ export default {
 				if (config?.prefix != null) {
 					await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $set: { prefix: undefined } });
 				}
+
+				clearServerPrefixPronouns(message.serverContext).catch((e) => console.warn("Failed to clear prefix pronouns:", e));
 
 				message.reply(`✅ Prefix has been reset to the default: \`${DEFAULT_PREFIX}\`.`);
 				break;
