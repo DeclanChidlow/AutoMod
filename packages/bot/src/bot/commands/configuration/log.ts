@@ -4,7 +4,7 @@ import MessageCommandContext from "../../../struct/MessageCommandContext";
 import { client, dbs } from "../../..";
 import { isBotManager, NO_MANAGER_MSG } from "../../util";
 
-const SYNTAX = "{prefix}logs [category] [#channel]";
+const SYNTAX = "{prefix}logs [category] [#channel] | {prefix}logs remove [category]";
 
 export default {
 	name: "logs",
@@ -15,6 +15,30 @@ export default {
 	category: CommandCategory.Configuration,
 	run: async (message: MessageCommandContext, args: string[]) => {
 		if (!(await isBotManager(message))) return message.reply(NO_MANAGER_MSG("manage logging"));
+
+		if (["remove", "off", "disable"].includes(args[0]?.toLowerCase())) {
+			const category = args[1]?.toLowerCase();
+
+			switch (category) {
+				case "messageupdate": {
+					const config = await dbs.SERVERS.findOne({ id: message.channel!.serverId! });
+					if (!config?.logs?.messageUpdate) return await message.reply("Message update logs are not configured for this server.");
+					await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $unset: { "logs.messageUpdate": "" } });
+					return await message.reply("Removed message update logs from this server.");
+				}
+
+				case "modaction": {
+					const config = await dbs.SERVERS.findOne({ id: message.channel!.serverId! });
+					if (!config?.logs?.modAction) return await message.reply("Moderation logs are not configured for this server.");
+					await dbs.SERVERS.updateOne({ id: message.channel!.serverId! }, { $unset: { "logs.modAction": "" } });
+					return await message.reply("Removed moderation logs from this server.");
+				}
+
+				default: {
+					return await message.reply(`Usage: \`${message.prefix}logs remove [category]\`\nCategories: \`messageupdate\`, \`modaction\``);
+				}
+			}
+		}
 
 		if (!args[0]) {
 			return await message.reply(`No category specified. Syntax: \`${SYNTAX.replace(/{prefix}/g, message.prefix)}\`\n` + `Categories: \`messageupdate\`, \`modaction\``);
