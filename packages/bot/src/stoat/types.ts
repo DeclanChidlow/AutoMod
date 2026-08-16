@@ -46,6 +46,7 @@ export interface RawUser {
 	username: string;
 	discriminator?: string;
 	displayName?: string;
+	pronouns?: string;
 	avatar?: RawFile;
 	badges?: number;
 	status?: { text?: string; presence?: string };

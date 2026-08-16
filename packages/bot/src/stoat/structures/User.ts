@@ -27,7 +27,10 @@ export class User {
 		return this.data.discriminator;
 	}
 	get displayName() {
-		return this.data.displayName ?? this.data.username;
+		return this.data.displayName ?? this.username;
+	}
+	get pronouns() {
+		return this.data.pronouns;
 	}
 	get avatar() {
 		const a = this.data.avatar;
