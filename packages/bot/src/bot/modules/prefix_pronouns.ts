@@ -8,8 +8,10 @@ const PRONOUNS_MAX_LENGTH = 24;
 function prefixPronounText(prefix: string): string {
 	const sanitised = prefix.replace(/\s+/g, " ").trim();
 	if (!sanitised) return "";
+
 	const text = `Prefix: ${sanitised}`;
-	return text.length > PRONOUNS_MAX_LENGTH ? sanitised.slice(0, PRONOUNS_MAX_LENGTH) : text;
+	if (text.length <= PRONOUNS_MAX_LENGTH) return text;
+	return [...sanitised].slice(0, PRONOUNS_MAX_LENGTH).join("");
 }
 
 async function setServerPrefixPronouns(server: Server, prefix: string): Promise<void> {

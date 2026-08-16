@@ -40,7 +40,7 @@ export default {
 
 			let target;
 			try {
-				target = await server.fetchMember(targetUser);
+				target = await server.fetchMemberFresh(targetUser.id);
 			} catch (e) {
 				return message.reply("The target is not part of this server.");
 			}

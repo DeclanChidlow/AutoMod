@@ -6,7 +6,7 @@ import InfractionType from "automod-lib/dist/types/antispam/InfractionType";
 import { getOwnMemberInServer, storeInfraction } from "../util";
 import { fetchUsername } from "./mod_logs";
 import { DEFAULT_PREFIX } from "./command_handler";
-import { setServerPrefixPronouns } from "./prefix_pronouns";
+import { setServerPrefixPronouns, clearServerPrefixPronouns } from "./prefix_pronouns";
 import { UserSystemMessage } from "../../stoat/index.js";
 
 const DM_SESSION_LIFETIME = 1000 * 60 * 5;
@@ -91,7 +91,12 @@ client.on("serverCreate", async (server) => {
 		return undefined;
 	});
 
-	setServerPrefixPronouns(server, DEFAULT_PREFIX).catch((e) => console.warn("Failed to update prefix pronouns in server:", server.id, e));
+	const prefixConfig = await dbs.SERVERS.findOne({ id: server.id }).catch(() => null);
+	if (prefixConfig?.prefix) {
+		setServerPrefixPronouns(server, prefixConfig.prefix).catch((e) => console.warn("Failed to update prefix pronouns in server:", server.id, e));
+	} else {
+		clearServerPrefixPronouns(server).catch((e) => console.warn("Failed to clear prefix pronouns in server:", server.id, e));
+	}
 
 	const channels = server.channels.filter((c) => c && c.type == "TextChannel");
 
