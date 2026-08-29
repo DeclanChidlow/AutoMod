@@ -233,13 +233,18 @@ export default {
 
 		for (const user of targetUsers) {
 			try {
-				let member;
-				try {
-					member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
-				} catch {
+			let member;
+			try {
+				member = members.find((m) => m.id.user == user.id) || (await message.serverContext.fetchMember(user.id));
+			} catch (e) {
+				// String errors are API responses: a 404 here means the user isn't in the server.
+				// Banning non-members is allowed, so skip the hierarchy check below instead of failing.
+				// Non-string errors (eg network failures) still abort.
+				if (typeof e !== "string") {
 					embeds.push(embed(`Failed to fetch member data for this user. Cannot verify permissions.`, null, EmbedColor.Error));
 					continue;
 				}
+			}
 
 				if (member) {
 					const err = await checkMemberAction(member, message, "ban", "BanMembers");
