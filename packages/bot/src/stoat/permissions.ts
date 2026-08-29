@@ -52,6 +52,8 @@ export const Permission = {
 
 	BypassSlowmode: 2n ** 39n,
 
+	ViewAuditLogs: 2n ** 40n,
+
 	GrantAllSafe: 0x000f_ffff_ffff_ffffn,
 } as const;
 

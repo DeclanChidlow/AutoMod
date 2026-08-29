@@ -201,23 +201,42 @@ export class Client extends EventEmitter {
 					const previous = { ...this.messages.getUnderlyingObject(event.id), channelId: event.channel };
 					this.messages.updateUnderlyingObject(event.id, { ...event.data, editedAt: new Date().toISOString() });
 					this.emit("messageUpdate", existing, previous);
+				} else {
+					// The message isn't cached (eg it was sent before the bot connected).
+					// Create a partial entry so listeners can still log the update; the old content is unknown.
+					const partial = this.messages.getOrCreate(event.id, { _id: event.id, channel: event.channel, channelId: event.channel, ...event.data });
+					this.emit("messageUpdate", partial, { content: undefined });
 				}
 				break;
 			}
 			case "MessageDelete": {
-				if (this.messages.get(event.id)) {
-					this.emit("messageDelete", this.messages.getUnderlyingObject(event.id));
-					this.messages.delete(event.id);
-				}
+				// Emit even when the message isn't cached (eg it was sent before the bot connected) so listeners can still log the deletion, just without content or author info.
+				const data = this.messages.getUnderlyingObject(event.id);
+				this.emit("messageDelete", {
+					...data,
+					id: event.id,
+					authorId: data.authorId ?? data.author ?? "",
+					channelId: data.channelId ?? data.channel,
+				});
+				this.messages.delete(event.id);
 				break;
 			}
 			case "BulkMessageDelete": {
 				const deleted: any[] = [];
 				if (event.ids)
 					for (const id of event.ids) {
+						const data = this.messages.getUnderlyingObject(id);
 						if (this.messages.get(id)) {
-							deleted.push(this.messages.getUnderlyingObject(id));
+							deleted.push({
+								...data,
+								id,
+								authorId: data.authorId ?? data.author ?? "",
+								channelId: data.channelId ?? data.channel,
+							});
 							this.messages.delete(id);
+						} else {
+							// Uncached message: still include the ID so the deletion is logged.
+							deleted.push({ id, authorId: "", channelId: event.channel });
 						}
 					}
 				this.emit("messageDeleteBulk", deleted, event.channel ? this.channels.get(event.channel) : undefined);

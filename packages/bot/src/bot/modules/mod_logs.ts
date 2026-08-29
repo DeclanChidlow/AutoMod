@@ -1,7 +1,42 @@
 import { Server, ServerMember } from "../../stoat/index.js";
 import { client, dbs } from "../..";
 import LogMessage from "automod-lib/dist/types/LogMessage";
+import { decodeTime } from "ulid";
 import { arrayToCsv, sanitizeMessageContent, sendLogMessage } from "../util";
+
+const appURL = () => client.configuration?.app ?? "";
+
+/**
+ * Find the user who performed a deletion via the server audit log.
+ * Audit entries are written around the same time the delete event fires, so we retry briefly if no matching entry is found yet.
+ * Returns the actor's user ID, undefined if no matching entry exists, or null if the lookup failed.
+ */
+async function fetchAuditActor(serverId: string, matches: (action: any) => boolean): Promise<string | null | undefined> {
+	let errored = false;
+	for (let attempt = 0; attempt < 3; attempt++) {
+		if (attempt > 0) await new Promise((r) => setTimeout(r, attempt * 500));
+		try {
+			const res = await client.api.get(`/servers/${serverId}/audit_logs`, { limit: 50 });
+			for (const entry of res?.audit_logs ?? []) {
+				if (matches(entry.action) && Date.now() - decodeTime(entry._id) < 15_000) {
+					return entry.user;
+				}
+			}
+		} catch (e) {
+			console.error(e);
+			errored = true;
+		}
+	}
+	return errored ? null : undefined;
+}
+
+function fetchDeleteActor(serverId: string, channelId: string, authorId?: string): Promise<string | null | undefined> {
+	return fetchAuditActor(serverId, (action) => action?.type === "MessageDelete" && action.channel === channelId && (!authorId || action.author === authorId));
+}
+
+function fetchBulkDeleteActor(serverId: string, channelId: string, count: number): Promise<string | null | undefined> {
+	return fetchAuditActor(serverId, (action) => action?.type === "MessageBulkDelete" && action.channel === channelId && action.count === count);
+}
 
 // the `packet` event is emitted before the client's cache
 // is updated, which allows us to get the old message content
@@ -9,6 +44,12 @@ import { arrayToCsv, sanitizeMessageContent, sendLogMessage } from "../util";
 client.on("messageUpdate", async (message, oldMessage) => {
 	try {
 		if (!message.content) return;
+
+		if (!message.authorId) {
+			// The message wasn't cached when the update arrived (eg it was sent before the bot connected).
+			// Fetch it so the edit can be attributed to its author.
+			await message.channel?.fetchMessage(message.id).catch(() => {});
+		}
 
 		if (message.authorId == client.user?.id) return;
 
@@ -26,8 +67,8 @@ client.on("messageUpdate", async (message, oldMessage) => {
 		if (config?.logs?.messageUpdate) {
 			const attachFullMessage = oldMsg.length > 800 || newMsg.length > 800;
 			let embed: LogMessage = {
-				title: `Message edited in ${server.name}`,
-				description: `[#${channel.name}](/server/${server.id}/channel/${channel.id}) | ` + `<@${message.authorId}> | ` + `[Jump to message](/server/${server.id}/channel/${channel.id}/${message.id})`,
+				title: `Message edited`,
+				description: `**Author:** ${message.authorId ? `<@${message.authorId}>` : "Unknown"}\n` + `**Message:** [Jump to message](<${message.url}>)`,
 				fields: [],
 				color: "#829dff",
 			};
@@ -58,12 +99,35 @@ client.on("messageDelete", async (message) => {
 
 		let config = await dbs.SERVERS.findOne({ id: channel?.server?.id });
 		if (config?.logs?.messageUpdate) {
+			// Link to the message before the deleted one, since the deleted message itself is gone.
+			let contextId: string | undefined;
+			try {
+				const before = await channel.fetchMessages({ before: message.id, limit: 1 });
+				contextId = before[0]?.id;
+			} catch (e) {
+				console.error(e);
+			}
+
+			const canViewAuditLogs = !!channel.server?.havePermission("ViewAuditLogs");
+			const deleter = canViewAuditLogs ? await fetchDeleteActor(channel.serverId!, channel.id, message.authorId || undefined) : null;
+			let deletedBy: string;
+			if (deleter) {
+				deletedBy = deleter === message.authorId ? "themselves" : `<@${deleter}>`;
+			} else if (deleter === null) {
+				deletedBy = "Unknown";
+			} else if (message.authorId) {
+				// Self-deletes aren't written to the audit log.
+				deletedBy = "themselves";
+			} else {
+				deletedBy = "Unknown";
+			}
+
 			let embed: LogMessage = {
-				title: `Message deleted in ${channel?.server?.name}`,
+				title: `Message deleted`,
 				description:
-					`[#${channel.name}](/server/${channel.serverId}/channel/${channel.id}) | ` +
-					`<@${message.authorId}> | ` +
-					`[\\[Jump to context\\]](/server/${channel.serverId}/channel/${channel.id}/${message.id})`,
+					`**Author:** ${message.authorId ? `<@${message.authorId}>` : "Unknown"}\n` +
+					`**Deleted by:** ${deletedBy}\n` +
+					(contextId ? `**Context:** [\\[Jump to context\\]](<${appURL()}${channel.path}/${contextId}>)` : ""),
 				fields: [],
 				color: "#ff6b6b",
 			};
@@ -109,9 +173,24 @@ client.on("messageDeleteBulk", async (messages) => {
 
 			const csv = arrayToCsv(data);
 
+			// Link to the message before the deleted ones, since they themselves are gone.
+			let contextId: string | undefined;
+			try {
+				const before = await channel.fetchMessages({ before: messages[0].id, limit: 1 });
+				contextId = before[0]?.id;
+			} catch (e) {
+				console.error(e);
+			}
+
+			const canViewAuditLogs = !!channel.server?.havePermission("ViewAuditLogs");
+			const deleter = canViewAuditLogs ? await fetchBulkDeleteActor(channel.serverId!, channel.id, messages.length) : null;
+
 			let embed: LogMessage = {
-				title: `Bulk delete in ${channel.server?.name}`,
-				description: `${messages.length} messages deleted in ` + `[#${channel.name}](/server/${channel.serverId}/channel/${channel.id})`,
+				title: `Messages bulk deleted`,
+				description:
+					`${messages.length} messages deleted.\n` +
+					`**Deleted by:** ${deleter ? `<@${deleter}>` : "Unknown"}\n` +
+					(contextId ? `**Context:** [\\[Jump to context\\]](<${appURL()}${channel.path}/${contextId}>)` : ""),
 				fields: [],
 				attachments: [{ name: "messages.csv", content: Buffer.from(csv) }],
 				color: "#ff392b",
