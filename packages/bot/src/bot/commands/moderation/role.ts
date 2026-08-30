@@ -18,7 +18,7 @@ export default {
 			const action = args.shift()?.toLowerCase();
 
 			const normalizeEmoji = (emoji: string) => {
-				return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/[\uFE0F\uFE0E\uE0E2]/g, "");
+				return emoji.replace(/^:([A-Z0-9]+):$/i, "$1").replace(/[\uFE0F\uFE0E\uE0E1-\uE0E9]/g, "");
 			};
 
 			if (action === "reaction") {
@@ -47,24 +47,19 @@ export default {
 						return message.reply("Please provide a valid emoji.");
 					}
 
-				const roleHierarchyErr = await checkRoleAction(
-					server.roles.get(roleId),
-					message,
-					"assign this role",
-					"AssignRoles",
-				);
-				if (roleHierarchyErr) return message.reply({ embeds: [roleHierarchyErr] });
+					const roleHierarchyErr = await checkRoleAction(server.roles.get(roleId), message, "assign this role", "AssignRoles");
+					if (roleHierarchyErr) return message.reply({ embeds: [roleHierarchyErr] });
 
-				const channel = message.channel;
-				if (!channel) {
-					return message.reply("This command must be used in a channel.");
-				}
+					const channel = message.channel;
+					if (!channel) {
+						return message.reply("This command must be used in a channel.");
+					}
 
-				if (!channel.havePermission("React")) {
-					return message.reply("I don't have permission to add reactions in this channel.");
-				}
+					if (!channel.havePermission("React")) {
+						return message.reply("I don't have permission to add reactions in this channel.");
+					}
 
-				try {
+					try {
 						const targetMsg = await channel.fetchMessage(messageId);
 						await targetMsg.react(emoji);
 
@@ -101,8 +96,8 @@ export default {
 						return message.reply("No reaction role found for that message and emoji combination.");
 					}
 
-				const channel = message.channel;
-				if (channel && channel.havePermission("React")) {
+					const channel = message.channel;
+					if (channel && channel.havePermission("React")) {
 						try {
 							const targetMsg = await channel.fetchMessage(messageId);
 							await targetMsg.unreact(emoji);
